@@ -7,8 +7,11 @@ coffee bin/server.coffee
 == Copyright
 
 Copyright © 2011 Morgridge Institute for Research
+
 Copyright © 2011 David van Leeuwen
+
 Copyright © 2011 Meagan Rothschild
+
 
 == License
 
