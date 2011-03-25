@@ -20,11 +20,11 @@ exports.createServer = (app) ->
 		@subsribe = (emit) ->
 			subs[conn.id] = emit
 			conn.on 'end', ->
-				##publish 'leave', conn.id
+				publish 'leave', conn.id
 				delete subs[conn.id]
 		
 		## test method
 		@hello = () ->
-			##publish 'hello', 'Good day sir!'
+			publish 'hello', 'Good day sir!'
 		
 	client.listen app
