@@ -2,7 +2,7 @@
 
 == Setup
 
-coffee bin/app.coffee
+coffee bin/server.coffee
 
 == Copyright
 
