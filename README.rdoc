@@ -1,21 +1,12 @@
-= Anatomy Pro Contouring
+= Anatomy Pro-Am (working title)
 
 == Setup
 
-To run this demo you first need to install:
-* NodeJS
-* Node modules (npm install): connect, socket.io, redis, coffee-script, underscore
-* Redis (and run the server)
-
-Go to your folder and type:
-
 coffee bin/app.coffee
-
-It should be running now :-)
 
 == Copyright
 
-Copyright (c) 2011 David van Leeuwen, Ben Shapiro.
+Copyright (c) 2011 David van Leeuwen, Ben Shapiro, Greg Vaughan, Joe Snell, Shannon Harris, Meagan Rothschild
 
 == License
 
