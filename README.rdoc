@@ -6,7 +6,7 @@ coffee bin/app.coffee
 
 == Copyright
 
-Copyright (c) 2011 David van Leeuwen, Ben Shapiro, Greg Vaughan, Joe Snell, Shannon Harris, Meagan Rothschild
+Copyright (c) 2011 David van Leeuwen, Ben Shapiro, Greg Vaughan, Joseph L Snell, Shannon Harris, Meagan Rothschild
 
 == License
 
