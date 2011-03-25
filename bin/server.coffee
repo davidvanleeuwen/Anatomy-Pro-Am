@@ -7,7 +7,7 @@ browserify = require 'browserify'
 server = express.createServer();
 server.use express.static('./public')
 server.use browserify ->
-	mount: '/require.js',
+	mount: '/browserify.js',
 	main: require('events')
 server.get '/', (req, res) -> 
 	res.render()
