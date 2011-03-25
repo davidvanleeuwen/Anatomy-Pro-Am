@@ -11,9 +11,10 @@ publish = () ->
 	args = arguments
 	cl = args[1]
 	if not _.isUndefined args[2] then args = _.without args, cl
-	Hash(subs).forEach (emit,sub) ->
-		emit.apply emit, args
-
+	Hash(subs).forEach (emit, sub) ->
+		if sub isnt cl
+			emit.apply emit, args
+		
 ## dnode rpc client
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->

@@ -6,7 +6,9 @@ coffee bin/server.coffee
 
 == Copyright
 
-Copyright (c) 2011 David van Leeuwen, Ben Shapiro, Greg Vaughan, Joseph L Snell, Shannon Harris, Meagan Rothschild
+Copyright © 2011 Morgridge Institute for Research
+Copyright © 2011 David van Leeuwen
+Copyright © 2011 Meagan Rothschild
 
 == License
 
