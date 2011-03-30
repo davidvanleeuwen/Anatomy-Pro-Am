@@ -3,7 +3,7 @@
 ##	- Overwrite defaults if you want
 ###########
 
-# Main (socket) server
+# Main server
 exports.server = {
 	port: 3000
 }
@@ -16,6 +16,6 @@ exports.redis = {
 
 # Facebook settings
 exports.facebook = {
-	secret: '',
-	key: ''
+	appId: '195426547154882',
+	secret: '4fc5dd2a7e9946b959504ab1f229b6bc'
 }

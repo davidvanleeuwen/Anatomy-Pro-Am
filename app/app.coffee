@@ -1,9 +1,9 @@
 config = require '../config'
 
 ## dependencies
-DNode = require('dnode')
-Hash = require('hashish')
-_ = require('underscore')._
+DNode = require('dnode@0.6.3')
+Hash = require('hashish@0.0.2')
+_ = require('underscore@1.1.5')._
 
 ## pub/sub
 subs = {}
@@ -27,5 +27,5 @@ exports.createServer = (app) ->
 		## test method
 		@hello = () ->
 			publish 'hello', 'Good day sir!'
-		
-	client.listen app
+	##client.listen app
+	DNode(client).listen(app)

@@ -1,0 +1,15 @@
+* {
+	margin: 0;
+	padding: 0;
+	cursor: default;
+	font-family: Verdana;
+	font-size: 12px;
+}
+img {
+	position: absolute;
+	z-index: 1;
+}
+canvas {
+	position: absolute;
+	z-index: 2;
+}
