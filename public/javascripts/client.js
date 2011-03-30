@@ -1,32 +1,47 @@
-$(function(){
+$(function(exports){
+	var Backbone = require('backbone@0.3.3'),
+		_ = require('underscore')._,
+		resources = require('./models/resources'),
+		drawing = new resources.collections.Drawing;
+	
+	window.Point = Backbone.View.extend({
+		initialize: function() {
+			_.bindAll(this, 'render');
+			this.model.view = this;
+			this.canvas = $('.game').dom[0];
+			this.ctx = this.canvas.getContext("2d");
+			this.render();
+		},
+		render: function() {
+			this.ctx.beginPath();
+			this.ctx.arc(this.model.get('x'), this.model.get('y'), 10, 0, Math.PI*2, true); 
+			this.ctx.closePath();
+			this.ctx.fill();
+			return this;
+		}
+	});
+	
 	window.AppView = Backbone.View.extend({
 		el: $(".area"),
 		events: {
-			"mousedown .game": "startSettingPoint",
-			"mouseup .game": "stopSettingPoint",
-			"mousemove .game": "setNewPoint"
+			"mousedown .game": "setNewPoint"
 		},
 		initialize: function() {
 			this.canvas = $('.game').dom[0];
 			this.ctx = this.canvas.getContext("2d");
-			this.ctx.fillStyle = "rgba(200,0,0,0.3)";
-		},
-		startSettingPoint: function(event) {
-			this.isDrawing = true;
-		},
-		stopSettingPoint: function(event) {
-			this.isDrawing = false;
+			DNode(function(){
+				this.add = function(data) {
+					console.log(data);
+				}
+			}).connect(function(remote){
+				drawing.bind('rpc:add', function(data){
+					remote.add();
+				});
+			});
 		},
 		setNewPoint: function(event) {
-			if(this.isDrawing) {
-				var _x = event.clientX-this.canvas.offsetLeft, 
-					_y = event.clientY-this.canvas.offsetTop;
-
-				this.ctx.beginPath();
-				this.ctx.arc(_x, _y, 10, 0, Math.PI*2, true); 
-				this.ctx.closePath();
-				this.ctx.fill();
-			}
+			//new Point({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
+			drawing.trigger('rpc:add');
 		}
 	});
 	

@@ -2,22 +2,28 @@
 config = require './config'
 express = require 'express@2.1.0'
 browserify = require 'browserify@0.2.11'
-stylus = require 'stylus@0.10.0'
+backbone = require 'backbone@0.3.3'
+DNode = require 'dnode@0.6.3'
+app = require './app/app'
 
 ## server instance
 server = express.createServer()
 server.use express.bodyParser()
 server.use express.methodOverride()
 
+module.exports = server
+
 server.register '.html', require 'ejs'
 server.set 'view engine', 'html'
 server.use express.static __dirname + '/public'
 server.set 'views', __dirname + '/views'
 
-server.use browserify ->
+server.use browserify {
 	mount: '/browserify.js',
 	base: __dirname,
-	require: ['events']
+	require: ['backbone@0.3.3'],
+	#filter: require('jsmin').jsmin
+}
 
 server.get '/', (req, res) -> 
 	res.render 'index'
@@ -31,5 +37,4 @@ server.use (req, res) ->
 server.listen config.server.port
 
 ## RPC client
-app = require './app/app'
 app.createServer server
