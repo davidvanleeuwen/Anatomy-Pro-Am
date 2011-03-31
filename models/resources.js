@@ -8,7 +8,6 @@ resources.collections = {};
 resources.models.Point = Backbone.Model.extend({ 
 	initialize: function() {
 		_.bind(this);
-		console.log('init point model');
 	}
 });
 

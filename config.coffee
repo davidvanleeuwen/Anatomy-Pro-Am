@@ -3,6 +3,8 @@
 ##	- Overwrite defaults if you want
 ###########
 
+exports.version = 'v0.01'
+
 # Main server
 exports.server = {
 	port: 3000

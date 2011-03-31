@@ -3,8 +3,6 @@ config = require './config'
 ## dependencies
 express = require 'express@2.1.0'
 browserify = require 'browserify@0.2.11'
-backbone = require 'backbone@0.3.3'
-DNode = require 'dnode@0.6.3'
 app = require './app/app'
 
 ## server instance
@@ -34,8 +32,8 @@ server.listen config.server.port
 ## RPC client
 app.createServer server
 
-
 ## keep this at the bottom of the server file
+
 server.error (err, req, res) ->
 	res.render '500'
 
