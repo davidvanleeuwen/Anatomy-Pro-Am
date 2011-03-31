@@ -1,5 +1,5 @@
 var Backbone = require('backbone@0.3.3'), 
-	_ = require('underscore')._, 
+	_ = require('underscore@1.1.5')._, 
 	resources = module.exports = module.exports.resources = {};
 
 resources.models = {};

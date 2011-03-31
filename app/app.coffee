@@ -1,12 +1,34 @@
 config = require '../config'
 
 ## dependencies
-DNode = require('dnode@0.6.3')
-Hash = require('hashish@0.0.2')
+DNode = require 'dnode@0.6.3'
+Hash = require 'hashish@0.0.2'
 _ = require('underscore@1.1.5')._
-Backbone = require('backbone@0.3.3')
-resources  = require('../models/resources')
+Backbone = require 'backbone@0.3.3'
+resources  = require '../models/resources'
 
+## pub/sub
+subs = {}
+publish = () ->
+	args = arguments
+	cl = args[1]
+	if not _.isUndefined args[2] then args = _.without args, cl
+	Hash(subs).forEach (emit, sub) ->
+		if sub isnt cl
+			emit.apply emit, args
+		
+## DNode RPC API
+exports.createServer = (app) ->
+	client = DNode (client, conn) ->
+		@subsribe = (emit) ->
+			subs[conn.id] = emit
+			conn.on 'end', ->
+				publish 'leave', conn.id
+				delete subs[conn.id]
+		## test method
+		@add = () ->
+			publish 'hello', 'Good day sir!'
+	client.listen app
 
 ## stores
 MemoryStore = () ->
@@ -16,7 +38,6 @@ MemoryStore.prototype.create = (model) ->
 	if not model.id
 		model.id = model.attributes.id = Date.now()
 		this.data[model.id] = model
-		console.log(model);
 		return model
 	MemoryStore.prototype.set = (model) ->
 		this.data[model.id] = model
@@ -42,28 +63,3 @@ MemoryStore.prototype.create = (model) ->
 		console.log(error)
 
 collection = new resources.collections.Drawing
-
-## pub/sub
-subs = {}
-publish = () ->
-	args = arguments
-	cl = args[1]
-	if not _.isUndefined args[2] then args = _.without args, cl
-	Hash(subs).forEach (emit, sub) ->
-		if sub isnt cl
-			emit.apply emit, args
-		
-## DNode RPC API
-exports.createServer = (app) ->
-	client = DNode (client, conn) ->
-		@subsribe = (emit) ->
-			subs[conn.id] = emit
-			conn.on 'end', ->
-				publish 'leave', conn.id
-				delete subs[conn.id]
-		
-		## test method
-		@add = () ->
-			publish 'hello', 'Good day sir!'
-	##client.listen app
-	client.listen(app)
