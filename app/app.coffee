@@ -57,13 +57,15 @@ publish = () ->
 ## DNode RPC API
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
+		collection.bind 'add', (data) ->
+			client.add data.attributes
 		@subscribe = (emit) ->
 			subs[conn.id] = emit
 			conn.on 'end', ->
 				publish 'leave', conn.id
 				delete subs[conn.id]
-		@create = () ->
-			collection.create()
+		@add = (data) ->
+			collection.create(data)
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen(app)

@@ -29,19 +29,23 @@ $(function(exports){
 		initialize: function() {
 			this.canvas = $('.game').dom[0];
 			this.ctx = this.canvas.getContext("2d");
-			DNode().connect(function(remote){
+			DNode({
+				add: function(data) {
+					console.log(data);
+					if (!drawing.get(data.id)) drawing.add(data)
+				}
+			}).connect(function(remote){
 				var em = require('events').EventEmitter.prototype;
 				remote.subscribe(function () {
 					em.emit.apply(em, arguments);
 				});
-				drawing.bind('dnode:create', function(){
-					remote.create();
+				drawing.bind('dnode:add', function(data){
+					remote.add(data);
 				});
 			});
 		},
 		setNewPoint: function(event) {
-			//new Point({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
-			drawing.trigger('dnode:create');
+			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
 		}
 	});
 	
