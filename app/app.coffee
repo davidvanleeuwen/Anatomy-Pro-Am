@@ -69,3 +69,12 @@ exports.createServer = (app) ->
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen(app)
+	app.get '/drawing', (req, res) ->
+		collection.fetch {
+			success: (data) ->
+				res.writeHead 200
+				res.end JSON.stringify(data)
+			error: (err) ->
+				res.writeHead 204
+				res.end err
+		}

@@ -10,6 +10,7 @@ $(function(exports){
 			this.model.view = this;
 			this.canvas = $('.game').dom[0];
 			this.ctx = this.canvas.getContext("2d");
+			this.ctx.fillStyle = "rgb(200,0,0)";
 			this.render();
 		},
 		render: function() {
@@ -29,6 +30,23 @@ $(function(exports){
 		initialize: function() {
 			this.canvas = $('.game').dom[0];
 			this.ctx = this.canvas.getContext("2d");
+			
+			_.bindAll(this, 'drawPoint', 'drawnPoints');
+			var self = this;
+			drawing.bind('add', this.drawPoint);
+			drawing.bind('refresh', function(data) {
+				data.each(function(model){
+					if(self.drawnPoints[model.id]) {
+						self.drawnPoints[model.id].model.set(model.attributes);
+					} else {
+						self.drawPoint(model);
+					}
+				});
+			});
+			
+			// old fashion request to get the current state
+			drawing.fetch({success: function(data) { } });
+			
 			DNode({
 				add: function(data) {
 					console.log(data);
@@ -44,8 +62,14 @@ $(function(exports){
 				});
 			});
 		},
+		drawnPoints: {},
+		drawPoint: function(model) {
+			var point = new Point({model: model});
+			this.drawnPoints[model.id] = point;
+		},
 		setNewPoint: function(event) {
 			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
+			
 		}
 	});
 	
