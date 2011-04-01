@@ -5,13 +5,51 @@ var Backbone = require('backbone@0.3.3'),
 resources.models = {};
 resources.collections = {};
 
+/*
+ *	Case model
+ *	@images
+ */
+resources.models.Case = Backbone.Model.extend({ 
+	initialize: function() {
+		_.bind(this);
+	}
+});
+
+/*
+ *	Point model
+ *	@x
+ *	@y
+ */
 resources.models.Point = Backbone.Model.extend({ 
 	initialize: function() {
 		_.bind(this);
 	}
 });
 
+/*
+ *	Player model
+ *	@facebook_id
+ */
+resources.models.Player = Backbone.Model.extend({ 
+	initialize: function() {
+		_.bind(this);
+	}
+});
+
+/*
+ *	Drawing collection
+ *	@point
+ */
 resources.collections.Drawing = Backbone.Collection.extend({ 
 	model: resources.models.Point,
 	url: '/drawing'
+});
+
+/*
+ *	Players collection
+ *	@player
+ */
+resources.collections.Players = Backbone.Collection.extend({ 
+	model: resources.models.Player,
+	url: '/players'
 });
