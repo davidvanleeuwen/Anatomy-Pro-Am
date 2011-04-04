@@ -1,3 +1,17 @@
+
+<div id="fb-root"></div>
+<script>
+  FB.init({
+    appId  : '140523449349143',
+    status : true, // check login status
+    cookie : true, // enable cookies to allow the server to access the session
+    xfbml  : true  // parse XFBML
+  });
+var url = 'https://graph.facebook.com/oauth/authorize?client_id=140523449349143&redirect_uri='+encodeURIComponent('http://a.apa.dev.mirerca.com/authresponse/')+'&scope=user_photos,email,user_birthday,user_online_presence,offline_access';
+top.location.href = url;
+
+</script>
+
 <div class="area">
 	<div class="images">
 		<img src="images/image.png" />
@@ -6,3 +20,4 @@
 	<a href="#" class="clear">CLEAR</a>
 </div>
 
+</div>

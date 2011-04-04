@@ -7,7 +7,7 @@ exports.version = 'v0.01'
 
 # Main server
 exports.server = {
-	port: 3000
+	port: 8001
 }
 
 # Redis server
@@ -17,7 +17,8 @@ exports.redis = {
 }
 
 # Facebook settings
-exports.facebook = {
-	appId: '195426547154882',
-	secret: '4fc5dd2a7e9946b959504ab1f229b6bc'
+exports.fbconfig = {
+	appId: '140523449349143'
+	apiKey: 'ce1eb8dfeb1426ed26f3088c1342c8e33'
+	appSecret: 'eb5d3c2272b6a691cf205af78fb9db98'
 }
