@@ -1,6 +1,26 @@
+
+<div id="fb-root"></div>
+<script>
+  FB.init({
+    appId  : '195426547154882',
+    status : true, // check login status
+    cookie : true, // enable cookies to allow the server to access the session
+    xfbml  : true  // parse XFBML
+  });
+var url = 'https://graph.facebook.com/oauth/authorize?client_id=195426547154882&redirect_uri='+encodeURIComponent('http://c.apa.dev.mirerca.com/authresponse/')+'&scope=user_photos,email,user_birthday,user_online_presence,offline_access';
+top.location.href = url;
+
+</script>
+
+<!--
+
 <div class="area">
 	<div class="images">
 		<img src="images/image.png" />
 	</div>
 	<canvas class="game" width="668" height="587"></canvas>
 </div>
+
+<p>Greg</p>
+
+-->
