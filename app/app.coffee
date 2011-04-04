@@ -1,7 +1,7 @@
 config = require '../config'
 
 ## dependencies
-DNode = require 'dnode@0.6.3'
+DNode = require 'dnode@0.6.6'
 Hash = require 'hashish@0.0.2'
 _ = require('underscore@1.1.5')._
 Backbone = require 'backbone@0.3.3'
@@ -42,7 +42,11 @@ Backbone.sync = (method, model, success, error) ->
 	else
 		console.log(error)
 
+collections = []
 collection = new resources.collections.Drawing
+collections.push collections 
+drawing = new resources.collections.Drawing
+collections.push drawing 
 
 ## pub/sub
 subs = {}
@@ -53,19 +57,31 @@ publish = () ->
 	Hash(subs).forEach (emit, sub) ->
 		if sub isnt cl
 			emit.apply emit, args
-		
+
 ## DNode RPC API
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
-		collection.bind 'add', (data) ->
-			client.add data.attributes
 		@subscribe = (emit) ->
 			subs[conn.id] = emit
 			conn.on 'end', ->
 				publish 'leave', conn.id
 				delete subs[conn.id]
-		@add = (data) ->
-			collection.create(data)
+		@add = (data, options) ->
+			aColl = eval options.type
+			aColl.create data
+			client.add data, { type: options.type }
+		@remove = (data, options) ->
+			aColl = eval options.type
+			m = aColl.get data
+			if m
+				m.destroy()
+				client.remove data, { type: options.type }
+		@removeAll = (options) ->
+			aColl = eval options.type
+			aColl.each (m) ->
+				m.destroy()
+				client.removeAll { type: options.type }
+			
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen(app)

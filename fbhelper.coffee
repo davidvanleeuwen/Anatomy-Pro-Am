@@ -72,11 +72,10 @@ renderIndex =  (req, res) ->
 	console.log(user)
 	if user
 		console.log '-------=== LOGGED IN USER, SENDING INDEX ===-------'
-		res.render 'index'
+		res.render 'index', config.fbconfig
 	else
 		console.log '-------=== NO USER - RENDERING INDEX TO DIRECT USER TO AUTH PAGE ===-------'
-		res.render 'index'
-
+		res.render 'index', config.fbconfig
 
 exports.store_user = storeUser
 exports.userDeauthed = userDeauthed
