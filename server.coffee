@@ -2,11 +2,12 @@ config = require './config'
 express = require 'express@2.2.0'
 browserify = require 'browserify@0.3.0'
 stylus = require 'stylus@0.10.0'
-fbgraph = require 'facebook-graph@0.0.4'
+#fbgraph = require 'facebook-graph@0.0.4'
 https = require 'https'
-fbutil = require './facebookutil.js'
-redirect_uri = 'http://c.apa.dev.mirerca.com/authresponse/'
-scope = 'user_photos,email,user_birthday,user_online_presence,offline_access'
+#butil = require './facebookutil.js'
+fbhelper = require './fbhelper'
+#redirect_uri = 'http://c.apa.dev.mirerca.com/authresponse/'
+#scope = 'user_photos,email,user_birthday,user_online_presence,offline_access'
 
 ## server instance
 server = express.createServer()
@@ -28,27 +29,30 @@ server.use browserify {
 	#filter: require('jsmin').jsmin
 }
 ###
+	
 
-server.post '/', (req,res) ->
-	console.log(" / POST")
-	user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
+server.get '/', (req, res) ->
+	res.render 'index'
+	
+server.post '/', (req, res) ->
+	console.log("POST @ /")
+	fbhelper.renderIndex(req, res)
+###	user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
 	console.log(user)
 	if user
-		console.log '-------=== LOGGED IN USER, SENDING FRIENDS ===-------'
-		graph = new fbgraph.GraphAPI user['access_token']
-		print = (error, data) ->
-			console.log ''
-			res.send (data)
-		graph.getConnections 'me', 'friends', print
+		console.log '-------=== LOGGED IN USER, SENDING INDEX ===-------'
+		res.render 'index'
 	else
 		console.log '-------=== NO USER - RENDERING INDEX TO DIRECT USER TO AUTH PAGE ===-------'
 		res.render 'index'
-
+###
 server.get '/authresponse', (req, res) ->
-	console.log('get auth')
-	outputtext = ""
+	console.log('GET @ /authresponse')
+	fbhelper.authUser(req, res)
+###
 	if req.query.code
 		console.log "-------=== USER ACCEPTED TERMS, SENDING ACCESS TOKEN ===-------"
+		##compile access token requirements
 		path = '/oauth/access_token'
 		args = {
 			client_id: config.fbconfig.appId
@@ -56,35 +60,21 @@ server.get '/authresponse', (req, res) ->
 			client_secret: config.fbconfig.appSecret
 			code: req.query.code			
 		}
-		print = (error, data) ->
-			if data 
-				graph = new fbgraph.GraphAPI data
-				print = (error, data) ->
-					if data
-						outputtext = data
-						console.log data
-				graph.getConnections 'me', 'friends', print
+		print = (error, code) ->
+			if code 
+				#if we get the code back, get all user data
+				graph = new fbgraph.GraphAPI code
+				print = (error, userdata) ->
+					if userdata
+						fbhelper.store_user(userdata, code)
+				graph.getObject 'me', print
 		fbutil.auth path, 'GET', args, print
-		if outputtext
-			res.send(outputtext)
-		else
-			res.end()
-		#res.redirect 'http://apps.facebook.com/anatomy_pro-am/'
-
+		res.redirect 'http://apps.facebook.com/anatomy_pro-am/'
 
 	if req.query.error_reason	
-		console.log "-------=== USER DENIED TERMS ===-------"
-		console.log(req.query.error_reason)
-		console.log(req.query.error)
-		console.log(req.query.error_description)
+		fbhelper.userDeclinedAccess(req)
 		res.end()
-		###
-		server.get '/', (req,res) ->
-			console.log("GET")
-			#res.render 'index'
-			res.send("/ get")
-		###
-
+###
 ##Used to send privacy policy information.  
 server.all '/privacy', (req, res) ->
 	console.log("privacy")
@@ -102,9 +92,8 @@ server.all '/tab', (req, res) ->
 	res.send("TAB")
 ##Used when someone stops using the application
 server.post '/deauth', (req, res) ->
-	console.log("-------=== USER REMOVED APP! ===-------")
-	console.log(req)
-	res.send("DEAUTHED")
+	fbhelper.userDeauthed(req)
+	res.end()
 ###
 server.get '/', (req, res) -> 
 	res.render('index')

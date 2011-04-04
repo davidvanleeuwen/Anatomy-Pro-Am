@@ -21,4 +21,6 @@ exports.fbconfig = {
 	appId: '195426547154882'
 	apiKey: '31140e3cf6361171d37ce76eaabfac78'
 	appSecret: '4fc5dd2a7e9946b959504ab1f229b6bc'
+	redirect_uri: 'http://c.apa.dev.mirerca.com/authresponse/'
+	scope: 'user_photos,email,user_birthday,user_online_presence,offline_access'
 }

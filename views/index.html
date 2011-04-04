@@ -7,11 +7,22 @@
     cookie : true, // enable cookies to allow the server to access the session
     xfbml  : true  // parse XFBML
   });
-var url = 'https://graph.facebook.com/oauth/authorize?client_id=195426547154882&redirect_uri='+encodeURIComponent('http://c.apa.dev.mirerca.com/authresponse/')+'&scope=user_photos,email,user_birthday,user_online_presence,offline_access';
-top.location.href = url;
+
+FB.getLoginStatus(function(response) {
+  if (response.session) {
+    // logged in and connected user, someone you know
+	document.getElementById("gamearea").innerHTML = "play!";
+	
+  } else {
+    var url = 'https://graph.facebook.com/oauth/authorize?client_id=195426547154882&redirect_uri='+encodeURIComponent('http://c.apa.dev.mirerca.com/authresponse/')+'&scope=user_photos,email,user_birthday,user_online_presence,offline_access';
+	top.location.href = url;
+  }
+});
+
 
 </script>
 
+<div id = "gamearea"></div>
 <!--
 
 <div class="area">
