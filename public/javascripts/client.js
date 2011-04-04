@@ -25,11 +25,12 @@ $(function(exports){
 	window.AppView = Backbone.View.extend({
 		el: $(".area"),
 		events: {
-			"mousedown .game": "setNewPoint"
+			"mousedown .game": "setNewPoint",
+			"click .clear": "clearPoints"
 		},
 		initialize: function() {
 			this.canvas = $('.game').dom[0];
-			this.ctx = this.canvas.getContext("2d");
+			ctx = this.canvas.getContext("2d");
 			
 			_.bindAll(this, 'drawPoint', 'drawnPoints');
 			var self = this;
@@ -48,17 +49,35 @@ $(function(exports){
 			drawing.fetch({success: function(data) { } });
 			
 			DNode({
-				add: function(data) {
-					console.log(data);
-					if (!drawing.get(data.id)) drawing.add(data)
+				// clientside RPC, these methods are called by the server
+				add: function(data, options) {
+					var aColl = eval(options.type);
+					if (!aColl.get(data.id)) aColl.add(data);
+				},
+				removeAll: function(options) {
+					var aColl = eval(options.type);
+					aColl.each(function(m){
+						m.destroy();
+					});
 				}
 			}).connect(function(remote){
 				var em = require('events').EventEmitter.prototype;
 				remote.subscribe(function () {
 					em.emit.apply(em, arguments);
 				});
-				drawing.bind('dnode:add', function(data){
-					remote.add(data);
+				// listen to events from the collection
+				drawing.bind('drawing:add', function(data){
+					// do a RPC (its either add or remove, type is the collection name)
+					remote.add(data, {
+						type: 'drawing'
+					});
+				});
+				// remote.remove(data, options) or remote.removeAll(options)
+				// -- doesn't work right now, because we need to redraw the canvas!
+				drawing.bind('drawing:removeAll', function(data){
+					remote.removeAll({
+						type: 'drawing'
+					});
 				});
 			});
 		},
@@ -68,8 +87,13 @@ $(function(exports){
 			this.drawnPoints[model.id] = point;
 		},
 		setNewPoint: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
-			
+			// trigger event (via collection)
+			drawing.trigger('drawing:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
+			event.preventDefault();
+		},
+		clearPoints: function(event) {
+			drawing.trigger('drawing:removeAll', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
+			event.preventDefault();
 		}
 	});
 	

@@ -13,3 +13,8 @@ canvas {
 	position: absolute;
 	z-index: 2;
 }
+.clear {
+	position: absolute;
+	left: 700px;
+	top: 20px;
+}

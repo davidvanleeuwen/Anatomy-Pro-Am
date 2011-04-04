@@ -2,7 +2,7 @@ config = require './config'
 
 ## dependencies
 express = require 'express@2.1.0'
-browserify = require 'browserify@0.2.11'
+browserify = require 'browserify@0.3.1'
 app = require './app/app'
 
 ## server instance
