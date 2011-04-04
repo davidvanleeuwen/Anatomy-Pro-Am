@@ -1,7 +1,5 @@
 config = require './config'
 app = require './app/app'
-scope = 'user_photos,email,user_birthday,user_online_presence,offline_access'
-redirect_uri = 'http://a.apa.dev.mirerca.com/authresponse/'
 
 ## dependencies
 express = require 'express@2.2.1'
@@ -43,7 +41,7 @@ server.post '/', (req,res) ->
 		graph.getConnections 'me', 'friends', print
 	else
 		console.log '-------=== NO USER - RENDERING INDEX TO DIRECT USER TO AUTH PAGE ===-------'
-		res.render 'index'
+		res.render 'index', config.fbconfig
 
 server.get '/authresponse', (req, res) ->
 	console.log('get auth')
@@ -53,7 +51,7 @@ server.get '/authresponse', (req, res) ->
 		path = '/oauth/access_token'
 		args = {
 			client_id: config.fbconfig.appId
-			redirect_uri: redirect_uri
+			redirect_uri: config.fbconfig.redirect_uri
 			client_secret: config.fbconfig.appSecret
 			code: req.query.code			
 		}
