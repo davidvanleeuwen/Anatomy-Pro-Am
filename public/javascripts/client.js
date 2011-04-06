@@ -2,7 +2,8 @@ $(function(exports){
 	var Backbone = require('backbone@0.3.3'),
 		_ = require('underscore')._,
 		resources = require('./models/resources'),
-		drawing = new resources.collections.Drawing;
+		drawing = new resources.collections.Drawing,
+		view = {};
 	
 	window.Point = Backbone.View.extend({
 		initialize: function() {
@@ -32,45 +33,72 @@ $(function(exports){
 			this.render();
 		},
 		render: function() {
-			$.get('/renders/cases.html', function(t){
-				this.el.html(t);
-			}.bind(this));
+			if (view.cases) {
+				console.log('cashed version');
+				this.el.html('');
+				this.el.html(view.cases);
+			} else {
+				$.get('/renders/cases.html', function(t){
+					this.el.html('');
+					view.cases = t;
+					this.el.html(view.cases);
+				}.bind(this));
+			}
+			
 		},
 		selectCase: function(e) {
 			//console.log($(e.currentTarget));
 			e.preventDefault();
-			this.el.html('');
-			window.Computer = new ComputerView;
+			new ComputerView;
 		}
 	});
 	
 	window.ComputerView = Backbone.View.extend({
 		el: $('#game'),
 		events: {
-			'click .current_room_button': 'goBack'
+			'click .light_grey_gradient_text': 'goBack'
 		},
 		initialize: function() {
 			_.bindAll(this, 'render');
 			this.render();
 		},
 		render: function() {
-			$.get('/renders/computer.html', function(t){
-				this.el.html(t);
-			}.bind(this));
+			if (view.computer) {
+				this.el.html('');
+				this.el.html(view.computer);
+			} else {
+				$.get('/renders/computer.html', function(t){
+					this.el.html('');
+					view.computer = t;
+					this.el.html(view.computer);
+				}.bind(this));
+			}
 		},
 		goBack: function(e) {
 			e.preventDefault();
-			this.el.html('');
-			window.Case = new CaseView;
+			new CaseView;
 		}
 	});
 	
 	window.AppView = Backbone.View.extend({
 		el: $('#game'),
+		events: {
+			'click .light_grey_gradient_text': 'startGame'
+		},
 		initialize: function() {
-			
-			window.Case = new CaseView;
-			
+			_.bindAll(this, 'render');
+			this.render();
+		},
+		render: function() {
+			$.get('/renders/splash.html', function(t){
+				this.el.html(t);
+			}.bind(this));
+		},
+		startGame: function(e) {
+			e.preventDefault();
+			new CaseView;
+		}
+		
 			/*
 			this.canvas = $('.game').dom[0];
 			ctx = this.canvas.getContext("2d");
@@ -110,7 +138,6 @@ $(function(exports){
 					});
 				});
 			});
-			*/
 		},
 		drawnPoints: {},
 		drawPoint: function(model) {
@@ -125,7 +152,9 @@ $(function(exports){
 		clearPoints: function(event) {
 			drawing.trigger('drawing:removeAll', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
 			event.preventDefault();
-		}
+		}*/
 	});
+	
+	// todo: get all views (renders) first during the splash screen.
 	window.App = new AppView;
 });

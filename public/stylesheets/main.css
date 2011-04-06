@@ -267,8 +267,8 @@ h2{font-family:SteelfishRegular;
                     }
 
 /* ---------------SPLASH SCREEN ---------------------------------*/
-#game_container_splash_screen{height:555px; width:744px; margin:0 auto; background:url(images/background_tile.png);}
-#splash_logo{height:115px; width:453px; background:url(images/ap-a_logo_title_screen.png); margin:150px 0 0 150px; float:left;}
+#game_container_splash_screen{height:555px; width:744px; margin:0 auto; background:url(../images/background_tile.png);}
+#splash_logo{height:115px; width:453px; background:url(../images/ap-a_logo_title_screen.png); margin:150px 0 0 150px; float:left;}
 
 #start_button{height:30px; width:200px; float:left; border: 1px solid #490f0f; font-size:30px; padding:4px; text-align:center; margin:5px 0 0 275px;
                     -moz-border-radius:5px;
@@ -277,7 +277,7 @@ h2{font-family:SteelfishRegular;
                     -khtml-border-radius:5px;
 
                     background-color:#8e0000;
-                    background: url(images/red_gradient_background.png)repeat-x;
+                    background: url(../images/red_gradient_background.png)repeat-x;
                     background: -moz-linear-gradient(#860505, #cd3737);
                     background: -webkit-linear-gradient(linear, 0% 0%, 0% 100%, from(#860505), to(#cd3737));
                     background: -webkit-linear_gradient(#860505, #cd3737);
@@ -292,7 +292,7 @@ h2{font-family:SteelfishRegular;
                     -khtml-border-radius:5px;
 
                     background-color:#8e0000;
-                    background: url(images/red_gradient_background_dark.png)repeat-x;
+                    background: url(../images/red_gradient_background_dark.png)repeat-x;
                     background: -moz-linear-gradient(#660505, #ba2f2f);
                     background: -webkit-linear-gradient(linear, 0% 0%, 0% 100%, from(#660505), to(#ba2f2f));
                     background: -webkit-linear_gradient(#660505, #ba2f2f);
