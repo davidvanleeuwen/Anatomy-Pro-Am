@@ -32,7 +32,7 @@ $(function(exports){
 			this.render();
 		},
 		render: function() {
-			$.get('/render/cases.html', function(t){
+			$.get('/renders/cases.html', function(t){
 				this.el.html(t);
 			}.bind(this));
 		},
@@ -54,7 +54,7 @@ $(function(exports){
 			this.render();
 		},
 		render: function() {
-			$.get('/render/computer.html', function(t){
+			$.get('/renders/computer.html', function(t){
 				this.el.html(t);
 			}.bind(this));
 		},
