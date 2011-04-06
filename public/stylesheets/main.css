@@ -1,20 +1,267 @@
-* {
-	margin: 0;
-	padding: 0;
-	cursor: default;
-	font-family: Verdana;
-	font-size: 12px;
+*{margin: 0;padding: 0; }
+
+body{overflow: hidden;}
+ul{list-style:none;}
+p{color:#333333; font-family:verdana; font-size:12px;}
+h2{font-family:SteelfishRegular;
+        background: -webkit-gradient(linear, left top, left bottom, from(#d20000), to(#630000));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-family:SteelfishRegular;
+        color:#d20000;
+        }
+
+
+
+@font-face {
+    font-family: 'SteelfishRegular';
+    src: url('../fonts/steelfish-webfont.eot?') format('eot'),
+         url('../fonts/steelfish-webfont.woff') format('woff'),
+         url('../fonts/steelfish-webfont.ttf') format('truetype'),
+         url('../fonts/steelfish-webfont.svg#webfont9AQvgFHv') format('svg');
+    font-weight: normal;
+    font-style: normal;
 }
-img {
-	position: absolute;
-	z-index: 1;
+
+/* --------------------------------------------------------------------------------------CLASSES */
+
+.clear{clear: both;}
+.steelfish{font-family:SteelfishRegular;}
+.red_gradient_text{
+    background: -webkit-gradient(linear, left top, left bottom, from(#d20000), to(#630000));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family:SteelfishRegular;
+    color:#d20000;    
 }
-canvas {
-	position: absolute;
-	z-index: 2;
+
+.grey_gradient_text{
+    background: -webkit-gradient(linear, left top, left bottom, from(#696969), to(#151515));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family:SteelfishRegular;
+    color:#333333;
+    }
+    
+.light_grey_gradient_text{
+    background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#d3d3d3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family:SteelfishRegular;
+    color:#ffffff;
 }
-.clear {
-	position: absolute;
-	left: 700px;
-	top: 20px;
-}
+.spacer{margin:0 5px 0 5px;}
+.large{font-size:30px;}
+.left{text-align:left;}
+
+/* ----------------------------------------------------------------------------------END CLASSES */
+
+#game_container{height:555px; width:744px; margin:0 auto; background: url(../images/background_tile.png)repeat-x;}
+
+#page_wrap{width:646px; margin:0 auto; margin:0 0 0 50px; padding:33px 0 0 0;}
+
+/* -----------------------------------------------------------------------------------------------------------------------------------------HEADER */
+#header{height:52px; width:646px; float:left;}   
+#logo{height:48px; width:227px; background: url(../images/ap-a_logo.png); float:left;}
+#header_navigation{height:48px; width:372px; float:right; margin:10px 0 0 0;}
+#header_navigation ul{float:right;}
+#header_navigation li{display:inline; font-size:25px; text-align:right;}
+#header_navigation li a{margin:0 5px 0 5px;}
+#header_navigation li a:hover{background: -webkit-gradient(linear, left top, left bottom, from(#696969), to(#151515));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family:SteelfishRegular;
+    color:#333333;
+    }
+
+#horizontal_divider{height:1px; width:646px; background:#adadad; float:left; margin:10px 0 10px 0;}
+
+#case_clipboard{height:442px; width:642px; float:left; background:url(../images/clipboard.png); margin:7px 0 0 0;}
+#player_options{height:34px; width:642px; float:right;}
+#player_options ul{float:right;}
+#player_options li{display:inline; font-size:21px;}
+#player_options li a{background: -webkit-gradient(linear, left top, left bottom, from(#696969), to(#151515));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family:SteelfishRegular;
+    color:#333333;
+    }
+#player_options li a:hover{background: -webkit-gradient(linear, left top, left bottom, from(#d20000), to(#630000));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family:SteelfishRegular;
+    color:#d20000;
+    }
+ /* -----------------------------------------------------------------------------------------------------------------------------------------END HEADER */   
+    
+
+/* ---------------------------------------------------------------------------------------------------------------------------------CASES */
+#case_container{width:550px; float:left; margin:40px 0 0 40px; padding:5px;
+                    }
+.case:hover{background:#e8e8e8;}
+.case{width:550px; float:left; border: 1px solid #ababab; padding:5px; margin:0 0 10px 0;
+                    -moz-border-radius:5px;
+                    -webkit-border-radius:5px;
+                    border-radius:5px;
+                    -khtml-border-radius:5px;
+                    }
+                    
+.case_header{width:544px; float:left;}
+.case_number{float:left; font-size:32px;}                    
+.case_number a:hover{    
+                    background: -webkit-gradient(linear, left top, left bottom, from(#d20000), to(#630000));
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    font-family:SteelfishRegular;
+                    color:#d20000;                    
+                    }
+
+
+.case_difficulty{float:right;}
+.case_difficulty p{font-size:32px;}
+.difficulty_stars{margin:10px 0 0 0;}
+.difficulty_stars li{display:inline;}
+
+.red_case_divider{height:1px; width:544px; float:left; background:#8e0000; margin:3px 0 3px 0;}
+
+.case_footer{height:104px; width:544px; float:left; margin:7px 0 0 0;}
+.case_pic{height:110px; width:107px; background:url(../images/screenshot_placeholder.png); float:left;
+                    -moz-border-radius:5px;
+                    -webkit-border-radius:5px;
+                    border-radius:5px;
+                    -khtml-border-radius:5px;
+                    }
+.case_info_container{height:100px; width:244px; float:left; margin:0 0 0 10px; text-align:justify;}
+.case_name{float:left;}
+.case_description{float:left;}
+
+.take_case_button{height:40px; width:153px; float:right; border: 1px solid #490f0f; font-size:30px; padding-top:5px; margin:25px 0 0 0;
+                    -moz-border-radius:5px;
+                    -webkit-border-radius:5px;
+                    border-radius:5px;
+                    -khtml-border-radius:5px;
+                    
+                    background-color:#8e0000;
+                    background: url(../images/red_gradient_background.png)repeat-x;
+                    background: -moz-linear-gradient(#860505, #cd3737);
+                    background: -webkit-linear-gradient(linear, 0% 0%, 0% 100%, from(#860505), to(#cd3737));
+                    background: -webkit-linear_gradient(#860505, #cd3737);
+                    background: -o-linear-gradient(#860505, #cd3737);
+                    }
+                    
+.take_case_button:hover{height:40px; width:153px; float:right; border: 1px solid #490f0f; padding-top:5px;
+                    -moz-border-radius:5px;
+                    -webkit-border-radius:5px;
+                    border-radius:5px;
+                    -khtml-border-radius:5px;
+                    
+                    background-color:#8e0000;
+                    background: url(../images/red_gradient_background_dark.png)repeat-x;
+                    background: -moz-linear-gradient(#660505, #ba2f2f);
+                    background: -webkit-linear-gradient(linear, 0% 0%, 0% 100%, from(#660505), to(#ba2f2f));
+                    background: -webkit-linear_gradient(#660505, #ba2f2f);
+                    background: -o-linear-gradient(#660505, #ba2f2f);
+                    }
+
+.take_case_button a{font-family:SteelfishRegular; margin:0 0 0 20px;}
+.case_divider{height:22px; width:540px; background:url(../images/case_separator.png); float:left;}
+                    
+/* START IN GAME --------------------------------------------*/
+
+#game_container_in_game{height:555px; width:744px; margin:0 auto; background:url(../images/old_computer_bg.png);}
+
+#play_space{height:433px; width:740px; float:left;}
+#scan{height:325px; width:431px; background:#333; float:right; margin:27px 68px 0 0;
+                    -moz-border-radius:5px;
+                    -webkit-border-radius:5px;
+                    border-radius:5px;
+                    -khtml-border-radius:5px;
+                    }
+#prep_button{height:30px; width:200px; float:right; border: 1px solid #490f0f; font-size:30px; padding:4px; text-align:center; margin:18px 155px 0 0;
+                    -moz-border-radius:5px;
+                    -webkit-border-radius:5px;
+                    border-radius:5px;
+                    -khtml-border-radius:5px;
+                    
+                    background-color:#8e0000;
+                    background: url(../images/red_gradient_background.png)repeat-x;
+                    background: -moz-linear-gradient(#860505, #cd3737);
+                    background: -webkit-linear-gradient(linear, 0% 0%, 0% 100%, from(#860505), to(#cd3737));
+                    background: -webkit-linear_gradient(#860505, #cd3737);
+                    background: -o-linear-gradient(#860505, #cd3737);
+                    }
+
+                    
+#prep_button:hover{height:30px; width:200px; float:right; border: 1px solid #490f0f; padding:4px; text-align:center; margin:18px 155px 0 0;
+                    -moz-border-radius:5px;
+                    -webkit-border-radius:5px;
+                    border-radius:5px;
+                    -khtml-border-radius:5px;
+                    
+                    background-color:#8e0000;
+                    background: url(../images/red_gradient_background_dark.png)repeat-x;
+                    background: -moz-linear-gradient(#660505, #ba2f2f);
+                    background: -webkit-linear-gradient(linear, 0% 0%, 0% 100%, from(#660505), to(#ba2f2f));
+                    background: -webkit-linear_gradient(#660505, #ba2f2f);
+                    background: -o-linear-gradient(#660505, #ba2f2f);
+                    }
+
+
+#tool_container{height:325px; width:155px; background:white; float:left; margin:27px 0 0 69px;
+                    -moz-border-radius:5px;
+                    -webkit-border-radius:5px;
+                    border-radius:5px;
+                    -khtml-border-radius:5px;
+                    }
+#in_game_footer{height:81px; width:744px; background:url(../images/grey_bg_tile.png)repeat-x; float:left;}
+#game_label{height:41px; width:744px; float:left;}
+#label{height:41px; width:151px; background:url(../images/label_bg.png); float:left; margin:0 0 0 25px; text-align:center;}
+
+#badge{height:138px; width:192px; background:url(../images/badge.png); position:absolute; left:16px; bottom:64px; z-index:500;}
+#div_black{height:81px; width:1px; background:#151515; float:left; margin:0 0 0 210px;}
+#div_black_2{height:81px; width:1px; background:#151515; float:left; margin:0 0 0 10px;}
+#div_white{height:81px; width:1px; background:#616161; float:left;}
+#fb_friends_container{height:70px; width:325px; background:#151515; border:1px solid #616161; float:left;
+                    margin:4px 0 0 10px;
+                    -moz-border-radius:5px;
+                    -webkit-border-radius:5px;
+                    border-radius:5px;
+                    -khtml-border-radius:5px;
+                    }
+                    
+#badge_status{text-align:center; margin: 55px 0 0 0;}
+#room_container{height:70px; width:160px; float:right; margin:10px 10px 0 0;}
+#room_container h4{margin:13px 0 0 0;}
+#current_room{height:12px; width:87px; background:url(../images/current_room.png);float:left;}
+#current_room_label{height:40px; width:90px; text-align:center; float:left;}
+#current_room_label p{font-size:40px;}
+
+
+#current_room_button{height:60px; width:60px; float:right; border: 1px solid #490f0f; font-size:30px;  text-align:center;
+                    -moz-border-radius:5px;
+                    -webkit-border-radius:5px;
+                    border-radius:5px;
+                    -khtml-border-radius:5px;
+                    
+                    background-color:#8e0000;
+                    background: url(../images/red_gradient_background.png)repeat-x;
+                    background: -moz-linear-gradient(#860505, #cd3737);
+                    background: -webkit-linear-gradient(linear, 0% 0%, 0% 100%, from(#860505), to(#cd3737));
+                    background: -webkit-linear_gradient(#860505, #cd3737);
+                    background: -o-linear-gradient(#860505, #cd3737);
+                    }
+
+                    
+#current_room_button:hover{height:60px; width:60px; float:right; border: 1px solid #490f0f;  text-align:center;
+                    -moz-border-radius:5px;
+                    -webkit-border-radius:5px;
+                    border-radius:5px;
+                    -khtml-border-radius:5px;
+                    
+                    background-color:#8e0000;
+                    background: url(../images/red_gradient_background_dark.png)repeat-x;
+                    background: -moz-linear-gradient(#660505, #ba2f2f);
+                    background: -webkit-linear-gradient(linear, 0% 0%, 0% 100%, from(#660505), to(#ba2f2f));
+                    background: -webkit-linear_gradient(#660505, #ba2f2f);
+                    background: -o-linear-gradient(#660505, #ba2f2f);
+                    }

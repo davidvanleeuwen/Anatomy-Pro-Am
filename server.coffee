@@ -3,7 +3,7 @@ app = require './app/app'
 ## dependencies
 express = require 'express@2.2.1'
 browserify = require 'browserify@0.3.1'
-fbgraph = require 'facebook-graph@0.0.5'
+fbgraph = require 'facebook-graph@0.0.6'
 https = require 'https'
 fbhelper = require './fbhelper'
 

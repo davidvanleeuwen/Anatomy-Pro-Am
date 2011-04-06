@@ -6,7 +6,7 @@
 	FB.getLoginStatus(function(response) {
 	  if (response.session) {
 	    // logged in and connected user, someone you know
-		$('.area').show();
+		$('#game_container').show();
 	  } else {
 		var url = 'https://graph.facebook.com/oauth/authorize?client_id='
 			+ '<%= appId %>&redirect_uri='
@@ -16,6 +16,16 @@
 	});
 </script>
 
+<div id="game">
+	
+</div>
+
+
+<div class="clear">
+</div>
+
+
+<!--
 <div class="area" style="display: none;">
 	<div class="images">
 		<img src="images/image.png" />
@@ -23,4 +33,4 @@
 	<canvas class="game" width="668" height="587"></canvas>
 	<a href="#" class="clear">CLEAR</a>
 </div>
-
+-->

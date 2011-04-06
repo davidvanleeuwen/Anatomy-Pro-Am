@@ -22,13 +22,56 @@ $(function(exports){
 		}
 	});
 	
-	window.AppView = Backbone.View.extend({
-		el: $(".area"),
+	window.CaseView = Backbone.View.extend({
+		el: $('#game'),
 		events: {
-			"mousedown .game": "setNewPoint",
-			"click .clear": "clearPoints"
+			'click .light_grey_gradient_text': 'selectCase'
 		},
 		initialize: function() {
+			_.bindAll(this, 'render');
+			this.render();
+		},
+		render: function() {
+			$.get('/render/cases.html', function(t){
+				this.el.html(t);
+			}.bind(this));
+		},
+		selectCase: function(e) {
+			//console.log($(e.currentTarget));
+			e.preventDefault();
+			this.el.html('');
+			window.Computer = new ComputerView;
+		}
+	});
+	
+	window.ComputerView = Backbone.View.extend({
+		el: $('#game'),
+		events: {
+			'click .current_room_button': 'goBack'
+		},
+		initialize: function() {
+			_.bindAll(this, 'render');
+			this.render();
+		},
+		render: function() {
+			$.get('/render/computer.html', function(t){
+				this.el.html(t);
+			}.bind(this));
+		},
+		goBack: function(e) {
+			e.preventDefault();
+			this.el.html('');
+			window.Case = new CaseView;
+		}
+	});
+	
+	window.AppView = Backbone.View.extend({
+		el: $('#game'),
+		initialize: function() {
+			
+			window.Case = new CaseView;
+			
+			/*
 			this.canvas = $('.game').dom[0];
 			ctx = this.canvas.getContext("2d");
 			
@@ -53,12 +96,6 @@ $(function(exports){
 				add: function(data, options) {
 					var aColl = eval(options.type);
 					if (!aColl.get(data.id)) aColl.add(data);
-				},
-				removeAll: function(options) {
-					var aColl = eval(options.type);
-					aColl.each(function(m){
-						m.destroy();
-					});
 				}
 			}).connect(function(remote){
 				var em = require('events').EventEmitter.prototype;
@@ -72,14 +109,8 @@ $(function(exports){
 						type: 'drawing'
 					});
 				});
-				// remote.remove(data, options) or remote.removeAll(options)
-				// -- doesn't work right now, because we need to redraw the canvas!
-				drawing.bind('drawing:removeAll', function(data){
-					remote.removeAll({
-						type: 'drawing'
-					});
-				});
 			});
+			*/
 		},
 		drawnPoints: {},
 		drawPoint: function(model) {

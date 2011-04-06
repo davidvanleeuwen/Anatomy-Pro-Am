@@ -86,7 +86,7 @@ exports.createServer = (app) ->
 		@version = config.version
 	.listen(app)
 	app.get '/drawing', (req, res) ->
-		collection.fetch {
+		drawing.fetch {
 			success: (data) ->
 				res.writeHead 200
 				res.end JSON.stringify(data)

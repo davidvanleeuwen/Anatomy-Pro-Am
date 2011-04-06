@@ -1,5 +1,5 @@
 config = require './config'
-fbgraph = require 'facebook-graph@0.0.4'
+fbgraph = require 'facebook-graph@0.0.6'
 fbutil = require './facebookutil.js'
 
 storeUser = (userData, userCode) ->
@@ -61,7 +61,7 @@ authUser = (req, res) ->
 						storeUser(userdata, code)
 				graph.getObject 'me', print
 		fbutil.auth path, 'GET', args, print
-		res.redirect 'http://apps.facebook.com/anatomy_pro-am/'
+		res.redirect config.fbconfig.url
 
 	if req.query.error_reason	
 		userDeclinedAccess(req)
