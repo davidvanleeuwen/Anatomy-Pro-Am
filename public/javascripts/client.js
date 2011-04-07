@@ -5,11 +5,11 @@ $(function(exports){
 		drawing = new resources.collections.Drawing,
 		players = new resources.collections.Players
 		view = {};
-	
+	var playerID;
 	window.Player = Backbone.View.extend({
 		tagName: 'li',
-		//template: _.template($('#player-template').html()),
 		initialize: function() {
+			this.template = _.template($('#player-template').html());
 			_.bindAll(this, 'render');
 			this.model.bind('change', this.render);
 			this.model.view = this;
@@ -20,7 +20,9 @@ $(function(exports){
 			return this;
 		},
 		setContent: function() {
-			this.$('fb_player_img').attr('style', 'background: url(\''+this.model.get('avatar')+'\'');
+			console.log(this.model.get('avatar'));
+			//console.log(this.$('fb_player_img').attr('style'));
+			this.$('.fb_player_img').attr('style', 'background: url(\'' + this.model.get('avatar')  + '\');');
 			this.$('span').text(this.model.get('name'));
 		},
 		remove: function() {
@@ -103,11 +105,14 @@ $(function(exports){
 			}
 		},
 		setupView: function() {
-			players.fetch({success: function(data) { } });
+			players.fetch({success: function(data) { console.log(data); } });
 			DNode({
 				add: function(data, options) {
 					var aColl = eval(options.type);
 					if (!aColl.get(data.id)) aColl.add(data);
+				}
+				setPlayerID: function (id){
+					playerID = id;
 				}
 			}).connect();
 		},
@@ -115,6 +120,8 @@ $(function(exports){
 			players.each(this.addOne);
 		},
 		addOne: function(player) {
+			console.log("STUFF")
+			console.log(player)
 			var view = new Player({model: player});
 			this.$('#fb_friends_container').append(view.render().el);
 		},

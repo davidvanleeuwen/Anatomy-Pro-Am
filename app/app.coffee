@@ -59,10 +59,14 @@ publish = () ->
 ## DNode RPC API
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
+		conn.on 'end', ->
+			
 		@subscribe = (emit) ->
 			subs[conn.id] = emit
 			conn.on 'end', ->
+				console.log 'player left'
 				publish 'leave', conn.id
+				client.remove
 				delete subs[conn.id]
 		@add = (data, options) ->
 			aColl = eval options.type
@@ -103,4 +107,8 @@ exports.createServer = (app) ->
 
 # temp fix, added callback
 exports.setFbUser = (data) ->
-	# players.create new player!
+	newUser = {
+		name: data.first_name
+		avatar: "http://graph.facebook.com/" + data.id + "/picture"
+	}
+	players.create (newUser)
