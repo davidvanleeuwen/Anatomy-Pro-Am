@@ -1,6 +1,7 @@
 config = require './config'
 fbgraph = require 'facebook-graph@0.0.6'
 fbutil = require './facebookutil.js'
+DNode = require 'dnode@0.6.6'
 
 storeUser = (userData, userCode) ->
 	##Will store user to DB.  
@@ -27,9 +28,7 @@ storeUser = (userData, userCode) ->
 	EXAMPLE OUTPUT OF USERCODE
 	195426547154882|2aca7ffbd1917de4b5db3ac9-1240446434|Cb5iU82pqvGhfhm6RBt5a9fL7m0
 	###
-	console.log userData
-	console.log userCode
-
+	
 userDeauthed = (reqInfo) ->
 	#do something with deauthed user info
 	console.log("-------=== USER REMOVED APP! ===-------")
@@ -67,11 +66,13 @@ authUser = (req, res) ->
 		userDeclinedAccess(req)
 		res.end()
 
-renderIndex =  (req, res) ->
+renderIndex =  (req, res, cb) ->
 	user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
-	console.log(user)
 	if user
-		console.log '-------=== LOGGED IN USER, SENDING INDEX ===-------'
+		# temp fix, added callback
+		graph = new fbgraph.GraphAPI user.access_token
+		graph.getObject 'me', (error, data) ->
+			cb(data)
 		res.render 'index', config.fbconfig
 	else
 		console.log '-------=== NO USER - RENDERING INDEX TO DIRECT USER TO AUTH PAGE ===-------'

@@ -3,8 +3,31 @@ $(function(exports){
 		_ = require('underscore')._,
 		resources = require('./models/resources'),
 		drawing = new resources.collections.Drawing,
+		players = new resources.collections.Players
 		view = {};
 	
+	window.Player = Backbone.View.extend({
+		tagName: 'li',
+		//template: _.template($('#player-template').html()),
+		initialize: function() {
+			_.bindAll(this, 'render');
+			this.model.bind('change', this.render);
+			this.model.view = this;
+		},
+		render: function() {
+			$(this.el).html(this.template(this.model.toJSON()));
+			this.setContent();
+			return this;
+		},
+		setContent: function() {
+			this.$('fb_player_img').attr('style', 'background: url(\''+this.model.get('avatar')+'\'');
+			this.$('span').text(this.model.get('name'));
+		},
+		remove: function() {
+			$(this.el).remove();
+		}
+	});
+	/*
 	window.Point = Backbone.View.extend({
 		initialize: function() {
 			_.bindAll(this, 'render');
@@ -22,7 +45,7 @@ $(function(exports){
 			return this;
 		}
 	});
-	
+	*/
 	window.CaseView = Backbone.View.extend({
 		el: $('#game'),
 		events: {
@@ -59,20 +82,41 @@ $(function(exports){
 			'click .light_grey_gradient_text': 'goBack'
 		},
 		initialize: function() {
-			_.bindAll(this, 'render');
+			_.bindAll(this, 'addOne', 'addAll', 'render');
+			players.bind('add', this.addOne);
+			players.bind('refresh', this.addAll);
+			
 			this.render();
 		},
 		render: function() {
 			if (view.computer) {
 				this.el.html('');
 				this.el.html(view.computer);
+				this.setupView();
 			} else {
 				$.get('/renders/computer.html', function(t){
 					this.el.html('');
 					view.computer = t;
 					this.el.html(view.computer);
+					this.setupView();
 				}.bind(this));
 			}
+		},
+		setupView: function() {
+			players.fetch({success: function(data) { } });
+			DNode({
+				add: function(data, options) {
+					var aColl = eval(options.type);
+					if (!aColl.get(data.id)) aColl.add(data);
+				}
+			}).connect();
+		},
+		addAll: function() {
+			players.each(this.addOne);
+		},
+		addOne: function(player) {
+			var view = new Player({model: player});
+			this.$('#fb_friends_container').append(view.render().el);
 		},
 		goBack: function(e) {
 			e.preventDefault();

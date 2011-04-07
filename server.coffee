@@ -6,6 +6,7 @@ browserify = require 'browserify@0.3.1'
 fbgraph = require 'facebook-graph@0.0.6'
 https = require 'https'
 fbhelper = require './fbhelper'
+app = require './app/app'
 
 ## server instance
 server = express.createServer()
@@ -27,12 +28,17 @@ server.use browserify {
 	#filter: require('jsmin').jsmin
 }
 
+## RPC client
+app.createServer server
+
 server.get '/', (req, res) ->
 	res.render 'index', config.fbconfig
 	
 server.post '/', (req, res) ->
 	console.log("POST @ /")
-	fbhelper.renderIndex(req, res)
+	fbhelper.renderIndex req, res, (data) ->
+		# temp fix, added callback
+		app.setFbUser(data)
 
 server.get '/authresponse', (req, res) ->
 	console.log('GET @ /authresponse')
@@ -57,10 +63,6 @@ server.all '/tab', (req, res) ->
 server.post '/deauth', (req, res) ->
 	fbhelper.userDeauthed(req)
 	res.end()
-
-## RPC client
-app = require './app/app'
-app.createServer server
 
 
 ## other stuff

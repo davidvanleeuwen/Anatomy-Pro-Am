@@ -223,12 +223,44 @@ h2{font-family:SteelfishRegular;
 #div_white{height:81px; width:1px; background:#616161; float:left;}
 #fb_friends_container{height:70px; width:325px; background:#151515; border:1px solid #616161; float:left;
                     margin:4px 0 0 10px;
+					padding: 0 0 0 3px;
                     -moz-border-radius:5px;
                     -webkit-border-radius:5px;
                     border-radius:5px;
                     -khtml-border-radius:5px;
                     }
-                    
+
+.fb_player {
+	margin: 4px 0 0 3px;
+	float: left;
+	background-color: #385b9d;
+	height: 62px;
+	width: 50px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.fb_player .fb_player_img {
+	float: left;
+	margin: 4px 4px 1px 4px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	height: 45px;
+	width: 43px;
+	background-repeat: no-repeat;
+	background-position:; top center;
+}
+
+.fb_player span {
+	float: left;
+	color: #fff;
+	font: 9px Verdana;
+	width: 100%;
+	text-align: center;
+}
+
 #badge_status{text-align:center; margin: 55px 0 0 0;}
 #room_container{height:70px; width:160px; float:right; margin:10px 10px 0 0;}
 #room_container h4{margin:13px 0 0 0;}

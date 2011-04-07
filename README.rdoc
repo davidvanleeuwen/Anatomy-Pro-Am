@@ -2,7 +2,10 @@
 
 == Setup
 
-coffee server.coffee
+1) copy config_example.coffee, change the name to config.coffee
+2) register at facebook.com/developer and add the domain information and add a iframe url
+3) edit the config.coffee file and the fbconfig.url should be an url like apps.facebook.com/appname
+4) run the server: coffee server.coffee
 
 == Copyright
 

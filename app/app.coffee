@@ -42,11 +42,9 @@ Backbone.sync = (method, model, success, error) ->
 	else
 		console.log(error)
 
-collections = []
-collection = new resources.collections.Drawing
-collections.push collections 
+
 drawing = new resources.collections.Drawing
-collections.push drawing 
+players = new resources.collections.Players
 
 ## pub/sub
 subs = {}
@@ -81,7 +79,6 @@ exports.createServer = (app) ->
 			aColl.each (m) ->
 				m.destroy()
 				client.removeAll { type: options.type }
-			
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen(app)
@@ -94,3 +91,16 @@ exports.createServer = (app) ->
 				res.writeHead 204
 				res.end err
 		}
+	app.get '/players', (req, res) ->
+		players.fetch {
+			success: (data) ->
+				res.writeHead 200
+				res.end JSON.stringify(data)
+			error: (err) ->
+				res.writeHead 204
+				res.end err
+		}
+
+# temp fix, added callback
+exports.setFbUser = (data) ->
+	# players.create new player!
