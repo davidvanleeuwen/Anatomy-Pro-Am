@@ -110,7 +110,7 @@ $(function(exports){
 				add: function(data, options) {
 					var aColl = eval(options.type);
 					if (!aColl.get(data.id)) aColl.add(data);
-				}
+				},
 				setPlayerID: function (id){
 					playerID = id;
 				}
