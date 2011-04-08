@@ -28,6 +28,8 @@ storeUser = (userData, userCode) ->
 	EXAMPLE OUTPUT OF USERCODE
 	195426547154882|2aca7ffbd1917de4b5db3ac9-1240446434|Cb5iU82pqvGhfhm6RBt5a9fL7m0
 	###
+	#console.log(userData)
+	#console.log(userCode)
 	
 userDeauthed = (reqInfo) ->
 	#do something with deauthed user info
@@ -61,7 +63,7 @@ authUser = (req, res) ->
 				graph.getObject 'me', print
 		fbutil.auth path, 'GET', args, print
 		res.redirect config.fbconfig.url
-
+		
 	if req.query.error_reason	
 		userDeclinedAccess(req)
 		res.end()
@@ -69,9 +71,11 @@ authUser = (req, res) ->
 renderIndex =  (req, res, cb) ->
 	user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
 	if user
+		console.log(user)
 		# temp fix, added callback
 		graph = new fbgraph.GraphAPI user.access_token
 		graph.getObject 'me', (error, data) ->
+			#console.log data
 			cb(data)
 		res.render 'index', config.fbconfig
 	else
