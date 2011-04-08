@@ -3,9 +3,9 @@ $(function(exports){
 		_ = require('underscore')._,
 		resources = require('./models/resources'),
 		drawing = new resources.collections.Drawing,
-		players = new resources.collections.Players
+		players = new resources.collections.Players,
 		view = {};
-	var playerID;
+
 	window.Player = Backbone.View.extend({
 		tagName: 'li',
 		initialize: function() {
@@ -109,11 +109,11 @@ $(function(exports){
 			DNode({
 				add: function(data, options) {
 					var aColl = eval(options.type);
-					if (!aColl.get(data.id)) aColl.add(data);
+					 if (!aColl.get(data.id)) aColl.add(data);
 				}
-				setPlayerID: function (id){
-					playerID = id;
-				}
+		// 		setPlayerID: function (id){
+		//			playerID = id;
+		//		}
 			}).connect();
 		},
 		addAll: function() {

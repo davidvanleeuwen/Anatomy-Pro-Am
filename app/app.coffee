@@ -6,7 +6,7 @@ Hash = require 'hashish@0.0.2'
 _ = require('underscore@1.1.5')._
 Backbone = require 'backbone@0.3.3'
 resources  = require '../models/resources'
-
+fbgraph = require 'facebook-graph@0.0.6'
 # memory store class for storing it in the memory (update: replace with redis)
 class MemoryStore
 	constructor: () ->
@@ -60,6 +60,15 @@ publish = () ->
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
 		conn.on 'end', ->
+			console.log("END")
+			user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
+			if user
+				players.each (player) ->
+					if player.playerID == user.uid
+						p = players.get(player)
+						console.log(p)
+						players.destroy (p)
+				
 			
 		@subscribe = (emit) ->
 			subs[conn.id] = emit
@@ -107,8 +116,10 @@ exports.createServer = (app) ->
 
 # temp fix, added callback
 exports.setFbUser = (data) ->
-	newUser = {
-		name: data.first_name
-		avatar: "http://graph.facebook.com/" + data.id + "/picture"
-	}
-	players.create (newUser)
+	if data
+		newUser = {
+			playerID: data.id
+			name: data.first_name
+			avatar: "http://graph.facebook.com/" + data.id + "/picture"
+		}
+		players.create (newUser)

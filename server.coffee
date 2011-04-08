@@ -38,7 +38,8 @@ server.post '/', (req, res) ->
 	console.log("POST @ /")
 	fbhelper.renderIndex req, res, (data) ->
 		# temp fix, added callback
-		app.setFbUser(data)
+		if data
+			app.setFbUser(data)
 
 server.get '/authresponse', (req, res) ->
 	console.log('GET @ /authresponse')
