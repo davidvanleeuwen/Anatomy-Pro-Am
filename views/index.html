@@ -15,10 +15,24 @@
 	  }
 	});
 	FB.Canvas.setSize({ width: 744, height: 555 });
+	
+	var stats = new Stats();
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.left = '0px';
+	stats.domElement.style.top = '0px';
+
+	$('body').append(stats.domElement);
+
+	setInterval( function () {
+	    stats.update();
+	}, 1000 / 60 );
+	
+	
 </script>
 
 <div id="game"></div>
-
+<!-- debug info -->
+<span class="grey_gradient_text" style="position: absolute; top: 10px; right: 24px; font-size: 21px; text-align: center;">v0.01</span>
 <div class="clear">
 </div>
 

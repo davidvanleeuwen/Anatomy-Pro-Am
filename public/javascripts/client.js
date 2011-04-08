@@ -45,7 +45,7 @@ $(function(exports){
 			_.bindAll(this, 'render');
 			erase = false;
 			this.model.view = this;
-			this.canvas = $('canvas').dom[0];
+			this.canvas = $('.scanvas').dom[0];
 			this.ctx = this.canvas.getContext("2d");
 			var actType = this.model.get('actType');
 			this.ctx.lineWidth  = size*2;
@@ -283,7 +283,6 @@ $(function(exports){
 			
 			images.forEach(function(img){
 				if(images.indexOf(img) == images.length-1) {
-					console.log(img);
 					this.$('#images').append('<img src="'+img+'" />');
 				} else {
 					this.$('#images').append('<img src="'+img+'" style="display: none;" />');
@@ -326,7 +325,7 @@ $(function(exports){
 				});
 				self.Load();
 			});
-			this.canvas = $('canvas').dom[0];
+			this.canvas = $('.scanvas').dom[0];
 			this.ctx = this.canvas.getContext("2d");
 			_.bindAll(this, 'drawPoint', 'drawnPoints');
 			_.bindAll(this, 'Load');
