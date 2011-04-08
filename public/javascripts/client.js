@@ -5,15 +5,11 @@ $(function(exports){
 		drawing = new resources.collections.Drawing,
 		players = new resources.collections.Players,
 		view = {};
-
-	// please refactor this:
-	var timgd;
-	var history = new Array();
-	var curPos = 0;
+	var tempImageData;
 	var curTool = 0;
 	var isDrawing;
 	var context;
-	var erase;
+	var erase; //Whether it's in erase mode
 	var size = 10;
 
 	window.Player = Backbone.View.extend({
@@ -47,12 +43,12 @@ $(function(exports){
 			this.model.view = this;
 			this.canvas = $('.scanvas').dom[0];
 			this.ctx = this.canvas.getContext("2d");
-			var actType = this.model.get('actType');
+			var actionType = this.model.get('actionType');
 			this.ctx.lineWidth  = size*2;
-			timgd = this.ctx.getImageData(0,0,this.canvas.width,this.canvas.height);
-			if (actType==3) {
+			tempImageData = this.ctx.getImageData(0,0,this.canvas.width,this.canvas.height);
+			if (actionType==3) {
 				curTool = this.model.get('tool');
-			} else if (actType==4) {
+			} else if (actionType==4) {
 				this.load();
 			} else {
 				var x = this.model.get('x');
@@ -70,14 +66,12 @@ $(function(exports){
 					this.ctx.fillStyle = "rgb(255,255,255)";
 					this.ctx.strokeStyle = "rgb(255,255,255)";
 				}
-				this.render(x,y,actType);
+				this.render(x,y,actionType);
 			}
 		},
 		updCanv: function() {
-			//Joe's awesome algorithm
-			//console.log("trouble?");
-			timgd=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-			var pix = timgd.data;
+			tempImageData=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+			var pix = tempImageData.data;
 			for (var i = 0, n = pix.length; i < n; i += 4) {
 			    if(pix[i]>0&&pix[i+1]>0&&pix[i+2]>0){
 			    	pix[i+3]=0;
@@ -88,28 +82,26 @@ $(function(exports){
 			    // i+3 is alpha (the fourth element)
 			}
 			// Draw the ImageData at the given (x,y) coordinates.
-			//console.log(curTool);
-			this.canvas.width = this.canvas.width;
+			this.canvas.width = this.canvas.width; //Purges canvas
 			this.ctx.fillStyle = "rgba(0, 0, 0, 0.0)";
 			this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-			this.ctx.putImageData(timgd, 0, 0);
+			this.ctx.putImageData(tempImageData, 0, 0);
 		},
 		load: function()  {
 			var c = 0;
-			var small = this.model.get('smList');
-			//console.log(small);
-			var actType;
+			var pointArray = this.model.get('pointArrayServer');
+			var actionType;
 			var x;
 			var y;
 			//console.log("and now");
-			//console.log(small);
+			//console.log(pointArray);
 
-			while(c<small.length){
-				actType = small[c].actType;
-				x = small[c].x;
-				y = small[c].y;
-				if(actType==3){
-					curTool = small[c].tool;
+			while(c<pointArray.length){
+				actionType = pointArray[c].actionType;
+				x = pointArray[c].x;
+				y = pointArray[c].y;
+				if(actionType==3){
+					curTool = pointArray[c].tool;
 				}else{
 					if(curTool == 0){
 						erase=false;
@@ -124,18 +116,18 @@ $(function(exports){
 						this.ctx.fillStyle = "rgb(255,255,255)";
 						this.ctx.strokeStyle = "rgb(255,255,255)";
 					}
-					if(actType==0){
+					if(actionType==0){
 						this.ctx.beginPath();
 						this.ctx.arc(x,y, size, 0, Math.PI*2, true); 
 						this.ctx.closePath();
 						this.ctx.fill();
 						isDrawing = true;
-					} else if(isDrawing && actType==1){
+					} else if(isDrawing && actionType==1){
 						this.ctx.beginPath();
 						this.ctx.arc(x,y, size, 0, Math.PI*2, true); 
 						this.ctx.closePath();
 						this.ctx.fill();
-					} else if(actType==2){
+					} else if(actionType==2){
 						this.ctx.beginPath();
 						this.ctx.arc(x,y, size, 0, Math.PI*2, true); 
 						this.ctx.closePath();
@@ -149,8 +141,8 @@ $(function(exports){
 			}
 			return this;
 		},
-		render: function(x,y,actType) {
-			if(actType==0){
+		render: function(x,y,actionType) {
+			if(actionType==0){
 				this.ctx.beginPath();
 				this.ctx.arc(x,y, size, 0, Math.PI*2, true); 
 				this.ctx.closePath();
@@ -158,7 +150,7 @@ $(function(exports){
 				this.ctx.moveTo(x,y);
 				this.ctx.beginPath();
 				isDrawing = true;
-			} else if(isDrawing && actType==1){
+			} else if(isDrawing && actionType==1){
 				this.ctx.lineTo(x,y);
 				this.ctx.closePath();
 				this.ctx.stroke();
@@ -167,7 +159,7 @@ $(function(exports){
 				this.ctx.closePath();
 				this.ctx.fill();
 				this.ctx.beginPath();
-			} else if(actType==2){
+			} else if(actionType==2){
 				this.ctx.lineTo(x,y);
 				this.ctx.closePath();
 				this.ctx.stroke();
@@ -209,8 +201,7 @@ $(function(exports){
 			new ComputerView;
 		}
 	});
-	window.smaller = new Array()
-	
+	window.pointArray = new Array()
 	window.ComputerView = Backbone.View.extend({
 		el: $('#game'),
 		events: {
@@ -226,7 +217,6 @@ $(function(exports){
 		initialize: function() {
 			_.bindAll(this, 'render');
 			this.render();
-			//console.log('yay');	
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -251,32 +241,27 @@ $(function(exports){
 			this.ctx = this.canvas.getContext("2d");
 			_.bindAll(this, 'drawPoint', 'drawnPoints');
 			_.bindAll(this, 'Load');
-			//_.bindAll(this, 'startLine', 'drawLine', 'endLine', 'changeColor0', 'changeColor1', 'changeColor2', 'changeColor3')
 			var self = this;
-			//console.log(self);
 			drawing.bind('add', this.drawPoint);
 			// old fashion request to get the current state
 			drawing.fetch({success: function(data) {
-				var cs = 0;
-				var cm = 0;
-				//console.log(data);
-				//console.log(data.models.length);
+				var ca = 0; // Counter Array
+				var cm = 0; // Counter Model
 				while(cm < data.models.length){
-					if(data.models[cm].attributes.actType != 4){
-						window.smaller[cs] = data.models[cm].attributes;
-						cs++;
+					if(data.models[cm].attributes.actionType != 4){
+						window.pointArray[ca] = data.models[cm].attributes;
+						ca++;
 					}else{
-						var tc = 0;
-						while(tc<data.models[cm].attributes.smList.length){
-							window.smaller[cs] = data.models[cm].attributes.smList[tc];
+						var tc = 0; //Temp Counter 
+						while(tc<data.models[cm].attributes.pointArrayServer.length){
+							window.pointArray[cs] = data.models[cm].attributes.pointArrayServer[tc];
 							tc++;
-							cs++;
+							ca++;
 						}
 					}
 					cm++;
 				}
-				var tmp = window.smaller;
-				//console.log(self);
+				var tmp = window.pointArray;
 			}});
 			// fixtures:
 			var images = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
@@ -293,9 +278,8 @@ $(function(exports){
 			
 			DNode({
 				add: function(data, options) {
-					//var aColl = eval(options.type);
-					//if (!aColl.get(data.id)) aColl.add(data);
-					this.drawPoint(data);
+					var aColl = eval(options.type);
+					if (!aColl.get(data.id)) aColl.add(data);
 				},
 				setPlayerID: function (id){
 					playerID = id;
@@ -325,25 +309,6 @@ $(function(exports){
 				});
 				self.Load();
 			});
-			this.canvas = $('.scanvas').dom[0];
-			this.ctx = this.canvas.getContext("2d");
-			_.bindAll(this, 'drawPoint', 'drawnPoints');
-			_.bindAll(this, 'Load');
-			var self = this;
-			console.log(self);
-			drawing.bind('add', this.drawPoint);
-			// old fashion request to get the current state
-			drawing.fetch({success: function(data) {
-				var c = 0;
-				console.log(data);
-				console.log(data.models.length);
-				while(c < data.models.length){
-					window.smaller[c] = data.models[c].attributes;
-					c++;
-				}
-				var tmp = window.smaller;
-				//console.log(self);
-			}});
 		},
 		drawnPoints: {},
 		drawPoint: function(model) {
@@ -357,39 +322,28 @@ $(function(exports){
 			this.$('#fb_friends_container').append(view.render().el);
 		},
 		startLine: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actType:0, tool:curTool});
+			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:0, tool:curTool});
 		},
 		drawLine: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actType:1, tool:curTool});
+			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:1, tool:curTool});
 		},
 		endLine: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actType:2, tool:curTool});
+			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:2, tool:curTool});
 		},
 		changeColor0: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actType:3, tool:0});
-			//drawing.trigger('dnode:add', {smList: window.smaller, actType:4});
-
+			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:3, tool:0});
 		},
 		changeColor1: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actType:3, tool:1});
-			//drawing.trigger('dnode:add', {smList: window.smaller, actType:4});
-
+			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:3, tool:1});
 		},
 		changeColor2: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actType:3, tool:2});
-			//drawing.trigger('dnode:add', {smList: window.smaller, actType:4});
-
+			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:3, tool:2});
 		},
 		changeColor3: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actType:3, tool:3});
-			//drawing.trigger('dnode:add', {smList: window.smaller, actType:4});
-
+			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:3, tool:3});
 		},
 		Load: function() {
-			//Fix dis dave Should be replace/change
-			// get model
-			//console.log(window.smaller);
-			drawing.trigger('dnode:addWhere', {smList: window.smaller, actType:4});
+			drawing.trigger('dnode:addPointArray', {pointArrayServer: window.pointArray, actionType:4});
 		}
 	});
 	

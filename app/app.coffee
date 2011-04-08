@@ -81,15 +81,14 @@ exports.createServer = (app) ->
 			aColl = eval options.type
 			aColl.create data
 			client.add data, { type: options.type }
-		@addWhere = (data,options) ->
+		@addPointArray = (data,options) ->
 			found = false
 			aColl = eval options.type
 			aColl.each (m) ->
-				actType = m.get 'actType'
-				if actType == 4
+				actionType = m.get 'actionType'
+				if actionType == 4
 					found = true
 					m.destroy()
-					console.log("Shouldn't happen lots")
 			aColl.create(data)
 			client.add data, { type: options.type }
 		@remove = (data, options) ->
