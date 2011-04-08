@@ -73,6 +73,7 @@ exports.createServer = (app) ->
 			###
 		@subscribe = (emit) ->
 			subs[conn.id] = emit
+			client.returnID conn.id
 			conn.on 'end', ->
 				publish 'leave', conn.id
 				delete subs[conn.id]

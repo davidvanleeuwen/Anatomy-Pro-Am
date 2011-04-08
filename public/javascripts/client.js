@@ -256,6 +256,10 @@ $(function(exports){
 				setPlayerID: function (id){
 					playerID = id;
 					 if (!aColl.get(data.id)) aColl.add(data);
+				},
+				returnID: function(id) {
+					console.log('my id: ', id);
+					console.log(FB.getSession());
 				}
 		// 		setPlayerID: function (id){
 		//			playerID = id;
