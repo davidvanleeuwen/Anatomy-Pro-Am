@@ -7,6 +7,7 @@ _ = require('underscore@1.1.5')._
 Backbone = require 'backbone@0.3.3'
 resources  = require '../models/resources'
 fbgraph = require 'facebook-graph@0.0.6'
+
 # memory store class for storing it in the memory (update: replace with redis)
 class MemoryStore
 	constructor: () ->
@@ -61,6 +62,7 @@ exports.createServer = (app) ->
 	client = DNode (client, conn) ->
 		conn.on 'end', ->
 			console.log("END")
+			###
 			user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
 			if user
 				players.each (player) ->
@@ -68,6 +70,7 @@ exports.createServer = (app) ->
 						p = players.get(player)
 						console.log(p)
 						players.destroy (p)
+			###
 		@subscribe = (emit) ->
 			subs[conn.id] = emit
 			conn.on 'end', ->
@@ -77,6 +80,22 @@ exports.createServer = (app) ->
 			aColl = eval options.type
 			aColl.create data
 			client.add data, { type: options.type }
+		@addWhere = (data,options,val) ->
+			found = false
+			collection.each (m) ->
+				actType = m.get 'actType'
+				if actType == val
+					found = true
+					m.destroy({})
+					console.log("Shouldn't happen lots")
+			collection.create(data)
+			
+		@addWhere = (data, options,val) ->
+			
+			aColl = eval options.type
+			aColl.create data
+			client.add data, { type: options.type }
+	
 		@remove = (data, options) ->
 			aColl = eval options.type
 			m = aColl.get data
