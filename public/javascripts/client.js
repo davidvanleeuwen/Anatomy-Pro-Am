@@ -252,7 +252,6 @@ $(function(exports){
 			
 			images.forEach(function(img){
 				if(images.indexOf(img) == images.length-1) {
-					console.log(img);
 					this.$('#images').append('<img src="'+img+'" />');
 				} else {
 					this.$('#images').append('<img src="'+img+'" style="display: none;" />');
