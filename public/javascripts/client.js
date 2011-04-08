@@ -3,9 +3,9 @@ $(function(exports){
 		_ = require('underscore')._,
 		resources = require('./models/resources'),
 		drawing = new resources.collections.Drawing,
-		players = new resources.collections.Players,
 		view = {};
-
+		
+			var players = new resources.collections.Players;
 	// please refactor this:
 	var timgd;
 	var history = new Array();
@@ -15,6 +15,8 @@ $(function(exports){
 	var context;
 	var erase;
 	var size = 10;
+	
+	var amountOfPlayers = 0;
 
 	window.Player = Backbone.View.extend({
 		tagName: 'li',
@@ -212,24 +214,35 @@ $(function(exports){
 	window.smaller = new Array()
 	
 	window.ComputerView = Backbone.View.extend({
+		
 		el: $('#game'),
 		events: {
 			'click .light_grey_gradient_text': 'goBack',
 			"mousedown .scanvas": "startLine",
-			"mousemove .scanvas" : "drawLine",
+			/*"mousemove .scanvas" : "drawLine",
 			"mouseup .scanvas": "endLine",
 			"click .brush0": "changeColor0",
 			"click .brush1": "changeColor1",
 			"click .brush2": "changeColor2",
-			"click .brush3": "Load"
+			"click .brush3": "Load"*/
 		},
 		initialize: function() {
-			_.bindAll(this, 'render');
+			players = new resources.collections.Players;
+			players.unbind();
+			drawing.unbind();
+			_.bindAll(this, 'addOne', 'addAll', 'render');
+			players.bind('add', this.addOne);
+			players.bind('refresh', this.addAll);
+			players.bind('change', this.logger);
 			this.render();
 			//console.log('yay');	
 		},
+		logger: function(){
+			alckjaoijcalsdkjc;
+		},
 		goBack: function(e) {
 			e.preventDefault();
+			delete this;
 			new CaseView;
 		},
 		render: function() {
@@ -245,27 +258,38 @@ $(function(exports){
 					this.setupView();
 				}.bind(this));
 			}
+			players.fetch({success: function(data) { console.log(data); } });
 		},
 		setupView: function() {
-			players.fetch({success: function(data) { console.log(data); } });
+			
+			console.log("setupview");
+			console.log(players);
+			//this.addAll(players);
+			console.log("endsetupview");
 			DNode({
-				add: function(data, options) {
-					var aColl = eval(options.type);
-					if (!aColl.get(data.id)) aColl.add(data);
+				addPlayer: function(data) {
+					console.log(data);
+					//if (!players.get(data.id)) players.add(data);
 				},
 				setPlayerID: function (id){
 					playerID = id;
 					 if (!aColl.get(data.id)) aColl.add(data);
 				},
 				returnID: function(id) {
-					console.log('my id: ', id);
-					console.log(FB.getSession());
+					//console.log(FB.getSession());
+				},
+				printID: function (id){
+					//console.log('my id: ', id);
 				}
-		// 		setPlayerID: function (id){
-		//			playerID = id;
-		//		}
+
 			}).connect(function(remote){
 				var em = require('events').EventEmitter.prototype;
+				
+				em.on('addPlayer', function(data) {
+					console.log(data);
+				});
+				
+				remote.setID(FB.getSession().uid);
 				remote.subscribe(function () {
 					em.emit.apply(em, arguments);
 				});
@@ -274,25 +298,21 @@ $(function(exports){
 						type: 'drawing'
 					});
 				});
-				drawing.bind('dnode:addWhere', function(data){
-					remote.addWhere(data, {
-						type: 'drawing'
-					},4);
-				});
-				self.Load();
+				//self.Load();
 			});
+			
 			this.canvas = $('canvas').dom[0];
 			this.ctx = this.canvas.getContext("2d");
 			_.bindAll(this, 'drawPoint', 'drawnPoints');
 			_.bindAll(this, 'Load');
 			var self = this;
-			console.log(self);
+			//console.log(self);
 			drawing.bind('add', this.drawPoint);
 			// old fashion request to get the current state
 			drawing.fetch({success: function(data) {
 				var c = 0;
-				console.log(data);
-				console.log(data.models.length);
+				//console.log(data);
+				//console.log(data.models.length);
 				while(c < data.models.length){
 					window.smaller[c] = data.models[c].attributes;
 					c++;
@@ -306,12 +326,6 @@ $(function(exports){
 			var point = new Point({model: model});
 			this.drawnPoints[model.id] = point;
 		},
-		addOne: function(player) {
-			console.log("STUFF")
-			console.log(player)
-			var view = new Player({model: player});
-			this.$('#fb_friends_container').append(view.render().el);
-		},
 		startLine: function(event) {
 			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actType:0, tool:curTool});
 		},
@@ -321,6 +335,7 @@ $(function(exports){
 		endLine: function(event) {
 			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actType:2, tool:curTool});
 		},
+		
 		changeColor0: function(event) {
 			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actType:3, tool:0});
 			//drawing.trigger('dnode:add', {smList: window.smaller, actType:4});
@@ -345,7 +360,16 @@ $(function(exports){
 			//Fix dis dave Should be replace/change
 			// get model
 			//console.log(window.smaller);
-			drawing.trigger('dnode:addWhere', {smList: window.smaller, actType:4});
+			drawing.trigger('dnode:add', {smList: window.smaller, actType:4});
+		},
+		addAll: function() {
+			console.log("addall");
+			console.log(players.length);
+			players.each(this.addOne);
+		},
+		addOne: function(player) {
+			var view = new Player({model: player});
+			this.$('#fb_friends_container').append(view.render().el);
 		}
 	});
 	

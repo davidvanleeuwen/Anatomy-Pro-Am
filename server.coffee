@@ -39,6 +39,7 @@ server.post '/', (req, res) ->
 	fbhelper.renderIndex req, res, (data) ->
 		# temp fix, added callback
 		if data
+			console.log data
 			app.setFbUser(data)
 
 server.get '/authresponse', (req, res) ->

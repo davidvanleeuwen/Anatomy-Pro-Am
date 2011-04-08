@@ -60,42 +60,31 @@ publish = () ->
 ## DNode RPC API
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
+		conn.on 'ready', ->
+			publish 'addPlayer', conn.id
+			#client.addPlayer conn.id
 		conn.on 'end', ->
 			console.log("END")
-			###
-			user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
-			if user
-				players.each (player) ->
-					if player.playerID == user.uid
-						p = players.get(player)
-						console.log(p)
-						players.destroy (p)
-			###
+			console.log(conn.id)
+			players.each (player) ->
+				if player.playerID == conn.id
+					p = players.get(player)
+					console.log(p)
+					players.destroy (p)
 		@subscribe = (emit) ->
 			subs[conn.id] = emit
 			client.returnID conn.id
 			conn.on 'end', ->
 				publish 'leave', conn.id
 				delete subs[conn.id]
+		@setID = (id) ->
+			conn.id = id
+			client.printID conn.id
 		@add = (data, options) ->
-			aColl = eval options.type
-			aColl.create data
+			if options.type == 'drawing'
+				drawing.create data
 			client.add data, { type: options.type }
-		@addWhere = (data,options,val) ->
-			found = false
-			collection.each (m) ->
-				actType = m.get 'actType'
-				if actType == val
-					found = true
-					m.destroy({})
-					console.log("Shouldn't happen lots")
-			collection.create(data)
-			
-		@addWhere = (data, options,val) ->
-			
-			aColl = eval options.type
-			aColl.create data
-			client.add data, { type: options.type }
+	
 	
 		@remove = (data, options) ->
 			aColl = eval options.type
@@ -120,22 +109,23 @@ exports.createServer = (app) ->
 				res.writeHead 204
 				res.end err
 		}
-	app.get '/players', (req, res) ->
+	app.get '/players', (req, res) ->	
+		console.log players.length;
 		players.fetch {
 			success: (data) ->
+				console.log "jsonified: ", JSON.stringify(data)
 				res.writeHead 200
 				res.end JSON.stringify(data)
 			error: (err) ->
 				res.writeHead 204
 				res.end err
 		}
-
-# temp fix, added callback
+#### temp fix, added callback
 exports.setFbUser = (data) ->
 	if data
 		newUser = {
 			playerID: data.id
-			name: data.first_name
+			name: Date.now()
 			avatar: "http://graph.facebook.com/" + data.id + "/picture"
 		}
 		players.create (newUser)
