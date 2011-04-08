@@ -45,7 +45,7 @@ $(function(exports){
 			_.bindAll(this, 'render');
 			erase = false;
 			this.model.view = this;
-			this.canvas = $('canvas').dom[0];
+			this.canvas = $('.scanvas').dom[0];
 			this.ctx = this.canvas.getContext("2d");
 			var actType = this.model.get('actType');
 			this.ctx.lineWidth  = size*2;
@@ -293,7 +293,7 @@ $(function(exports){
 				});
 				self.Load();
 			});
-			this.canvas = $('canvas').dom[0];
+			this.canvas = $('.scanvas').dom[0];
 			this.ctx = this.canvas.getContext("2d");
 			_.bindAll(this, 'drawPoint', 'drawnPoints');
 			_.bindAll(this, 'Load');
