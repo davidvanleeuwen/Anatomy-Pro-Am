@@ -261,6 +261,18 @@ h2{font-family:SteelfishRegular;
 	text-align: center;
 }
 
+#images {
+	position: absolute;
+	left: 270px;
+	top: 40px;
+	z-index: 1;
+}
+
+.scanvas {
+	position: absolute;
+	z-index: 2;
+}
+
 #badge_status{text-align:center; margin: 55px 0 0 0;}
 #room_container{height:70px; width:160px; float:right; margin:10px 10px 0 0;}
 #room_container h4{margin:13px 0 0 0;}

@@ -247,7 +247,20 @@ $(function(exports){
 			}
 		},
 		setupView: function() {
+			// fixtures:
+			var images = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
+			
+			images.forEach(function(img){
+				if(images.indexOf(img) == images.length-1) {
+					console.log(img);
+					this.$('#images').append('<img src="'+img+'" />');
+				} else {
+					this.$('#images').append('<img src="'+img+'" style="display: none;" />');
+				}
+			});
+			
 			players.fetch({success: function(data) { console.log(data); } });
+			
 			DNode({
 				add: function(data, options) {
 					var aColl = eval(options.type);
