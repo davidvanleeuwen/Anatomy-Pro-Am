@@ -1135,20 +1135,29 @@ $(function(exports){
 			this.ctx = this.canvas.getContext("2d");
 			_.bindAll(this, 'drawPoint', 'drawnPoints');
 			_.bindAll(this, 'Load');
+			//_.bindAll(this, 'startLine', 'drawLine', 'endLine', 'changeColor0', 'changeColor1', 'changeColor2', 'changeColor3')
 			var self = this;
-			console.log(self);
+			//console.log(self);
 			drawing.bind('add', this.drawPoint);
 			// old fashion request to get the current state
 			drawing.fetch({success: function(data) {
-				var c = 0;
-					console.log(data);
-					console.log(data.models.length);
-
-
-					while(c < data.models.length){
-						window.smaller[c] = data.models[c].attributes;
-						c++;
-
+				var cs = 0;
+				var cm = 0;
+					//console.log(data);
+					//console.log(data.models.length);
+					while(cm < data.models.length){
+						if(data.models[cm].attributes.actType != 4){
+							window.smaller[cs] = data.models[cm].attributes;
+							cs++;
+						}else{
+							var tc = 0;
+							while(tc<data.models[cm].attributes.smList.length){
+								window.smaller[cs] = data.models[cm].attributes.smList[tc];
+								tc++;
+								cs++;
+							}
+						}
+						cm++;
 					}
 					var tmp = window.smaller;
 					//console.log(self);
@@ -1157,7 +1166,7 @@ $(function(exports){
 			DNode({
 				add: function(data) {
 					//console.log(data);
-					if (!drawing.get(data.id)) drawing.add(data)
+					if (!drawing.get(data.id)) this.drawPoint(data)
 				}
 			}).connect(function(remote){
 				var em = require('events').EventEmitter.prototype;
