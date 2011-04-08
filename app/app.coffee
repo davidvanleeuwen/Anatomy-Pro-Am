@@ -68,6 +68,22 @@ exports.createServer = (app) ->
 			aColl = eval options.type
 			aColl.create data
 			client.add data, { type: options.type }
+		@addWhere = (data,options,val) ->
+			found = false
+			collection.each (m) ->
+				actType = m.get 'actType'
+				if actType == val
+					found = true
+					m.destroy({})
+					console.log("Shouldn't happen lots")
+			collection.create(data)
+			
+		@addWhere = (data, options,val) ->
+			
+			aColl = eval options.type
+			aColl.create data
+			client.add data, { type: options.type }
+	
 		@remove = (data, options) ->
 			aColl = eval options.type
 			m = aColl.get data
