@@ -53,3 +53,23 @@ resources.collections.Players = Backbone.Collection.extend({
 	model: resources.models.Player,
 	url: '/players'
 });
+
+/*
+ *	Friend model
+ *	@facebook_id
+ */
+resources.models.Friend = Backbone.Model.extend({ 
+	initialize: function() {
+		_.bind(this);
+	}
+});
+
+/*
+ *	Friends collection
+ *	@friend
+ */
+resources.collections.Friends = Backbone.Collection.extend({ 
+	model: resources.models.Friend,
+	url: '/friends'
+});
+

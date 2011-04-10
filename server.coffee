@@ -21,6 +21,8 @@ server.set 'view engine', 'html'
 server.use express.static __dirname + '/public'
 #server.set 'views', __dirname + '/views'
 
+console.log(__dirname);
+
 server.use browserify {
 	mount: '/browserify.js',
 	base: __dirname,
@@ -39,6 +41,7 @@ server.post '/', (req, res) ->
 	fbhelper.renderIndex req, res, (data) ->
 		# temp fix, added callback
 		if data
+			console.log data
 			app.setFbUser(data)
 
 server.get '/authresponse', (req, res) ->

@@ -12,20 +12,20 @@ fbgraph = require 'facebook-graph@0.0.6'
 class MemoryStore
 	constructor: () ->
 		@data = {}
-	create: (@model) ->
+	create: (model) ->
 		if not model.id
 			model.id = model.attributes.id = Date.now()
 			@data[model.id] = model
 			return model
-	set: (@model) ->
+	set: (model) ->
 		@data[model.id] = model
 		return model
-	get: (@model) ->
+	get: (model) ->
 		if model and model.id
 			return @data[model.id]
 		else
 			return _.values(@data)
-	destroy: (@model) ->
+	destroy: (model) ->
 		delete @data[model.id]
 		return model
 
@@ -59,27 +59,32 @@ publish = () ->
 
 ## DNode RPC API
 exports.createServer = (app) ->
+	
 	client = DNode (client, conn) ->
+		conn.on 'ready', ->
+			publish 'addPlayer', conn.id
+			#client.addPlayer conn.id
 		conn.on 'end', ->
 			console.log("END")
-			###
-			user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
-			if user
-				players.each (player) ->
-					if player.playerID == user.uid
-						p = players.get(player)
-						console.log(p)
-						players.destroy (p)
-			###
+			console.log(conn.id)
+			players.each (player) ->
+				if player.playerID == conn.id
+					p = players.get(player)
+					console.log(p)
+					players.destroy (p)
 		@subscribe = (emit) ->
 			subs[conn.id] = emit
-			client.returnID conn.id
+			#client.returnID conn.id
 			conn.on 'end', ->
 				publish 'leave', conn.id
 				delete subs[conn.id]
+		###
+		@setID = (id) ->
+			conn.id = id
+			client.printID conn.id
 		@add = (data, options) ->
 			aColl = eval options.type
-			aColl.create data
+			aColl.create 
 			client.add data, { type: options.type }
 		@addPointArray = (data,options) ->
 			found = false
@@ -102,6 +107,7 @@ exports.createServer = (app) ->
 			aColl.each (m) ->
 				m.destroy()
 				client.removeAll { type: options.type }
+		###
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen(app)
@@ -114,7 +120,8 @@ exports.createServer = (app) ->
 				res.writeHead 204
 				res.end err
 		}
-	app.get '/players', (req, res) ->
+	app.get '/players', (req, res) ->	
+		console.log players.length;
 		players.fetch {
 			success: (data) ->
 				res.writeHead 200
@@ -123,13 +130,22 @@ exports.createServer = (app) ->
 				res.writeHead 204
 				res.end err
 		}
-
-# temp fix, added callback
+	app.get '/friends', (req, res) ->
+		friends.fetch {
+			success: (data) ->
+				res.writeHead 200
+				res.end JSON.stringify(data)
+			error: (err) ->
+				res.writeHead 204
+				res.end err
+		}
+	
+#### temp fix, added callback
 exports.setFbUser = (data) ->
 	if data
 		newUser = {
 			playerID: data.id
-			name: data.first_name
+			name: Date.now()
 			avatar: "http://graph.facebook.com/" + data.id + "/picture"
 		}
 		players.create (newUser)
