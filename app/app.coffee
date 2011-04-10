@@ -77,7 +77,9 @@ class SessionManager
 		@sessions_for_connection = {}
 		@sessions_for_facebook_id = {}
 		@sessions_for_random_key = {}
-		
+	
+	#call this when the user has done the facebook authentication
+	#this returns a random session key that should be used to authenticate the dnode connection	
 	createSession = (player) =>
 		session = new Session(player)
 		session_key = session.random_key
@@ -85,6 +87,8 @@ class SessionManager
 		@sessions_for_random_key[session_key] = session		
 		return session_key
 	
+	#this should be called when the client sends an authenticate message over dnone. 
+	#this must be done before anything else over dnone
 	sessionConnected = (random_key, conn, client) ->
 		console.log("Session connection started! Connection ID = "+conn.id)
 		if random_key in @sessions_for_random_key
