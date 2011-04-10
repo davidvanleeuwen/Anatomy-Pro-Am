@@ -31,6 +31,7 @@ class MemoryStore
 
 store = new MemoryStore
 
+
 # overwrite Backbone's sync, to store it in the memory
 Backbone.sync = (method, model, success, error) ->
 	switch method
@@ -42,7 +43,6 @@ Backbone.sync = (method, model, success, error) ->
 		success(resp)
 	else
 		console.log(error)
-
 
 drawing = new resources.collections.Drawing
 players = new resources.collections.Players
@@ -57,20 +57,77 @@ publish = () ->
 		if sub isnt cl
 			emit.apply emit, args
 
+GenerateRandomKey = () ->
+	#generate random key for this session
+	chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+	key_length = 32
+	ret = ""
+	for x in [0..32]
+		rnum = Math.floor(Math.random() * chars.length)
+		ret += chars.substring(rnum,rnum+1)
+
+	return ret
+
+class Session
+	constructor: (@name, @player) ->
+		@random_key = GenerateRandomKey()
+
+class SessionManager
+	constructor: (@name) ->
+		@sessions_for_connection = {}
+		@sessions_for_facebook_id = {}
+		@sessions_for_random_key = {}
+	
+	#call this when the user has done the facebook authentication
+	#this returns a random session key that should be used to authenticate the dnode connection	
+	createSession = (player) =>
+		session = new Session(player)
+		session_key = session.random_key
+		@sessions_for_facebook_id[player.facebook_id] = session
+		@sessions_for_random_key[session_key] = session		
+		return session_key
+	
+	#this should be called when the client sends an authenticate message over dnone. 
+	#this must be done before anything else over dnone
+	sessionConnected = (random_key, conn, client) ->
+		console.log("Session connection started! Connection ID = "+conn.id)
+		if random_key in @sessions_for_random_key
+			session = @sessions_for_random_key[random_key]
+			@sessions_for_connection[conn] = session
+			@session.connection = conn
+			@session.client = client
+						
+			# notify this player's friends of disconnection e.g., something like
+			# for friend in friends_for_player[player]
+			#	@sessions_for_facebook_id[friend_id].client.friendSignedOn @session.person 
+		else
+			console.log("Session connected started with invalid random_id!!!!")
+			
+	sessionDisconnected = (conn) ->
+		console.log("Session started! Connection ID = "+conn.id)
+		
+		player = playerForConnection conn
+		# notify this player's friends of disconnection
+		
+		@sessions_for_facebook_id.delete sessions_for_connection[conn].player.facebook_id
+		@sessions_for_connection.delete conn
+		
+	playerForConnection = (conn) ->
+		@sessions_for_connection[conn].player
+	
+
+sessionManager = new SessionManager	
+
+
 ## DNode RPC API
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
 		conn.on 'ready', ->
-			publish 'addPlayer', conn.id
-			#client.addPlayer conn.id
+			# publish 'addPlayer', conn.id
+			# #client.addPlayer conn.id
 		conn.on 'end', ->
-			console.log("END")
-			console.log(conn.id)
-			players.each (player) ->
-				if player.playerID == conn.id
-					p = players.get(player)
-					console.log(p)
-					players.destroy (p)
+			sessionManager.sessionEnded(conn)
+
 		@subscribe = (emit) ->
 			subs[conn.id] = emit
 			#client.returnID conn.id

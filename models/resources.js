@@ -36,6 +36,15 @@ resources.models.Player = Backbone.Model.extend({
 	}
 });
 
+
+resources.models.Person = Backbone.Model.extend({
+	defaults: {
+		"name": "NAME UNDEFINED!",
+		"facebook_id": 0,
+	}
+})
+
+
 /*
  *	Drawing collection
  *	@point
@@ -69,7 +78,7 @@ resources.models.Friend = Backbone.Model.extend({
  *	@friend
  */
 resources.collections.Friends = Backbone.Collection.extend({ 
-	model: resources.models.Friend,
+	model: resources.models.Person
 	url: '/friends'
 });
 
