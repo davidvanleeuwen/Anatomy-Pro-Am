@@ -3,6 +3,7 @@ components.drawing = function(){
 	
 	var tempImageData;
 	var curTool = 0;
+	// isDrawing is for one person? Doesn't make sense if there are other people drawing too!
 	var isDrawing;
 	var context;
 	var erase; //Whether it's in erase mode
@@ -65,7 +66,8 @@ components.drawing = function(){
 			var actionType;
 			var x;
 			var y;
-
+			
+			// this is loading?
 			while(c<pointArray.length){
 				actionType = pointArray[c].actionType;
 				x = pointArray[c].x;
@@ -186,9 +188,10 @@ components.drawing = function(){
 			this.ctx = this.canvas.getContext("2d");
 			_.bindAll(this, 'drawPoint');
 			
+			// every time you 'add' something, it calls drawPoint
 			drawing.bind('add', this.drawPoint);
 			
-			// fixtures:
+			// fixtures for the images (scans):
 			var images = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 			
 			images.forEach(function(img){
@@ -201,13 +204,14 @@ components.drawing = function(){
 			
 		},
 		drawPoint: function(model) {
-			// create nieuw point
+			// create new point locally
 			var point = new Point({model: model});
 			
-			// send model to other clients that are listening
+			// send the model to the server
 			remote.newPoint({model: model});
 		},
 		startLine: function(event) {
+			// made the action more clear and removed the tooltype for now, instead of doing the event just use a native event
 			drawing.create({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'startline'});
 		},
 		drawLine: function(event) {
