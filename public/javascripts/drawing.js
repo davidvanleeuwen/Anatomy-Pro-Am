@@ -1,6 +1,13 @@
 components.drawing = function(){
 	console.log('loaded drawing');
 	
+	var tempImageData;
+	var curTool = 0;
+	var isDrawing;
+	var context;
+	var erase; //Whether it's in erase mode
+	var size = 10;
+	
 	window.Point = Backbone.View.extend({
 		initialize: function() {
 			_.bindAll(this, 'render');
@@ -58,8 +65,6 @@ components.drawing = function(){
 			var actionType;
 			var x;
 			var y;
-			//console.log("and now");
-			//console.log(pointArray);
 
 			while(c<pointArray.length){
 				actionType = pointArray[c].actionType;
@@ -140,30 +145,22 @@ components.drawing = function(){
 	});
 	
 	window.pointArray = new Array()
+	
 	window.ComputerView = Backbone.View.extend({
-		
 		el: $('#game'),
 		events: {
 			'click .light_grey_gradient_text': 'goBack',
 			"mousedown .scanvas": "startLine",
-			/*"mousemove .scanvas" : "drawLine",
+			"mousemove .scanvas" : "drawLine",
 			"mouseup .scanvas": "endLine",
-			"click .brush0": "changeColor0",
+			/*"click .brush0": "changeColor0",
 			"click .brush1": "changeColor1",
 			"click .brush2": "changeColor2",
 			"click .brush3": "Load"*/
 		},
 		initialize: function() {
-			players.unbind();
-			drawing.unbind();
-			_.bindAll(this, 'addOne', 'addAll', 'render');
-			players.bind('add', this.addOne);
-			players.bind('refresh', this.addAll);
-			players.bind('change', this.logger);
+			_.bindAll(this, 'render');
 			this.render();
-		},
-		logger: function(){
-			alckjaoijcalsdkjc;
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -187,30 +184,10 @@ components.drawing = function(){
 		setupView: function() {
 			this.canvas = $('canvas').dom[0];
 			this.ctx = this.canvas.getContext("2d");
-			_.bindAll(this, 'drawPoint', 'drawnPoints');
-			_.bindAll(this, 'Load');
-			var self = this;
+			_.bindAll(this, 'drawPoint');
+			
 			drawing.bind('add', this.drawPoint);
-			// old fashion request to get the current state
-			drawing.fetch({success: function(data) {
-				var ca = 0; // Counter Array
-				var cm = 0; // Counter Model
-				while(cm < data.models.length){
-					if(data.models[cm].attributes.actionType != 4){
-						window.pointArray[ca] = data.models[cm].attributes;
-						ca++;
-					}else{
-						var tc = 0; //Temp Counter 
-						while(tc<data.models[cm].attributes.pointArrayServer.length){
-							window.pointArray[cs] = data.models[cm].attributes.pointArrayServer[tc];
-							tc++;
-							ca++;
-						}
-					}
-					cm++;
-				}
-				var tmp = window.pointArray;
-			}});
+			
 			// fixtures:
 			var images = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 			
@@ -222,60 +199,23 @@ components.drawing = function(){
 				}
 			});
 			
-			players.fetch({success: function(data) { console.log(data); } });
-			
-			/*
-			em.on('addPlayer', function(data) {
-				console.log(data);
-			});
-
-			remote.setID(FB.getSession().uid);
-			remote.subscribe(function () {
-				em.emit.apply(em, arguments);
-			});
-			drawing.bind('dnode:add', function(data){
-				remote.add(data, {
-					type: 'drawing'
-				});
-			});
-			self.Load();
-			*/
-				
-			this.canvas = $('canvas').dom[0];
-			this.ctx = this.canvas.getContext("2d");
-			_.bindAll(this, 'drawPoint', 'drawnPoints');
-			_.bindAll(this, 'Load');
-			var self = this;
-			//console.log(self);
-			drawing.bind('add', this.drawPoint);
-			// old fashion request to get the current state
-			drawing.fetch({success: function(data) {
-				var c = 0;
-				//console.log(data);
-				//console.log(data.models.length);
-				while(c < data.models.length){
-					window.smaller[c] = data.models[c].attributes;
-					c++;
-				}
-				var tmp = window.smaller;
-				//console.log(self);
-			}});
 		},
-		drawnPoints: {},
 		drawPoint: function(model) {
+			// create nieuw point
 			var point = new Point({model: model});
-			this.drawnPoints[model.id] = point;
+			
+			// send model to other clients that are listening
+			remote.newPoint({model: model});
 		},
 		startLine: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:0, tool:curTool});
+			drawing.create({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'startline'});
 		},
 		drawLine: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:1, tool:curTool});
+			drawing.create({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'drawline'});
 		},
 		endLine: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:2, tool:curTool});
-		},
-		
+			drawing.create({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'endline'});
+		}/*,
 		changeColor0: function(event) {
 			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:3, tool:0});
 		},
@@ -290,15 +230,6 @@ components.drawing = function(){
 		},
 		Load: function() {
 			drawing.trigger('dnode:addPointArray', {pointArrayServer: window.pointArray, actionType:4});
-		},
-		addAll: function() {
-			console.log("addall");
-			console.log(players.length);
-			players.each(this.addOne);
-		},
-		addOne: function(player) {
-			var view = new Player({model: player});
-			this.$('#fb_friends_container').append(view.render().el);
-		}
+		}*/
 	});
 };

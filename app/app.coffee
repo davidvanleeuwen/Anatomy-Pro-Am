@@ -59,7 +59,6 @@ publish = () ->
 
 ## DNode RPC API
 exports.createServer = (app) ->
-	
 	client = DNode (client, conn) ->
 		conn.on 'ready', ->
 			publish 'addPlayer', conn.id
@@ -130,7 +129,7 @@ exports.createServer = (app) ->
 				res.writeHead 204
 				res.end err
 		}
-	app.get '/friends', (req, res) ->
+	app.get '/myfriends', (req, res) ->
 		friends.fetch {
 			success: (data) ->
 				res.writeHead 200
