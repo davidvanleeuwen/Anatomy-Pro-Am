@@ -95,12 +95,17 @@ class SessionManager
 		console.log("Session connection started! Connection ID = "+conn.id)
 		if @sessions_for_random_key[random_key]
 			session = @sessions_for_random_key[random_key]
-			@sessions_for_connection[conn] = session
+			@sessions_for_connection[conn.id] = session
 			session.connection = conn
 			session.client = client
 			session.emit = emit
+			
+			# temp notification to tell all users for the global session that a player came online
+			Hash(@sessions_for_connection).forEach (player) ->
+				player.emit.apply player.emit, ['FriendCameOnline', player.facebook_id]
+			
 			# notify this player's friends of disconnection e.g., something like
-			# for friend in friends_for_player[player]
+			#for friend in friends_for_player[player]
 			#	@sessions_for_facebook_id[friend_id].client.friendSignedOn @session.person 
 		else
 			console.log("Session connected started with invalid random_id!!!!")
@@ -108,14 +113,18 @@ class SessionManager
 	sessionDisconnected: (conn) ->
 		console.log("Session ended! Disconnected ID = "+conn.id)
 		
-		player = @playerForConnection conn
+		# temp notification to tell all users for the global session that a player went offline
+		Hash(@sessions_for_connection).forEach (player) ->
+			player.emit.apply player.emit, ['FriendWentOffline', player.facebook_id]
+		
+		#player = @playerForConnection conn.id
 		# notify this player's friends of disconnection
-	
-		delete @sessions_for_facebook_id[@sessions_for_connection[conn].facebook_id]
-		delete @sessions_for_connection[conn]
+		
+		delete @sessions_for_facebook_id[@sessions_for_connection[conn.id].facebook_id]
+		delete @sessions_for_connection[conn.id]
 		
 	playerForConnection: (conn) ->
-		@sessions_for_connection[conn].player
+		@sessions_for_connection[conn.id].player
 
 sessionManager = new SessionManager	
 
@@ -127,6 +136,9 @@ exports.createServer = (app) ->
 			sessionManager.sessionConnected auth_token, conn, client, emit
 		conn.on 'end', ->
 			sessionManager.sessionDisconnected(conn)
+		@newPoint = (options) ->
+			if options and options.model
+				drawing.set model
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen(app)

@@ -30,7 +30,7 @@ $(function(){
 	DNode().connect(function(remote){
 		window.remote = remote;
 		if(AUTH_TOKEN != '' || AUTH_TOKEN != 'undefined') {
-			remote.subscribe(AUTH_TOKEN, em);
+			remote.subscribe(AUTH_TOKEN, emit);
 		}
 		components.cases();
 		components.friendbar();

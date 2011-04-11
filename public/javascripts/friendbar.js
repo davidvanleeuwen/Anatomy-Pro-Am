@@ -26,8 +26,8 @@ components.friendbar = function(){
 		}
 	});
 	
-	em.on('FrienCameOnline', function(n) { friends.add(n); });
-	em.on('FriendWentOffline', function(n) { friends.remove(n); });
+	em.on('FriendCameOnline', function(n) { console.log(n); });
+	em.on('FriendWentOffline', function(n) { console.log(n); });
 	
 	window.FriendBar = Backbone.View.extend({
 		el: '#fb_friends_container',
