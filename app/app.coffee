@@ -69,8 +69,10 @@ GenerateRandomKey = () ->
 	return ret
 
 class Session
-	constructor: (@name, @player) ->
+	constructor: (@facebook_id, @fbUser) ->
 		@random_key = GenerateRandomKey()
+		@connection = ''
+		@client = ''
 
 class SessionManager
 	constructor: (@name) ->
@@ -81,10 +83,9 @@ class SessionManager
 	#call this when the user has done the facebook authentication
 	#this returns a random session key that should be used to authenticate the dnode connection
 	createSession: (player) =>
-		session = new Session(player)
+		session = new Session(player.id, player)
 		session_key = session.random_key
-		console.log session_key
-		@sessions_for_facebook_id[player.facebook_id] = session
+		@sessions_for_facebook_id[player.id] = session
 		@sessions_for_random_key[session_key] = session		
 		return session_key
 	
@@ -92,13 +93,12 @@ class SessionManager
 	#this must be done before anything else over dnone
 	sessionConnected: (random_key, conn, client, emit) ->
 		console.log("Session connection started! Connection ID = "+conn.id)
-		console.log random_key
-		if random_key in @sessions_for_random_key
+		if @sessions_for_random_key[random_key]
 			session = @sessions_for_random_key[random_key]
 			@sessions_for_connection[conn] = session
-			@session.connection = conn
-			@session.client = client
-						
+			session.connection = conn
+			session.client = client
+			session.emit = emit
 			# notify this player's friends of disconnection e.g., something like
 			# for friend in friends_for_player[player]
 			#	@sessions_for_facebook_id[friend_id].client.friendSignedOn @session.person 
@@ -108,10 +108,13 @@ class SessionManager
 	sessionDisconnected: (conn) ->
 		console.log("Session ended! Disconnected ID = "+conn.id)
 		
-		player = playerForConnection conn
+		player = @playerForConnection conn
 		# notify this player's friends of disconnection
 		
-		@sessions_for_facebook_id.delete sessions_for_connection[conn].player.facebook_id
+		console.log @sessions_for_facebook_id
+		console.log @sessions_for_connection
+		
+		@sessions_for_facebook_id.delete @sessions_for_connection[conn].facebook_id
 		@sessions_for_connection.delete conn
 		
 	playerForConnection: (conn) ->
@@ -127,9 +130,8 @@ exports.createServer = (app) ->
 			# publish 'addPlayer', conn.id
 			# #client.addPlayer conn.id
 		conn.on 'end', ->
-			#sessionManager.sessionDisconnected(conn)
+			sessionManager.sessionDisconnected(conn)
 		@subscribe = (auth_token, emit) ->
-			console.log auth_token
 			sessionManager.sessionConnected auth_token, conn, client, emit
 			###
 			subs[conn.id] = emit
@@ -172,4 +174,4 @@ exports.createServer = (app) ->
 # creates a new session with the facebook_id and returns a token
 exports.setFbUserAndGetToken = (fbUser) ->
 	if fbUser
-		return sessionManager.createSession fbUser.id
+		return sessionManager.createSession fbUser

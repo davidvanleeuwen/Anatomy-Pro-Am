@@ -79,7 +79,7 @@ renderIndex =  (req, res, getToken) ->
 				res.render 'index', {fb: config.fbconfig, token: token}
 	else
 		console.log '-------=== NO USER - RENDERING INDEX TO DIRECT USER TO AUTH PAGE ===-------'
-		res.render 'index', config.fbconfig
+		res.render 'index', {fb: config.fbconfig, token: ''}
 
 exports.store_user = storeUser
 exports.userDeauthed = userDeauthed
