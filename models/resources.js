@@ -78,7 +78,7 @@ resources.models.Friend = Backbone.Model.extend({
  *	@friend
  */
 resources.collections.Friends = Backbone.Collection.extend({ 
-	model: resources.models.Person
+	model: resources.models.Person,
 	url: '/friends'
 });
 

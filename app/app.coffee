@@ -79,8 +79,8 @@ class SessionManager
 		@sessions_for_random_key = {}
 	
 	#call this when the user has done the facebook authentication
-	#this returns a random session key that should be used to authenticate the dnode connection	
-	createSession = (player) =>
+	#this returns a random session key that should be used to authenticate the dnode connection
+	createSession: (player) =>
 		session = new Session(player)
 		session_key = session.random_key
 		@sessions_for_facebook_id[player.facebook_id] = session
@@ -89,7 +89,7 @@ class SessionManager
 	
 	#this should be called when the client sends an authenticate message over dnone. 
 	#this must be done before anything else over dnone
-	sessionConnected = (random_key, conn, client) ->
+	sessionConnected: (random_key, conn, client) ->
 		console.log("Session connection started! Connection ID = "+conn.id)
 		if random_key in @sessions_for_random_key
 			session = @sessions_for_random_key[random_key]
@@ -103,8 +103,8 @@ class SessionManager
 		else
 			console.log("Session connected started with invalid random_id!!!!")
 			
-	sessionDisconnected = (conn) ->
-		console.log("Session started! Connection ID = "+conn.id)
+	sessionDisconnected: (conn) ->
+		console.log("Session ended! Disconnected ID = "+conn.id)
 		
 		player = playerForConnection conn
 		# notify this player's friends of disconnection
@@ -112,9 +112,8 @@ class SessionManager
 		@sessions_for_facebook_id.delete sessions_for_connection[conn].player.facebook_id
 		@sessions_for_connection.delete conn
 		
-	playerForConnection = (conn) ->
+	playerForConnection: (conn) ->
 		@sessions_for_connection[conn].player
-	
 
 sessionManager = new SessionManager	
 
@@ -126,44 +125,13 @@ exports.createServer = (app) ->
 			# publish 'addPlayer', conn.id
 			# #client.addPlayer conn.id
 		conn.on 'end', ->
-			sessionManager.sessionEnded(conn)
-
+			sessionManager.sessionDisconnected(conn)
 		@subscribe = (emit) ->
 			subs[conn.id] = emit
 			#client.returnID conn.id
 			conn.on 'end', ->
 				publish 'leave', conn.id
 				delete subs[conn.id]
-		###
-		@setID = (id) ->
-			conn.id = id
-			client.printID conn.id
-		@add = (data, options) ->
-			aColl = eval options.type
-			aColl.create 
-			client.add data, { type: options.type }
-		@addPointArray = (data,options) ->
-			found = false
-			aColl = eval options.type
-			aColl.each (m) ->
-				actionType = m.get 'actionType'
-				if actionType == 4
-					found = true
-					m.destroy()
-			aColl.create(data)
-			client.add data, { type: options.type }
-		@remove = (data, options) ->
-			aColl = eval options.type
-			m = aColl.get data
-			if m
-				m.destroy()
-				client.remove data, { type: options.type }
-		@removeAll = (options) ->
-			aColl = eval options.type
-			aColl.each (m) ->
-				m.destroy()
-				client.removeAll { type: options.type }
-		###
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen(app)
@@ -186,7 +154,7 @@ exports.createServer = (app) ->
 				res.writeHead 204
 				res.end err
 		}
-	app.get '/myfriends', (req, res) ->
+	app.get '/friends', (req, res) ->
 		friends.fetch {
 			success: (data) ->
 				res.writeHead 200
@@ -195,13 +163,8 @@ exports.createServer = (app) ->
 				res.writeHead 204
 				res.end err
 		}
-	
-#### temp fix, added callback
-exports.setFbUser = (data) ->
-	if data
-		newUser = {
-			playerID: data.id
-			name: Date.now()
-			avatar: "http://graph.facebook.com/" + data.id + "/picture"
-		}
-		players.create (newUser)
+
+# creates a new session with the facebook_id and returns a token
+exports.setFbUserAndGetToken = (fbUser) ->
+	if fbUser
+		return sessionManager.createSession fbUser.id

@@ -1,5 +1,5 @@
 $(function(){
-	console.log('loading client');
+	console.log('loading app');
 	
 	// change this to mixin views
 	window.view = {};

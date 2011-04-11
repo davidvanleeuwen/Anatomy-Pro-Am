@@ -37,12 +37,10 @@ server.get '/', (req, res) ->
 	res.render 'index', config.fbconfig
 	
 server.post '/', (req, res) ->
-	console.log("POST @ /")
-	fbhelper.renderIndex req, res, (data) ->
-		# temp fix, added callback
-		if data
-			console.log data
-			app.setFbUser(data)
+	fbhelper.renderIndex req, res, (fbUser) ->
+		if fbUser
+			# callback for getting the token and returns it to the  original request
+			return app.setFbUserAndGetToken fbUser
 
 server.get '/authresponse', (req, res) ->
 	console.log('GET @ /authresponse')

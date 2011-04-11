@@ -68,15 +68,12 @@ authUser = (req, res) ->
 		userDeclinedAccess(req)
 		res.end()
 
-renderIndex =  (req, res, cb) ->
+renderIndex =  (req, res, getToken) ->
 	user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
 	if user
-		console.log(user)
-		# temp fix, added callback
 		graph = new fbgraph.GraphAPI user.access_token
 		graph.getObject 'me', (error, data) ->
-			#console.log data
-			cb(data)
+			getToken data
 		res.render 'index', config.fbconfig
 	else
 		console.log '-------=== NO USER - RENDERING INDEX TO DIRECT USER TO AUTH PAGE ===-------'
