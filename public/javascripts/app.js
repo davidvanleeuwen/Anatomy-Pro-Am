@@ -29,8 +29,9 @@ $(function(){
 	
 	DNode().connect(function(remote){
 		window.remote = remote;
-		
-		remote.subscribe(AUTH_TOKEN, em);
+		if(AUTH_TOKEN != '' || AUTH_TOKEN != 'undefined') {
+			remote.subscribe(AUTH_TOKEN, em);
+		}
 		components.cases();
 		components.friendbar();
 		components.drawing();

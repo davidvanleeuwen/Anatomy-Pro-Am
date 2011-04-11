@@ -34,7 +34,7 @@ server.use browserify {
 app.createServer server
 
 server.get '/', (req, res) ->
-	res.render 'index', config.fbconfig
+	res.render 'index', {fb: config.fbconfig, token: ''}
 	
 server.post '/', (req, res) ->
 	fbhelper.renderIndex req, res, (fbUser) ->
