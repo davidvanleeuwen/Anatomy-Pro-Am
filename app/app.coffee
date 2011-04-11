@@ -130,7 +130,7 @@ exports.createServer = (app) ->
 			# publish 'addPlayer', conn.id
 			# #client.addPlayer conn.id
 		conn.on 'end', ->
-			sessionManager.sessionDisconnected(conn)
+			#sessionManager.sessionDisconnected(conn)
 		@subscribe = (auth_token, emit) ->
 			sessionManager.sessionConnected auth_token, conn, client, emit
 			###

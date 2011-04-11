@@ -70,13 +70,18 @@ authUser = (req, res) ->
 
 renderIndex =  (req, res, getToken) ->
 	user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
+	console.log user
 	if user
 		graph = new fbgraph.GraphAPI user.access_token
 		graph.getObject 'me', (error, data) ->
-			token = getToken data
-			if token
-				# should the render be in here or in the server.coffee?
-				res.render 'index', {fb: config.fbconfig, token: token}
+			if error
+				console.log 'fbhelper error: ', error
+			else
+				token = getToken data
+				if token
+					# should the render be in here or in the server.coffee?
+					res.render 'index', {fb: config.fbconfig, token: token}
+			
 	else
 		console.log '-------=== NO USER - RENDERING INDEX TO DIRECT USER TO AUTH PAGE ===-------'
 		res.render 'index', {fb: config.fbconfig, token: ''}
