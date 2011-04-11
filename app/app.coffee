@@ -110,12 +110,9 @@ class SessionManager
 		
 		player = @playerForConnection conn
 		# notify this player's friends of disconnection
-		
-		console.log @sessions_for_facebook_id
-		console.log @sessions_for_connection
-		
-		@sessions_for_facebook_id.delete @sessions_for_connection[conn].facebook_id
-		@sessions_for_connection.delete conn
+	
+		delete @sessions_for_facebook_id[@sessions_for_connection[conn].facebook_id]
+		delete @sessions_for_connection[conn]
 		
 	playerForConnection: (conn) ->
 		@sessions_for_connection[conn].player
@@ -126,19 +123,10 @@ sessionManager = new SessionManager
 ## DNode RPC API
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
-		conn.on 'ready', ->
-			# publish 'addPlayer', conn.id
-			# #client.addPlayer conn.id
-		conn.on 'end', ->
-			#sessionManager.sessionDisconnected(conn)
 		@subscribe = (auth_token, emit) ->
 			sessionManager.sessionConnected auth_token, conn, client, emit
-			###
-			subs[conn.id] = emit
-			conn.on 'end', ->
-				publish 'leave', conn.id
-				delete subs[conn.id]
-			###
+		conn.on 'end', ->
+			sessionManager.sessionDisconnected(conn)
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen(app)
