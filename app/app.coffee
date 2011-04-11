@@ -83,14 +83,16 @@ class SessionManager
 	createSession: (player) =>
 		session = new Session(player)
 		session_key = session.random_key
+		console.log session_key
 		@sessions_for_facebook_id[player.facebook_id] = session
 		@sessions_for_random_key[session_key] = session		
 		return session_key
 	
 	#this should be called when the client sends an authenticate message over dnone. 
 	#this must be done before anything else over dnone
-	sessionConnected: (random_key, conn, client) ->
+	sessionConnected: (random_key, conn, client, emit) ->
 		console.log("Session connection started! Connection ID = "+conn.id)
+		console.log random_key
 		if random_key in @sessions_for_random_key
 			session = @sessions_for_random_key[random_key]
 			@sessions_for_connection[conn] = session
@@ -125,13 +127,16 @@ exports.createServer = (app) ->
 			# publish 'addPlayer', conn.id
 			# #client.addPlayer conn.id
 		conn.on 'end', ->
-			sessionManager.sessionDisconnected(conn)
-		@subscribe = (emit) ->
+			#sessionManager.sessionDisconnected(conn)
+		@subscribe = (auth_token, emit) ->
+			console.log auth_token
+			sessionManager.sessionConnected auth_token, conn, client, emit
+			###
 			subs[conn.id] = emit
-			#client.returnID conn.id
 			conn.on 'end', ->
 				publish 'leave', conn.id
 				delete subs[conn.id]
+			###
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen(app)

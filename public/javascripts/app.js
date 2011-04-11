@@ -29,6 +29,8 @@ $(function(){
 	
 	DNode().connect(function(remote){
 		window.remote = remote;
+		
+		remote.subscribe(AUTH_TOKEN, em);
 		components.cases();
 		components.friendbar();
 		components.drawing();

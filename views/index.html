@@ -1,7 +1,7 @@
 <div id="fb-root"></div>
 
 <script>
-	FB.init({ appId  : '<%= appId %>', status : true, cookie : true, xfbml  : true });
+	FB.init({ appId  : '<%= fb.appId %>', status : true, cookie : true, xfbml  : true });
 	
 	FB.getLoginStatus(function(response) {
 	  if (response.session) {
@@ -9,33 +9,21 @@
 		$('#game_container').show();
 	  } else {
 		var url = 'https://graph.facebook.com/oauth/authorize?client_id='
-			+ '<%= appId %>&redirect_uri='
-			+ encodeURIComponent('<%= redirect_uri %>')+'&scope=<%= scope %>';
+			+ '<%= fb.appId %>&redirect_uri='
+			+ encodeURIComponent('<%= fb.redirect_uri %>')
+			+ '&scope=<%= fb.scope %>';
 		top.location.href = url;
 	  }
 	});
 	FB.Canvas.setSize({ width: 744, height: 555 });
 	
-	var stats = new Stats();
-	stats.domElement.style.position = 'absolute';
-	stats.domElement.style.left = '0px';
-	stats.domElement.style.top = '0px';
-
-	$('body').append(stats.domElement);
-
-	setInterval( function () {
-	    stats.update();
-	}, 1000 / 60 );
-	
-	
+	var AUTH_TOKEN = "<%= token %>";
 </script>
-
 <div id="game"></div>
 <!-- debug info -->
 <span class="grey_gradient_text" style="position: absolute; top: 10px; right: 24px; font-size: 21px; text-align: center;">v0.01</span>
 <div class="clear">
 </div>
-
 
 <!--
 <div class="area" style="display: none;">

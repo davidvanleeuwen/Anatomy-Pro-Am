@@ -208,7 +208,12 @@ components.drawing = function(){
 			var point = new Point({model: model});
 			
 			// send the model to the server
+			/*
 			remote.newPoint({model: model});
+			em.on('newPoint', function(point){
+				drawing.create(point);
+			});
+			*/
 		},
 		startLine: function(event) {
 			// made the action more clear and removed the tooltype for now, instead of doing the event just use a native event
