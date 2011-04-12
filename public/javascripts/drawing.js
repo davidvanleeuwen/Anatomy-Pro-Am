@@ -191,6 +191,13 @@ components.drawing = function(){
 			// every time you 'add' something, it calls drawPoint
 			drawing.bind('add', this.drawPoint);
 			
+			em.on('pointColered', function(player_id, point) {
+				console.log(player_id, point);
+			});
+			em.on('pointErased', function(player_id, point) {
+				console.log(player_id, point)
+			});
+			
 			// fixtures for the images (scans):
 			var images = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 			
@@ -205,7 +212,7 @@ components.drawing = function(){
 		},
 		drawPoint: function(model) {
 			// create new point locally
-			var point = new PointView({model: model});
+			//var point = new PointView({model: model});
 			
 			// send the model to the server
 			/*
@@ -216,16 +223,13 @@ components.drawing = function(){
 			*/
 		},
 		startLine: function(event) {
-			//var model = new Point({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
-			remote.pointColored('1', model);
+			remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
 		},
 		drawLine: function(event) {
-			//var model = new Point({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
-			remote.pointColored('1', model);
+			remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
 		},
 		endLine: function(event) {
-			//var model = new Point({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
-			remote.pointColored('1', model);
+			remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
 		}
 	});
 };

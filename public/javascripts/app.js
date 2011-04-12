@@ -31,6 +31,9 @@ $(function(){
 		window.remote = remote;
 		if(AUTH_TOKEN != '' || AUTH_TOKEN != 'undefined') {
 			remote.subscribe(AUTH_TOKEN, emit);
+			em.on('myUID', function(uid) {
+				window.myUID = uid;
+			});
 		}
 		util.sync();
 		components.cases();

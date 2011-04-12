@@ -22,8 +22,11 @@ exports.createServer = (app) ->
 			sessionManager.sessionDisconnected conn
 		@pointColored = (player_id, point) ->
 			activityManager.createPoint player_id, point
+			sessionManager.publish 'pointColered', player_id, point
 		@pointErased = (player_id, point) ->
 			activityManager.deletePoint player_id, point
+			sessionManager.publish 'pointErased', player_id, point
+			
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen(app)
