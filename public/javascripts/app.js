@@ -32,6 +32,7 @@ $(function(){
 		if(AUTH_TOKEN != '' || AUTH_TOKEN != 'undefined') {
 			remote.subscribe(AUTH_TOKEN, emit);
 		}
+		util.sync();
 		components.cases();
 		components.friendbar();
 		components.drawing();
