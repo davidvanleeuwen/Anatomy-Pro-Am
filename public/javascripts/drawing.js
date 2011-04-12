@@ -9,38 +9,21 @@ components.drawing = function(){
 	var erase; //Whether it's in erase mode
 	var size = 10;
 	
-	window.Point = Backbone.View.extend({
+	window.PointView = Backbone.View.extend({
 		initialize: function() {
 			_.bindAll(this, 'render');
 			erase = false;
-			this.model.view = this;
+			console.log(this.model);
+			//this.model.view = this;
 			this.canvas = $('.scanvas').dom[0];
 			this.ctx = this.canvas.getContext("2d");
-			var actionType = this.model.get('actionType');
-			this.ctx.lineWidth  = size*2;
-			tempImageData = this.ctx.getImageData(0,0,this.canvas.width,this.canvas.height);
-			if (actionType==3) {
-				curTool = this.model.get('tool');
-			} else if (actionType==4) {
-				this.load();
-			} else {
-				var x = this.model.get('x');
-				var y = this.model.get('y');
-				if (curTool == 0) {
-					erase=false;
-					this.ctx.fillStyle = "rgb(0,0,255)";
-					this.ctx.strokeStyle = "rgb(0,0,255)";
-				} else if (curTool == 1) {
-					erase=false;
-					this.ctx.fillStyle = "rgb(255,0,0)";
-					this.ctx.strokeStyle = "rgb(255,0,0)";
-				} else if(curTool == 2) {
-					erase=true;
-					this.ctx.fillStyle = "rgb(255,255,255)";
-					this.ctx.strokeStyle = "rgb(255,255,255)";
-				}
-				this.render(x,y,actionType);
-			}
+			//console.log(this.model);
+			var actionType = this.model.get('action');
+			var x = this.model.get('x');
+			var y = this.model.get('y');
+			var tool = this.model.get('tool');
+			if(actionType==4) this.load();
+			else this.render(x,y,actionType,tool);
 		},
 		updCanv: function() {
 			tempImageData=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
@@ -63,83 +46,46 @@ components.drawing = function(){
 		load: function()  {
 			var c = 0;
 			var pointArray = this.model.get('pointArrayServer');
-			var actionType;
-			var x;
-			var y;
-			
-			// this is loading?
 			while(c<pointArray.length){
-				actionType = pointArray[c].actionType;
-				x = pointArray[c].x;
-				y = pointArray[c].y;
-				if(actionType==3){
-					curTool = pointArray[c].tool;
-				}else{
-					if(curTool == 0){
-						erase=false;
-						this.ctx.fillStyle = "rgb(0,0,255)";
-						this.ctx.strokeStyle = "rgb(0,0,255)";
-					}else if(curTool == 1){
-						erase=false;
-						this.ctx.fillStyle = "rgb(255,0,0)";
-						this.ctx.strokeStyle = "rgb(255,0,0)";
-					}else if(curTool == 2){
-						erase=true;
-						this.ctx.fillStyle = "rgb(255,255,255)";
-						this.ctx.strokeStyle = "rgb(255,255,255)";
-					}
-					if(actionType==0){
-						this.ctx.beginPath();
-						this.ctx.arc(x,y, size, 0, Math.PI*2, true); 
-						this.ctx.closePath();
-						this.ctx.fill();
-						isDrawing = true;
-					} else if(isDrawing && actionType==1){
-						this.ctx.beginPath();
-						this.ctx.arc(x,y, size, 0, Math.PI*2, true); 
-						this.ctx.closePath();
-						this.ctx.fill();
-					} else if(actionType==2){
-						this.ctx.beginPath();
-						this.ctx.arc(x,y, size, 0, Math.PI*2, true); 
-						this.ctx.closePath();
-						this.ctx.fill();
-						isDrawing = false;
-
-					}
-					if(erase) this.updCanv();
-				}
+				this.render(pointArray[c].x,
+							pointArray[c].y,
+							pointArray[c].actionType,
+							pointArray[c].tool)
 				c++;
 			}
 			return this;
 		},
-		render: function(x,y,actionType) {
-			if(actionType==0){
-				this.ctx.beginPath();
-				this.ctx.arc(x,y, size, 0, Math.PI*2, true); 
-				this.ctx.closePath();
-				this.ctx.fill();
-				this.ctx.moveTo(x,y);
-				this.ctx.beginPath();
-				isDrawing = true;
-			} else if(isDrawing && actionType==1){
+		render: function(x,y,actionType,tool) {
+			this.ctx.lineWidth  = size*2;
+			if (actionType==3) {
+				curTool = tool;
+			} else {
+				erase = false;
+				if (curTool == 0) {
+					this.ctx.fillStyle = "rgb(0,0,255)";
+					this.ctx.strokeStyle = "rgb(0,0,255)";
+				} else if (curTool == 1) {
+					this.ctx.fillStyle = "rgb(255,0,0)";
+					this.ctx.strokeStyle = "rgb(255,0,0)";
+				} else if(curTool == 2) {
+					erase=true;
+					this.ctx.fillStyle = "rgb(255,255,255)";
+					this.ctx.strokeStyle = "rgb(255,255,255)";
+				}
+			}
+			if(actionType == 'startLine') isDrawing = true;
+			if(actionType=='drawLine' || actionType=='endLine'){
 				this.ctx.lineTo(x,y);
 				this.ctx.closePath();
 				this.ctx.stroke();
+			} else if(isDrawing){
 				this.ctx.beginPath();
 				this.ctx.arc(x,y, size, 0, Math.PI*2, true); 
 				this.ctx.closePath();
 				this.ctx.fill();
+				if(actionType=='endLine') isDrawing = false;
+			} else if(actionType=='startLine' || actionType == 'drawLine'){
 				this.ctx.beginPath();
-			} else if(actionType==2){
-				this.ctx.lineTo(x,y);
-				this.ctx.closePath();
-				this.ctx.stroke();
-				this.ctx.beginPath();
-				this.ctx.arc(x,y, size, 0, Math.PI*2, true); 
-				this.ctx.closePath();
-				this.ctx.fill();
-				isDrawing = false;
 			}
 			if(erase) this.updCanv();
 			return this;
@@ -187,9 +133,14 @@ components.drawing = function(){
 			this.canvas = $('canvas').dom[0];
 			this.ctx = this.canvas.getContext("2d");
 			_.bindAll(this, 'drawPoint');
+			drawing.bind("drawP", this.drawPoint);
 			
+			
+			
+		
+		
 			// every time you 'add' something, it calls drawPoint
-			drawing.bind('add', this.drawPoint);
+			//drawing.bind('add', this.drawPoint);
 			
 			// fixtures for the images (scans):
 			var images = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
@@ -204,9 +155,11 @@ components.drawing = function(){
 			
 		},
 		drawPoint: function(model) {
+			//_.bindAll(this, "drawPoint", function(model) {
 			// create new point locally
-			var point = new Point({model: model});
-			
+			console.log(model);
+			var pointView = new PointView({model: model});
+
 			// send the model to the server
 			/*
 			remote.newPoint({model: model});
@@ -217,13 +170,13 @@ components.drawing = function(){
 		},
 		startLine: function(event) {
 			// made the action more clear and removed the tooltype for now, instead of doing the event just use a native event
-			drawing.create({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'startline'});
+			drawing.trigger('drawP',{x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'startline'});
 		},
 		drawLine: function(event) {
-			drawing.create({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'drawline'});
+			//drawing.create({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'drawline'});
 		},
 		endLine: function(event) {
-			drawing.create({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'endline'});
+			//drawing.create({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'endline'});
 		}/*,
 		changeColor0: function(event) {
 			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:3, tool:0});
