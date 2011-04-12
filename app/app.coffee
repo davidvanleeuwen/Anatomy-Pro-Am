@@ -11,7 +11,7 @@ util = require './util'
 
 store = new util.MemoryStore
 sessionManager = new util.SessionManager
-
+activityManager = new util.ContouringActivity
 
 ## DNode RPC API
 exports.createServer = (app) ->
@@ -19,8 +19,11 @@ exports.createServer = (app) ->
 		@subscribe = (auth_token, emit) ->
 			sessionManager.sessionConnected auth_token, conn, client, emit
 		conn.on 'end', ->
-			sessionManager.sessionDisconnected(conn)
-		
+			sessionManager.sessionDisconnected conn
+		@pointColored = (player_id, point) ->
+			activityManager.createPoint player_id, point
+		@pointErased = (player_id, point) ->
+			activityManager.deletePoint player_id, point
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen(app)

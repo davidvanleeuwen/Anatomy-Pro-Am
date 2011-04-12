@@ -9,7 +9,7 @@ components.drawing = function(){
 	var erase; //Whether it's in erase mode
 	var size = 10;
 	
-	window.Point = Backbone.View.extend({
+	window.PointView = Backbone.View.extend({
 		initialize: function() {
 			_.bindAll(this, 'render');
 			erase = false;
@@ -205,7 +205,7 @@ components.drawing = function(){
 		},
 		drawPoint: function(model) {
 			// create new point locally
-			var point = new Point({model: model});
+			var point = new PointView({model: model});
 			
 			// send the model to the server
 			/*
@@ -216,29 +216,16 @@ components.drawing = function(){
 			*/
 		},
 		startLine: function(event) {
-			// made the action more clear and removed the tooltype for now, instead of doing the event just use a native event
-			drawing.create({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'startline'});
+			//var model = new Point({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
+			remote.pointColored('1', model);
 		},
 		drawLine: function(event) {
-			drawing.create({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'drawline'});
+			//var model = new Point({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
+			remote.pointColored('1', model);
 		},
 		endLine: function(event) {
-			drawing.create({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'endline'});
-		}/*,
-		changeColor0: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:3, tool:0});
-		},
-		changeColor1: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:3, tool:1});
-		},
-		changeColor2: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:3, tool:2});
-		},
-		changeColor3: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:3, tool:3});
-		},
-		Load: function() {
-			drawing.trigger('dnode:addPointArray', {pointArrayServer: window.pointArray, actionType:4});
-		}*/
+			//var model = new Point({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
+			remote.pointColored('1', model);
+		}
 	});
 };

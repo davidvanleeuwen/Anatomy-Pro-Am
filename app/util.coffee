@@ -22,7 +22,7 @@ class Session
 		@client = ''
 
 class SessionManager
-	constructor: (@name) ->
+	constructor: (@id, @player) ->
 		@sessions_for_connection = {}
 		@sessions_for_facebook_id = {}
 		@sessions_for_random_key = {}
@@ -73,6 +73,33 @@ class SessionManager
 	playerForConnection: (conn) ->
 		@sessions_for_connection[conn.id].player
 
+###
+#	CONTOURING ACTIVITY
+###
+class ContouringActivity
+	constructor: () ->
+		@id = GenerateRandomKey()
+		@activityData = new ContouringActivityData(@id)
+		@players = {}
+	addPlayer: (player) ->
+		@players[player.id] = player
+	createPoint: (player_id, point) ->
+		@activityData.newPoint player_id, point
+	deletePoint: (player_id, point) ->
+		@activityData.removePoint player_id, point
+
+###
+#	CONTOURING ACTIVTY DATA
+###
+class ContouringActivityData
+	constructor: (@id) ->
+		@data_for_player = []
+	newPoint: (player_id, point) ->
+		if not @data_for_player[player_id]
+			@data_for_player[player_id] = []
+		@data_for_player[player_id][point.id] = point
+	removePoint: (player_id, point) ->
+		delete @data_for_player[player_id][point.id]
 
 ###
 #	MEMORY STORE
@@ -105,3 +132,4 @@ class MemoryStore
 
 exports.SessionManager = SessionManager
 exports.MemoryStore = MemoryStore
+exports.ContouringActivity = ContouringActivity
