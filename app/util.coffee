@@ -47,6 +47,8 @@ class SessionManager
 			session.client = client
 			session.emit = emit
 			
+			emit.apply emit, ['myUID', session.facebook_id]
+			
 			# temp notification to tell all users for the global session that a player came online
 			Hash(@sessions_for_connection).forEach (player) ->
 				player.emit.apply player.emit, ['FriendCameOnline', player.facebook_id]
@@ -63,13 +65,19 @@ class SessionManager
 		# temp notification to tell all users for the global session that a player went offline
 		Hash(@sessions_for_connection).forEach (player) ->
 			player.emit.apply player.emit, ['FriendWentOffline', player.facebook_id]
+			
 		
 		#player = @playerForConnection conn.id
 		# notify this player's friends of disconnection
 		
 		delete @sessions_for_facebook_id[@sessions_for_connection[conn.id].facebook_id]
 		delete @sessions_for_connection[conn.id]
-		
+	
+	publish: () ->
+		args = arguments
+		Hash(@sessions_for_connection).forEach (player) ->
+			player.emit.apply player.emit, args
+	
 	playerForConnection: (conn) ->
 		@sessions_for_connection[conn.id].player
 
@@ -97,9 +105,9 @@ class ContouringActivityData
 	newPoint: (player_id, point) ->
 		if not @data_for_player[player_id]
 			@data_for_player[player_id] = []
-		@data_for_player[player_id][point.id] = point
+		@data_for_player[player_id][point] = point
 	removePoint: (player_id, point) ->
-		delete @data_for_player[player_id][point.id]
+		delete @data_for_player[player_id][point]
 
 ###
 #	MEMORY STORE
