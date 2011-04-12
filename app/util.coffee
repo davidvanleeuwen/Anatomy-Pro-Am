@@ -47,28 +47,14 @@ class SessionManager
 			session.client = client
 			session.emit = emit
 			
-			emit.apply emit, ['myUID', session.facebook_id]
-			
-			# temp notification to tell all users for the global session that a player came online
-			Hash(@sessions_for_connection).forEach (player) ->
-				player.emit.apply player.emit, ['FriendCameOnline', player.facebook_id]
-			
-			# notify this player's friends of disconnection e.g., something like
-			#for friend in friends_for_player[player]
-			#	@sessions_for_facebook_id[friend_id].client.friendSignedOn @session.person 
+			return session
 		else
 			console.log("Session connected started with invalid random_id!!!!")
 			
 	sessionDisconnected: (conn) ->
 		console.log("Session ended! Disconnected ID = "+conn.id)
 		
-		# temp notification to tell all users for the global session that a player went offline
-		Hash(@sessions_for_connection).forEach (player) ->
-			player.emit.apply player.emit, ['FriendWentOffline', player.facebook_id]
-			
-		
-		#player = @playerForConnection conn.id
-		# notify this player's friends of disconnection
+		return @sessions_for_connection[conn.id]
 		
 		delete @sessions_for_facebook_id[@sessions_for_connection[conn.id].facebook_id]
 		delete @sessions_for_connection[conn.id]

@@ -17,9 +17,12 @@ activityManager = new util.ContouringActivity
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
 		@subscribe = (auth_token, emit) ->
-			sessionManager.sessionConnected auth_token, conn, client, emit
+			session = sessionManager.sessionConnected auth_token, conn, client, emit
+			emit.apply emit, ['myUID', session.facebook_id]
+			sessionManager.publish 'FriendCameOnline', session.facebook_id
 		conn.on 'end', ->
-			sessionManager.sessionDisconnected conn
+			session = sessionManager.sessionDisconnected conn
+			sessionManager.publish 'FriendWentOffline', session.facebook_id
 		@pointColored = (player_id, point) ->
 			activityManager.createPoint player_id, point
 			sessionManager.publish 'pointColered', player_id, point
