@@ -68,9 +68,8 @@ server.post '/deauth', (req, res) ->
 
 
 ## other stuff
-###server.error (err, req, res) ->
+server.error (err, req, res) ->
 	res.render '500'
-###
 server.use (req, res) ->
 	res.render '404'
 

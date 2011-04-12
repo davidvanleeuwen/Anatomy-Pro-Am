@@ -157,9 +157,7 @@ components.drawing = function(){
 		drawPoint: function(model) {
 			//_.bindAll(this, "drawPoint", function(model) {
 			// create new point locally
-			console.log(model);
-			var pointView = new PointView({model: model});
-
+			var point = new PointView({model: model});
 			// send the model to the server
 			/*
 			remote.newPoint({model: model});
@@ -169,29 +167,17 @@ components.drawing = function(){
 			*/
 		},
 		startLine: function(event) {
-			// made the action more clear and removed the tooltype for now, instead of doing the event just use a native event
-			drawing.trigger('drawP',{x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'startline'});
+			//var model = new Point({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
+			remote.pointColored('1', model);
 		},
 		drawLine: function(event) {
-			//drawing.create({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'drawline'});
+			//var model = new Point({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
+			remote.pointColored('1', model);
 		},
 		endLine: function(event) {
-			//drawing.create({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, action: 'endline'});
-		}/*,
-		changeColor0: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:3, tool:0});
-		},
-		changeColor1: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:3, tool:1});
-		},
-		changeColor2: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:3, tool:2});
-		},
-		changeColor3: function(event) {
-			drawing.trigger('dnode:add', {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, actionType:3, tool:3});
-		},
-		Load: function() {
-			drawing.trigger('dnode:addPointArray', {pointArrayServer: window.pointArray, actionType:4});
-		}*/
+			//var model = new Point({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
+			remote.pointColored('1', model);
+		}
+>>>>>>> ups/master
 	});
 };
