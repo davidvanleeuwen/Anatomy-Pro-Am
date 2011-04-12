@@ -178,6 +178,5 @@ components.drawing = function(){
 			//var model = new Point({x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
 			remote.pointColored('1', model);
 		}
->>>>>>> ups/master
 	});
 };
