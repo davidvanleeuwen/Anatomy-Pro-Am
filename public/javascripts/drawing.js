@@ -188,6 +188,7 @@ components.drawing = function(){
 			this.ctx = this.canvas.getContext("2d");
 			_.bindAll(this, 'drawPoint');
 			
+			window.friendbar = new FriendBar;
 			// every time you 'add' something, it calls drawPoint
 			drawing.bind('add', this.drawPoint);
 			
