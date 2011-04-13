@@ -31,31 +31,21 @@ components.drawing = function(){
 		setupView: function() {
 			this.canvas = $('canvas')[0];
 			this.ctx = this.canvas.getContext("2d");
-			_.bindAll(this, 'colorPoint');
 			
 			// queue per user for drawing points, we might want to refactor this and add this info to the user model?
 			this.users = {};
-			
-			em.on('stopColoring', function(player_id) {
-				var user = this.users[player_id];	
-				user.isDrawing = false;
-			}.bind(this));
 			
 			em.on('pointColered', function(player_id, point) {
 				var user = this.users[player_id];
 				
 				if(!user) {
 					user = this.users[player_id] = {};
-					user.isDrawing = true;
 				}
 				
-				if(user.isDrawing && user.x != 0 && user.y != 0) {
-					this.colorPoint(user.x, user.y, point.x, point.y, point.slide, 1);
+				if(user.x != 0 && user.y != 0) {
+					this.colorPoint(point.x, point.y, point.slide, 1);
 				}
 				
-				user.x = point.x;
-				user.y = point.y;
-				user.isDrawing = true;
 			}.bind(this));
 			
 			em.on('pointErased', function(player_id, point) {
@@ -78,29 +68,28 @@ components.drawing = function(){
 			delete this;
 			new CaseView;
 		},
-		colorPoint: function(previous_x, previous_y, next_x, next_y, slide, tool) {
+		colorPoint: function(x, y, slide, tool) {
 			if(this.slide == slide) {
-				this.ctx.strokeStyle = "rgb(255,0,0)";
-				this.ctx.lineWidth = 3;
+				this.ctx.fillStyle = "rgb(255,0,0)";
 				this.ctx.beginPath();
-				this.ctx.moveTo(previous_x, previous_y);
-				this.ctx.lineTo(next_x, next_y);
+				this.ctx.arc(x,y,1,0,Math.PI*2,true);
 				this.ctx.closePath();
-				this.ctx.stroke();
+				this.ctx.fill();
 			}
 		},
 		startLine: function(event) {
+			event.preventDefault();
 			this.isDrawing = true;
-			remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, slide: this.slide});
 		},
 		drawLine: function(event) {
+			event.preventDefault();
 			if(this.isDrawing) {
 				remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, slide: this.slide});
 			}
 		},
 		endLine: function(event) {
+			event.preventDefault();
 			this.isDrawing = false;
-			remote.stopColoring(myUID);
 		},
 		changeLayer: function(event) {
 			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
