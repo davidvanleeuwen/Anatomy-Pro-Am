@@ -50,7 +50,7 @@ components.drawing = function(){
 				}
 				
 				if(user.isDrawing && user.x != 0 && user.y != 0) {
-					this.colorPoint(user.x, user.y, point.x, point.y, 1);
+					this.colorPoint(user.x, user.y, point.x, point.y, point.slide, 1);
 				}
 				
 				user.x = point.x;
@@ -71,28 +71,31 @@ components.drawing = function(){
 			
 			this.slides = this.$('#images').children();
 			$(this.slides[0]).show();
+			this.slide = 0;
 		},
 		goBack: function(e) {
 			e.preventDefault();
 			delete this;
 			new CaseView;
 		},
-		colorPoint: function(previous_x, previous_y, next_x, next_y, tool) {
-			this.ctx.strokeStyle = "rgb(255,0,0)";
-			this.ctx.lineWidth = 3;
-			this.ctx.beginPath();
-			this.ctx.moveTo(previous_x, previous_y);
-			this.ctx.lineTo(next_x, next_y);
-			this.ctx.closePath();
-			this.ctx.stroke();
+		colorPoint: function(previous_x, previous_y, next_x, next_y, slide, tool) {
+			if(this.slide == slide) {
+				this.ctx.strokeStyle = "rgb(255,0,0)";
+				this.ctx.lineWidth = 3;
+				this.ctx.beginPath();
+				this.ctx.moveTo(previous_x, previous_y);
+				this.ctx.lineTo(next_x, next_y);
+				this.ctx.closePath();
+				this.ctx.stroke();
+			}
 		},
 		startLine: function(event) {
 			this.isDrawing = true;
-			remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
+			remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, slide: this.slide});
 		},
 		drawLine: function(event) {
 			if(this.isDrawing) {
-				remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop});
+				remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, slide: this.slide});
 			}
 		},
 		endLine: function(event) {
@@ -100,7 +103,9 @@ components.drawing = function(){
 			remote.stopColoring(myUID);
 		},
 		changeLayer: function(event) {
-			var slide = $('.slider')[0].value;
+			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+			this.slide = $('.slider')[0].value;
+			var slide = this.slide;
 			this.slides.each(function(n, el){
 				if(slide != n) {
 					$(el).hide();
