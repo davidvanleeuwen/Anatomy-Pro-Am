@@ -41,7 +41,7 @@ server.post '/', (req, res) ->
 			# callback for getting the token and returns it to the  original request
 			return app.setFbUserAndGetToken fbUser
 server.all '/deleteuser', (req, res) ->
-	console.log(req)
+	#console.log(req)
 	res.end
 	
 server.get '/authresponse', (req, res) ->

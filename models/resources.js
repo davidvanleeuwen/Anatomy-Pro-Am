@@ -42,9 +42,9 @@ resources.models.Person = Backbone.Model.extend({
 		"name": "NAME UNDEFINED!",
 		"facebook_id": 0,
 	},
-	clear: function(asdf) {
-    	//this.destroy();
-    	asdf.remove();
+	clear: function() {
+  	//	this.remove();
+		
     },
 	url: function() {
 		return 'deleteuser';
