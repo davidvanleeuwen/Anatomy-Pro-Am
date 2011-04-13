@@ -29,7 +29,7 @@ components.drawing = function(){
 			}
 		},
 		setupView: function() {
-			this.canvas = $('canvas').dom[0];
+			this.canvas = $('canvas')[0];
 			this.ctx = this.canvas.getContext("2d");
 			_.bindAll(this, 'colorPoint');
 			
