@@ -29,6 +29,8 @@ components.drawing = function(){
 			}
 		},
 		setupView: function() {
+
+			new FriendBar;
 			this.canvas = $('canvas')[0];
 			this.ctx = this.canvas.getContext("2d");
 			

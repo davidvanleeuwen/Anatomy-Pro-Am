@@ -50,7 +50,6 @@ components.friendbar = function(){
 			friends.bind('remove', this.removeFriend);
 			friends.bind('refresh', this.refreshFriends);
 			//friends.fetch();
-			console.log("LOADINGBAR");
 			this.render();
 		},
 		render: function() {
@@ -63,8 +62,12 @@ components.friendbar = function(){
 		},
 		removeFriend: function(friend) {
 			console.log('removed player: ', friend);
-			$(this.el).innerHTML = "";
+			console.log("Clear Friend");
 			friend.clear();
+			var inset = '<script type="text/template" id="player-template">				<div class="fb_player">					<div class="fb_player_img"></div>					<span></span>				<div>			</script>';
+			$(this.el).html(inset);
+			console.log(friends);
+			this.refreshFriends();
 		},
 		refreshFriends: function() {
 			friends.each(this.addFriend);
