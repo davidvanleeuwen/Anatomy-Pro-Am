@@ -31,6 +31,9 @@ exports.createServer = (app) ->
 		@pointErased = (player_id, point) ->
 			activityManager.deletePoint player_id, point
 			sessionManager.publish 'pointErased', player_id, point
+		@getColoredPointsForThisLayer = (layer, emit) ->
+			data = activityManager.getPoints layer
+			emit.apply emit, ['setColoredPointsForThisLayer', data]
 			
 		# dnode/coffeescript fix:
 		@version = config.version

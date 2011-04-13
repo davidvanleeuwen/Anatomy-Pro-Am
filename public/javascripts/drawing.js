@@ -92,8 +92,15 @@ components.drawing = function(){
 			this.isDrawing = false;
 		},
 		changeLayer: function(event) {
-			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			this.slide = $('.slider')[0].value;
+			
+			remote.getColoredPointsForThisLayer(this.slide, emit);
+			em.on('setColoredPointsForThisLayer', function(points){
+				console.log(points);
+			});
+			
+			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+			
 			var slide = this.slide;
 			this.slides.each(function(n, el){
 				if(slide != n) {
