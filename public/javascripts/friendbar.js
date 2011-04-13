@@ -50,7 +50,6 @@ components.friendbar = function(){
 			friends.bind('remove', this.removeFriend);
 			friends.bind('refresh', this.refreshFriends);
 			//friends.fetch();
-			console.log("LOADINGBAR");
 			this.render();
 		},
 		render: function() {
@@ -63,8 +62,10 @@ components.friendbar = function(){
 		},
 		removeFriend: function(friend) {
 			console.log('removed player: ', friend);
-			$(this.el).innerHTML = "";
-			friend.clear();
+			//$(this.el).innerHTML = "";
+			//this.model.clear();
+		 	//$(this.el).remove();
+			friend.remove();
 		},
 		refreshFriends: function() {
 			friends.each(this.addFriend);
