@@ -58,12 +58,13 @@ components.drawing = function(){
 			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 			
 			imageRefs.forEach(function(img){
-				this.$('#images').append('<img src="'+img+'" style="dislay: none;" />');
+				this.$('#images').append('<img src="'+img+'" style="display: none;" />');
 			});
 			
 			this.slides = this.$('#images').children();
+			
 			$(this.slides[0]).show();
-			this.slide = 0;
+			
 		},
 		goBack: function(e) {
 			e.preventDefault();
