@@ -8,6 +8,8 @@ components.drawing = function(){
 			"mousedown .scanvas": "startLine",
 			"mousemove .scanvas" : "drawLine",
 			"mouseup .scanvas": "endLine",
+			"mousedown .brush2" : "eraseTool",
+			"mousedown .brush0" : "drawTool",
 			"change .slider": "changeLayer"
 		},
 		initialize: function() {
@@ -45,7 +47,7 @@ components.drawing = function(){
 				}
 				
 				if(user.x != 0 && user.y != 0) {
-					this.colorPoint(point.x, point.y, point.slide, 1);
+					this.colorPoint(point.x, point.y, point.slide, point.tool);
 				}
 				
 			}.bind(this));
@@ -72,12 +74,33 @@ components.drawing = function(){
 		},
 		colorPoint: function(x, y, slide, tool) {
 			if(this.slide == slide) {
-				this.ctx.fillStyle = "rgb(255,0,0)";
+				if(tool == "erase") this.ctx.fillStyle = "rgb(255,255,255)";
+				else this.ctx.fillStyle = "rgb(255,0,0)";
 				this.ctx.beginPath();
-				this.ctx.arc(x,y,1,0,Math.PI*2,true);
+				if(tool == "erase") this.ctx.arc(x,y,5,0,Math.PI*2,true);
+				else this.ctx.arc(x,y,1,0,Math.PI*2,true);
 				this.ctx.closePath();
 				this.ctx.fill();
+				if(tool == "erase") this.updCanv();
 			}
+		},
+		updCanv: function() {
+			var tempImageData=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+			var pix = tempImageData.data;
+			for (var i = 0, n = pix.length; i < n; i += 4) {
+			    if(pix[i]>0&&pix[i+1]>0&&pix[i+2]>0){
+			    	pix[i+3]=0;
+			    }
+			    pix[i  ] = pix[i  ]; // red
+			    pix[i+1] = pix[i+1]; // green
+			    pix[i+2] = pix[i+2]; // blue
+			    // i+3 is alpha (the fourth element)
+			}
+			// Draw the ImageData at the given (x,y) coordinates.
+			this.canvas.width = this.canvas.width; //Purges canvas
+			this.ctx.fillStyle = "rgba(0, 0, 0, 0.0)";
+			this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+			this.ctx.putImageData(tempImageData, 0, 0);
 		},
 		startLine: function(event) {
 			event.preventDefault();
@@ -86,8 +109,17 @@ components.drawing = function(){
 		drawLine: function(event) {
 			event.preventDefault();
 			if(this.isDrawing) {
-				remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, slide: this.slide});
+				if(this.isErasing) remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, slide: this.slide, tool: "erase"});
+				else remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, slide: this.slide, tool: "draw"});
 			}
+		},
+		drawTool: function(event) {
+			event.preventDefault();
+			this.isErasing = false;
+		},
+		eraseTool: function(event) {
+			event.preventDefault();
+			this.isErasing = true;
 		},
 		endLine: function(event) {
 			event.preventDefault();
