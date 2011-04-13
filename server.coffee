@@ -1,7 +1,7 @@
 config = require './config'
 app = require './app/app'
 ## dependencies
-express = require 'express@2.2.1'
+express = require 'express@2.2.2'
 browserify = require 'browserify@0.3.1'
 fbgraph = require 'facebook-graph@0.0.6'
 https = require 'https'
@@ -21,8 +21,6 @@ server.set 'view engine', 'html'
 server.use express.static __dirname + '/public'
 #server.set 'views', __dirname + '/views'
 
-console.log(__dirname);
-
 server.use browserify {
 	mount: '/browserify.js',
 	base: __dirname,
@@ -34,6 +32,7 @@ server.use browserify {
 app.createServer server
 
 server.get '/', (req, res) ->
+	console.log 'get'
 	res.render 'index', {fb: config.fbconfig, token: ''}
 	
 server.post '/', (req, res) ->
@@ -68,10 +67,11 @@ server.post '/deauth', (req, res) ->
 
 
 ## other stuff
+###
 server.error (err, req, res) ->
 	res.render '500'
 server.use (req, res) ->
 	res.render '404'
-
+###
 
 server.listen config.server.port

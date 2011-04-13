@@ -1,7 +1,7 @@
 config = require '../config'
 
 ## dependencies
-DNode = require 'dnode@0.6.6'
+DNode = require 'dnode@0.6.7'
 _ = require('underscore@1.1.5')._
 Backbone = require 'backbone@0.3.3'
 resources  = require '../models/resources'
@@ -19,7 +19,6 @@ exports.createServer = (app) ->
 		@subscribe = (auth_token, emit) ->
 			session = sessionManager.sessionConnected auth_token, conn, client, emit
 			emit.apply emit, ['myUID', session.facebook_id]
-			console.log(session)
 			sessionManager.publish 'FriendCameOnline', session.fbUser
 		conn.on 'end', ->
 			session = sessionManager.sessionDisconnected conn
@@ -27,6 +26,8 @@ exports.createServer = (app) ->
 		@pointColored = (player_id, point) ->
 			activityManager.createPoint player_id, point
 			sessionManager.publish 'pointColered', player_id, point
+		@stopColoring = (player_id) ->
+			sessionManager.publish 'stopColoring', player_id
 		@pointErased = (player_id, point) ->
 			activityManager.deletePoint player_id, point
 			sessionManager.publish 'pointErased', player_id, point
