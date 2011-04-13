@@ -66,12 +66,11 @@ components.drawing = function(){
 			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 			
 			imageRefs.forEach(function(img){
-				if(imageRefs.indexOf(img) == imageRefs.length-1) {
-					this.$('#images').append('<img src="'+img+'" />');
-				} else {
-					this.$('#images').append('<img src="'+img+'" />');
-				}
+				this.$('#images').append('<img src="'+img+'" style="dislay: none;" />');
 			});
+			
+			this.slides = this.$('#images').children();
+			$(this.slides[0]).show();
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -102,7 +101,14 @@ components.drawing = function(){
 		},
 		changeLayer: function(event) {
 			var slide = $('.slider')[0].value;
-			//console.log($.children('#images'));
+			this.slides.each(function(n, el){
+				if(slide != n) {
+					$(el).hide();
+				} else {
+					$(el).show();
+					$('#slide').html('#'+(n+1));
+				}
+			});
 		}
 	});
 };
