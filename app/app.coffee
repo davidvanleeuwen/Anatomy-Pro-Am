@@ -1,7 +1,7 @@
 config = require '../config'
 
 ## dependencies
-DNode = require 'dnode@0.6.6'
+DNode = require 'dnode@0.6.7'
 _ = require('underscore@1.1.5')._
 Backbone = require 'backbone@0.3.3'
 resources  = require '../models/resources'
@@ -17,12 +17,21 @@ activityManager = new util.ContouringActivity
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
 		@subscribe = (auth_token, emit) ->
-			sessionManager.sessionConnected auth_token, conn, client, emit
+			session = sessionManager.sessionConnected auth_token, conn, client, emit
+			emit.apply emit, ['myUID', session.facebook_id]
+			sessionManager.publish 'FriendCameOnline', session.fbUser
 		conn.on 'end', ->
-			sessionManager.sessionDisconnected conn
+			session = sessionManager.sessionDisconnected conn
+			sessionManager.publish 'FriendWentOffline', session.fbUser
 		@pointColored = (player_id, point) ->
 			activityManager.createPoint player_id, point
+<<<<<<< HEAD
 			sessionManager.publish 'pointColored', player_id, point
+=======
+			sessionManager.publish 'pointColered', player_id, point
+		@stopColoring = (player_id) ->
+			sessionManager.publish 'stopColoring', player_id
+>>>>>>> ups/master
 		@pointErased = (player_id, point) ->
 			activityManager.deletePoint player_id, point
 			sessionManager.publish 'pointErased', player_id, point

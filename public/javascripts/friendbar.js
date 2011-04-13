@@ -2,8 +2,8 @@ components.friendbar = function(){
 	console.log('loading friendbar');
 	
 	window.friends = new resources.collections.Friends;
-	
-	window.Friend = Backbone.View.extend({
+	  
+	window.FriendView = Backbone.View.extend({
 		tagName: 'li',
 		initialize: function() {
 			this.template = _.template($('#player-template').html());
@@ -25,9 +25,22 @@ components.friendbar = function(){
 			$(this.el).remove();
 		}
 	});
-	
-	em.on('FriendCameOnline', function(n) { console.log(n); });
-	em.on('FriendWentOffline', function(n) { console.log(n); });
+	em.on('FriendCameOnline', function(n) { 
+		console.log("User Connected: " + n); 
+		friends.add({
+			id: n.id,
+			name: n.first_name,
+			avatar: "http://graph.facebook.com/" + n.id + "/picture"
+		});
+		console.log (friends);
+		});
+	em.on('FriendWentOffline', function(n) { 
+		console.log("User Disconnected: " + n); 
+		var m = friends.get(n.id);
+		console.log(friends);
+		friends.remove(m);
+		console.log(friends);
+		});
 	
 	window.FriendBar = Backbone.View.extend({
 		el: '#fb_friends_container',
@@ -36,22 +49,26 @@ components.friendbar = function(){
 			friends.bind('add', this.addFriend);
 			friends.bind('remove', this.removeFriend);
 			friends.bind('refresh', this.refreshFriends);
-			friends.fetch();
-			
+			//friends.fetch();
+			console.log("LOADINGBAR");
 			this.render();
 		},
 		render: function() {
-			
+			this.refreshFriends();
 		},
 		addFriend: function(friend) {
 			console.log('add player: ', friend);
+			var view = new FriendView({model:friend});
+			$(this.el).append(view.render().el);
 		},
 		removeFriend: function(friend) {
 			console.log('removed player: ', friend);
+			$(this.el).innerHTML = "";
+			friend.clear();
 		},
 		refreshFriends: function() {
 			friends.each(this.addFriend);
+			
 		}
  	});
-	//window.friendbar = new FriendBar;
 };

@@ -41,7 +41,14 @@ resources.models.Person = Backbone.Model.extend({
 	defaults: {
 		"name": "NAME UNDEFINED!",
 		"facebook_id": 0,
+	},
+	clear: function(){
+		//this.destroy();
+		console.log(this.view);
+
 	}
+	 
+	
 })
 
 

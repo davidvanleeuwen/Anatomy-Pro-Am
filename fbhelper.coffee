@@ -1,7 +1,6 @@
 config = require './config'
 fbgraph = require 'facebook-graph@0.0.6'
 fbutil = require './facebookutil.js'
-DNode = require 'dnode@0.6.6'
 
 storeUser = (userData, userCode) ->
 	##Will store user to DB.  
