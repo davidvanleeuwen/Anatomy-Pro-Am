@@ -97,8 +97,7 @@ class ContouringActivityData
 		if not @data_for_layer[point.layer][player_id]
 			# set the first point in the array
 			@data_for_layer[point.layer][player_id] = {}
-			size = _.size @data_for_layer[point.layer][player_id]
-			@data_for_layer[point.layer][player_id][size+1] = point
+			@data_for_layer[point.layer][player_id][GenerateRandomKey()] = point
 			return true
 		else
 			duplicatePoint = false
@@ -107,8 +106,8 @@ class ContouringActivityData
 					# this point already exists
 					duplicatePoint = true
 			if not duplicatePoint
-				size = _.size @data_for_layer[point.layer][player_id]
-				@data_for_layer[point.layer][player_id][size+1] = point
+				@data_for_layer[point.layer][player_id][GenerateRandomKey()] = point
+				point
 				return true
 			else
 				return false
