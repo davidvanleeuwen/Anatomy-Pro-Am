@@ -81,13 +81,13 @@ class ContouringActivity
 		@activityData.newPoint player_id, point
 	deletePoint: (player_id, point) ->
 		@activityData.removePoint player_id, point
-
+	
 ###
 #	CONTOURING ACTIVTY DATA
 ###
 class ContouringActivityData
 	constructor: (@id) ->
-		@data_for_player = []
+		@data_for_player = [][]
 	newPoint: (player_id, point) ->
 		if not @data_for_player[player_id]
 			@data_for_player[player_id] = []

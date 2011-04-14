@@ -49,7 +49,7 @@ components.friendbar = function(){
 			friends.bind('add', this.addFriend);
 			friends.bind('remove', this.removeFriend);
 			friends.bind('refresh', this.refreshFriends);
-			//friends.fetch();
+			friends.fetch();
 			this.render();
 		},
 		render: function() {
