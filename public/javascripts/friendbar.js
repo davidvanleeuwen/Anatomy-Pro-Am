@@ -26,13 +26,24 @@ components.friendbar = function(){
 		}
 	});
 	em.on('FriendCameOnline', function(n) { 
-		console.log("User Connected: " + n); 
-		friends.add({
-			id: n.id,
-			name: n.first_name,
-			avatar: "http://graph.facebook.com/" + n.id + "/picture"
-		});
-		console.log (friends);
+		console.log("User Connected: " + JSON.stringify(n)); 
+
+		console.log("friendLength: ", friends.length);
+		var okToAdd = true;
+		friends.each(function(friend){
+			if(friend.id == n.id){
+				console.log("DUPLICATE");
+				okToAdd = false;
+			}
+		})
+		if(okToAdd){
+			console.log("OK TO ADD");
+			friends.add({
+				id: n.id,
+				name: n.first_name,
+				avatar: "http://graph.facebook.com/" + n.id + "/picture"
+			});
+		}
 		});
 	em.on('FriendWentOffline', function(n) { 
 		console.log("User Disconnected: " + n); 
@@ -50,9 +61,11 @@ components.friendbar = function(){
 			friends.bind('remove', this.removeFriend);
 			friends.bind('refresh', this.refreshFriends);
 			friends.fetch();
-			this.render();
+			console.log("initialize " + friends.length);
+			//this.render();
 		},
 		render: function() {
+		console.log("render " + friends.length);
 			this.refreshFriends();
 		},
 		addFriend: function(friend) {
@@ -70,8 +83,8 @@ components.friendbar = function(){
 			this.refreshFriends();
 		},
 		refreshFriends: function() {
+		console.log("refresh " + friends.length);
 			friends.each(this.addFriend);
-			
 		}
  	});
 };

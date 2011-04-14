@@ -72,14 +72,9 @@ server.post '/deauth', (req, res) ->
 server.all '/friends', (req, res) ->
 	playersInfo = app.sessionManager.sessions_for_facebook_id
 	output = []
-	console.log playersInfo
 	Hash(playersInfo).forEach (player) ->
-		console.log "c"
 		output.push ( {id: player.fbUser.id,name: player.fbUser.first_name,avatar: "http://graph.facebook.com/" + player.fbUser.id + "/picture"})
-	console.log output
-	output = JSON.stringify(output)
-	console.log output
-	res.send(output)
+	res.send(JSON.stringify(output))
 
 ## other stuff
 ###
