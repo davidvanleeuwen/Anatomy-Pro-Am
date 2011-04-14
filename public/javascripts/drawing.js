@@ -69,7 +69,6 @@ components.drawing = function(){
 			var self = this;
 			
 			em.on('setColoredPointsForThisLayer', function(points){
-				console.log(points);
 				for(player in points) {
 					for(point in points[player]) {
 						self.colorPoint(points[player][point].x, points[player][point].y, points[player][point].layer);
@@ -104,15 +103,6 @@ components.drawing = function(){
 				this.ctx.fill();
 			}
 		},
-		updCanv: function() {
-			var tempImageData=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-			var pix = tempImageData.data;
-			for (var i = 0, n = pix.length; i < n; i += 4) 
-			    if(pix[i]>0&&pix[i+1]>0&&pix[i+2]>0) pix[i+3]=0;
-			// Draw the ImageData at the given (x,y) coordinates.
-			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-			this.ctx.putImageData(tempImageData, 0, 0);
-		},
 		erasePoint: function(x, y, slide) {
 			if(this.slide == slide) {
 				this.ctx.fillStyle = "rgb(255,255,255)";
@@ -120,8 +110,14 @@ components.drawing = function(){
 				this.ctx.arc(x,y,1,0,Math.PI*2,true);
 				this.ctx.closePath();
 				this.ctx.fill();
-				this.updCanv();
-			}
+				var tempImageData=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+				var pix = tempImageData.data;
+				for (var i = 0, n = pix.length; i < n; i += 4) 
+				    if(pix[i]>0&&pix[i+1]>0&&pix[i+2]>0) pix[i+3]=0;
+				// Draw the ImageData at the given (x,y) coordinates.
+				this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+				this.ctx.putImageData(tempImageData, 0, 0);
+		}
 		},
 		startLine: function(event) {
 			event.preventDefault();
