@@ -8,9 +8,9 @@ components.drawing = function(){
 			"mousedown .scanvas": "startLine",
 			"mousemove .scanvas" : "drawLine",
 			"mouseup .scanvas": "endLine",
-			"mousedown .brush2" : "eraseTool",
-			"mousedown .brush0" : "drawTool",
-			"change .slider": "changeLayer"
+			"change .slider": "changeLayer",
+			"click .color": "toggleErase",
+			"click .erase": "toggleErase"
 		},
 		initialize: function() {
 			_.bindAll(this, 'render');
@@ -31,10 +31,10 @@ components.drawing = function(){
 			}
 		},
 		setupView: function() {
-
 			new FriendBar;
 			this.canvas = $('canvas')[0];
 			this.ctx = this.canvas.getContext("2d");
+			this.isErasing = false;
 			
 			// queue per user for drawing points, we might want to refactor this and add this info to the user model?
 			this.users = {};
@@ -56,16 +56,28 @@ components.drawing = function(){
 				console.log(player_id, point)
 			});
 			
+			var self = this;
+			
+			em.on('setColoredPointsForThisLayer', function(points){
+				for(player in points) {
+					for(point in points[player]) {
+						self.colorPoint(points[player][point].x, points[player][point].y, points[player][point].layer, 'draw');
+					}
+				}
+			});
+			
 			// fixtures for the images (scans):
 			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 			
 			imageRefs.forEach(function(img){
-				this.$('#images').append('<img src="'+img+'" style="dislay: none;" />');
+				this.$('#images').append('<img src="'+img+'" style="display: none;" />');
 			});
 			
 			this.slides = this.$('#images').children();
+			
 			$(this.slides[0]).show();
 			this.slide = 0;
+			remote.getColoredPointsForThisLayer(this.slide, emit);
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -102,6 +114,8 @@ components.drawing = function(){
 			this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 			this.ctx.putImageData(tempImageData, 0, 0);
 		},
+		erasePoint: function(x, y, slide) {
+		},
 		startLine: function(event) {
 			event.preventDefault();
 			this.isDrawing = true;
@@ -129,9 +143,6 @@ components.drawing = function(){
 			this.slide = $('.slider')[0].value;
 			
 			remote.getColoredPointsForThisLayer(this.slide, emit);
-			em.on('setColoredPointsForThisLayer', function(points){
-				console.log(points);
-			});
 			
 			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			
@@ -144,6 +155,10 @@ components.drawing = function(){
 					$('#slide').html('#'+(n+1));
 				}
 			});
+		},
+		toggleErase: function(event) {
+			event.preventDefault();
+			this.isErasing = !this.isErasing;
 		}
 	});
 };

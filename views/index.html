@@ -1,12 +1,20 @@
 <div id="fb-root"></div>
 
 <script>
+
+	var AUTH_TOKEN = "<%= token %>";
 	FB.init({ appId  : '<%= fb.appId %>', status : true, cookie : true, xfbml  : true });
+	FB.Event.subscribe('auth.login', function(response) {
+	  // Reload the entire page. Could also do an Ajax request and dynamically
+	  // update the already loaded page.
+	  window.location.reload(true);
+	});
 	
 	FB.getLoginStatus(function(response) {
 	  if (response.session) {
 	    // logged in and connected user, someone you know
 		$('#game_container').show();
+		
 	  } else {
 		var url = 'https://graph.facebook.com/oauth/authorize?client_id='
 			+ '<%= fb.appId %>&redirect_uri='
@@ -17,7 +25,6 @@
 	});
 	FB.Canvas.setSize({ width: 744, height: 555 });
 	
-	var AUTH_TOKEN = "<%= token %>";
 </script>
 <div id="game"></div>
 <!-- debug info -->

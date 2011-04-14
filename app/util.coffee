@@ -1,4 +1,5 @@
 Hash = require 'hashish@0.0.2'
+_ = require('underscore@1.1.5')._
 
 ###
 #	SESSION MANAGER
@@ -82,20 +83,29 @@ class ContouringActivity
 	deletePoint: (player_id, point) ->
 		@activityData.removePoint player_id, point
 	getPoints: (layer) ->
-		return @activityData
+		return @activityData.getPointsForLayer layer
 
 ###
 #	CONTOURING ACTIVTY DATA
 ###
 class ContouringActivityData
 	constructor: (@id) ->
-		@data_for_player = []
+		@data_for_layer = {}
 	newPoint: (player_id, point) ->
-		if not @data_for_player[player_id]
-			@data_for_player[player_id] = []
-		@data_for_player[player_id][point] = point
+		if not @data_for_layer[point.layer]
+			@data_for_layer[point.layer] = {}
+		if not @data_for_layer[point.layer][player_id]
+			@data_for_layer[point.layer][player_id] = {}
+		# how to add to push something to an object? JSON.stringify(array) doesnt work
+		size = _.size @data_for_layer[point.layer][player_id]
+		@data_for_layer[point.layer][player_id][size+1] = point
 	removePoint: (player_id, point) ->
-		delete @data_for_player[player_id][point]
+		_.each @data_for_layer[point.layer][player_id], (p) ->
+			console.log 'stored: ', p
+			console.log 'received: ', point
+	getPointsForLayer: (layer) ->
+		return @data_for_layer[layer]
+
 
 ###
 #	MEMORY STORE

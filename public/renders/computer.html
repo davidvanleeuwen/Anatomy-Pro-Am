@@ -11,17 +11,24 @@
 		<div id="scan">
 			<canvas class="scanvas" height="325" width="431">
 		</div>
+		
 		<div id="tool_container">
-			<img class="brush0" src="images/brush.png" style="background-color:blue">
-			<img class="brush1" src="images/brush.png" style="background-color:red">
-			<img class="brush2" src="images/brush.png" style="background-color:white">
-			<img class="brush3" src="images/brush.png" style="background-color:green">
-			
-			<div id="slides">
-				<input type="range" class="slider" min="0" max="3" value="0" />
-				<span id="slide">#1</span>
+			<div id="tool_header">
+				<h2 class="light_grey_gradient_text">TOOLS</h2>
+			</div>
+			<div id="tools">
+				<div id="tools_container">
+					<a href="#"><img class="color" src="images/brush.png" alt="" /></a>
+					<a href="#"><img class="erase" src="images/brush_erase.png" alt="" /></a>
+					<div id="slides">
+						<input type="range" class="slider" min="0" max="3" value="0" />
+						Current image:
+						<span id="slide">#1</span>
+					</div>
+				</div>
 			</div>
 		</div>
+		
 		<div id="prep_button">
 			<h5 class="light_grey_gradient_text"><a href="">PREP FOR TREATMENT</a></h5>                
 		</div>
