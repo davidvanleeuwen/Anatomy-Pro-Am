@@ -18,7 +18,7 @@ exports.createServer = (app) ->
 	client = DNode (client, conn) ->
 		@subscribe = (auth_token, emit) ->
 			session = sessionManager.sessionConnected auth_token, conn, client, emit
-			emit.apply emit, ['myUID', session.facebook_id]
+			emit.apply emit, ['myUID', session.facebook_id, session.player_color]
 			sessionManager.publish 'FriendCameOnline', session.fbUser
 		conn.on 'end', ->
 			session = sessionManager.sessionDisconnected conn

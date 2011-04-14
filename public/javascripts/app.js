@@ -30,7 +30,7 @@ $(function(){
 			window.remote = remote;
 			console.log("LIDSJFLJ");
 			remote.subscribe(AUTH_TOKEN, emit);
-			em.on('myUID', function(uid) {
+			em.on('myUID', function(uid, color) {
 				window.myUID = uid;
 			});
 		});
