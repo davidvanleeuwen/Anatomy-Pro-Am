@@ -25,16 +25,14 @@ exports.createServer = (app) ->
 			sessionManager.publish 'FriendWentOffline', session.fbUser
 		@pointColored = (player_id, point) ->
 			activityManager.createPoint player_id, point
-<<<<<<< HEAD
 			sessionManager.publish 'pointColored', player_id, point
-=======
-			sessionManager.publish 'pointColered', player_id, point
-		@stopColoring = (player_id) ->
-			sessionManager.publish 'stopColoring', player_id
->>>>>>> ups/master
 		@pointErased = (player_id, point) ->
-			activityManager.deletePoint player_id, point
-			sessionManager.publish 'pointErased', player_id, point
+			erasedPoint = activityManager.deletePoint player_id, point
+			if erasedPoint
+				sessionManager.publish 'pointErased', player_id, erasedPoint
+		@getColoredPointsForThisLayer = (layer, emit) ->
+			data = activityManager.getPoints layer
+			emit.apply emit, ['setColoredPointsForThisLayer', data]
 			
 		# dnode/coffeescript fix:
 		@version = config.version
@@ -44,3 +42,5 @@ exports.createServer = (app) ->
 exports.setFbUserAndGetToken = (fbUser) ->
 	if fbUser
 		return sessionManager.createSession fbUser
+
+exports.sessionManager = sessionManager

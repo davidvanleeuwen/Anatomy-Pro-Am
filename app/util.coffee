@@ -1,4 +1,5 @@
 Hash = require 'hashish@0.0.2'
+_ = require('underscore@1.1.5')._
 
 ###
 #	SESSION MANAGER
@@ -81,19 +82,47 @@ class ContouringActivity
 		@activityData.newPoint player_id, point
 	deletePoint: (player_id, point) ->
 		@activityData.removePoint player_id, point
+	getPoints: (layer) ->
+		return @activityData.getPointsForLayer layer
 
 ###
 #	CONTOURING ACTIVTY DATA
 ###
 class ContouringActivityData
 	constructor: (@id) ->
-		@data_for_player = []
+		@data_for_layer = {}
 	newPoint: (player_id, point) ->
-		if not @data_for_player[player_id]
-			@data_for_player[player_id] = []
-		@data_for_player[player_id][point] = point
+		if not @data_for_layer[point.layer]
+			@data_for_layer[point.layer] = {}
+		if not @data_for_layer[point.layer][player_id]
+			# set the first point in the array
+			@data_for_layer[point.layer][player_id] = {}
+			size = _.size @data_for_layer[point.layer][player_id]
+			@data_for_layer[point.layer][player_id][size+1] = point
+			return true
+		else
+			duplicatePoint = false
+			_.each @data_for_layer[point.layer][player_id], (p, k) ->
+				if p.x is point.x and p.y is point.y
+					# this point already exists
+					duplicatePoint = true
+			if not duplicatePoint
+				size = _.size @data_for_layer[point.layer][player_id]
+				@data_for_layer[point.layer][player_id][size+1] = point
+				return true
+			else
+				return false
 	removePoint: (player_id, point) ->
-		delete @data_for_player[player_id][point]
+		removePointKey = ''
+		_.each @data_for_layer[point.layer][player_id], (p, k) ->
+			if p.x is point.x and p.y is point.y
+				removePointKey = k
+		erasedPoint = @data_for_layer[point.layer][player_id][removePointKey]
+		delete @data_for_layer[point.layer][player_id][removePointKey]
+		return erasedPoint
+	getPointsForLayer: (layer) ->
+		return @data_for_layer[layer]
+
 
 ###
 #	MEMORY STORE
