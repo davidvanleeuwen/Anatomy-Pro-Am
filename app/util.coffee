@@ -5,6 +5,15 @@ _ = require('underscore@1.1.5')._
 #	SESSION MANAGER
 ###
 
+GetColor = () ->
+	chars = "89ABCDEF";
+	key_length = 6
+	ret = ""
+	for x in [0..5]
+		rnum = Math.floor(Math.random() * chars.length)
+		ret += chars.substring(rnum,rnum+1)
+	return ret
+
 GenerateRandomKey = () ->
 	#generate random key for this session
 	chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
@@ -34,6 +43,7 @@ class SessionManager
 		session = new Session(player.id, player)
 		session_key = session.random_key
 		@sessions_for_facebook_id[player.id] = session
+		player.player_color = GetColor()
 		@sessions_for_random_key[session_key] = session		
 		return session_key
 	

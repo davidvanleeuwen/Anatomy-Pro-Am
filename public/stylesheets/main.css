@@ -171,17 +171,19 @@ h2{font-family:SteelfishRegular;
 #game_container_in_game{height:555px; width:744px; margin:0 auto; background:url(../images/old_computer_bg.png);}
 
 #play_space{height:433px; width:740px; float:left;}
-#scan{height:325px; width:431px; background:#333; float:right; margin:27px 68px 0 0;
+#scan{height:325px; width:431px; background:#333; float:right; margin:27px 68px 0 0; 
                     -moz-border-radius:5px;
                     -webkit-border-radius:5px;
                     border-radius:5px;
                     -khtml-border-radius:5px;
                     }
-#prep_button{height:30px; width:200px; float:right; border: 1px solid #490f0f; font-size:30px; padding:4px; text-align:center; margin:18px 155px 0 0;
+#prep_button{z-index:5000;height:30px; width:200px; float:right; border: 1px solid #490f0f; font-size:30px; padding:4px; text-align:center; margin:18px 155px 0 0;
                     -moz-border-radius:5px;
                     -webkit-border-radius:5px;
                     border-radius:5px;
                     -khtml-border-radius:5px;
+
+ position:relative;
                     
                     background-color:#8e0000;
                     background: url(../images/red_gradient_background.png)repeat-x;
@@ -192,11 +194,13 @@ h2{font-family:SteelfishRegular;
                     }
 
                     
-#prep_button:hover{height:30px; width:200px; float:right; border: 1px solid #490f0f; padding:4px; text-align:center; margin:18px 155px 0 0;
+#prep_button:hover{z-index:5000;height:30px; width:200px; float:right; border: 1px solid #490f0f; padding:4px; text-align:center; margin:18px 155px 0 0;
                     -moz-border-radius:5px;
                     -webkit-border-radius:5px;
                     border-radius:5px;
                     -khtml-border-radius:5px;
+
+ position:relative;
                     
                     background-color:#8e0000;
                     background: url(../images/red_gradient_background_dark.png)repeat-x;
@@ -206,6 +210,8 @@ h2{font-family:SteelfishRegular;
                     background: -o-linear-gradient(#660505, #ba2f2f);
                     }
 
+#prep_button a{height:30px; width:200px; display:block;}
+#prep_button a:hover{height:30px; width:200px; display:block;}
 
 #tool_container{height:325px; width:155px; float:left; margin:27px 0 0 69px;}
 
