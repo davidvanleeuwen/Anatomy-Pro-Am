@@ -28,7 +28,7 @@ storeUser = (userData, userCode) ->
 	195426547154882|2aca7ffbd1917de4b5db3ac9-1240446434|Cb5iU82pqvGhfhm6RBt5a9fL7m0
 	###
 	#console.log(userData)
-	#console.log(userCode)
+	console.log(userCode)
 	
 userDeauthed = (reqInfo) ->
 	#do something with deauthed user info
@@ -61,7 +61,7 @@ authUser = (req, res) ->
 						storeUser(userdata, code)
 				graph.getObject 'me', print
 		fbutil.auth path, 'GET', args, print
-		res.redirect config.fbconfig.url
+		res.redirect config.fbconfig.signedup
 		
 	if req.query.error_reason	
 		userDeclinedAccess(req)
@@ -69,12 +69,13 @@ authUser = (req, res) ->
 
 renderIndex =  (req, res, getToken) ->
 	user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
-	console.log user
+	console.log 'user' + user
 	if user
 		graph = new fbgraph.GraphAPI user.access_token
 		graph.getObject 'me', (error, data) ->
 			if error
 				console.log 'fbhelper error: ', error
+				res.render 'index', {fb: config.fbconfig, token: ''}
 			else
 				token = getToken data
 				if token
@@ -84,7 +85,7 @@ renderIndex =  (req, res, getToken) ->
 	else
 		console.log '-------=== NO USER - RENDERING INDEX TO DIRECT USER TO AUTH PAGE ===-------'
 		res.render 'index', {fb: config.fbconfig, token: ''}
-
+		
 exports.store_user = storeUser
 exports.userDeauthed = userDeauthed
 exports.userDeclinedAccess = userDeclinedAccess

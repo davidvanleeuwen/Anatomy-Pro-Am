@@ -25,19 +25,20 @@ $(function(){
 			new CaseView;
 		}
 	});
-	window.app = new AppView;
-	
-	DNode().connect(function(remote){
-		window.remote = remote;
-		if(AUTH_TOKEN != '' || AUTH_TOKEN != 'undefined') {
+	if(AUTH_TOKEN != '') {
+		DNode().connect(function(remote){
+			window.remote = remote;
+			console.log("LIDSJFLJ");
 			remote.subscribe(AUTH_TOKEN, emit);
 			em.on('myUID', function(uid) {
 				window.myUID = uid;
 			});
-		}
+		});
+	
+		window.app = new AppView;
 		util.sync();
 		components.cases();
 		components.friendbar();
-		components.drawing();
-	});
+		components.drawing();	
+	}
 });
