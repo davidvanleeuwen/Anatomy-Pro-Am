@@ -8,7 +8,9 @@ components.drawing = function(){
 			"mousedown .scanvas": "startLine",
 			"mousemove .scanvas" : "drawLine",
 			"mouseup .scanvas": "endLine",
-			"change .slider": "changeLayer"
+			"change .slider": "changeLayer",
+			"click .color": "toggleErase",
+			"click .erase": "toggleErase"
 		},
 		initialize: function() {
 			_.bindAll(this, 'render');
@@ -29,14 +31,13 @@ components.drawing = function(){
 			}
 		},
 		setupView: function() {
-
 			new FriendBar;
 			this.canvas = $('canvas')[0];
 			this.ctx = this.canvas.getContext("2d");
+			this.isErasing = false;
 			
 			// queue per user for drawing points, we might want to refactor this and add this info to the user model?
 			this.users = {};
-			
 			
 			em.on('pointColered', function(player_id, point) {
 				var user = this.users[player_id];
@@ -60,7 +61,7 @@ components.drawing = function(){
 			em.on('setColoredPointsForThisLayer', function(points){
 				for(player in points) {
 					for(point in points[player]) {
-						self.colorPoint(points[player][point].x, points[player][point].y, points[player][point].layer, 1);
+						self.colorPoint(points[player][point].x, points[player][point].y, points[player][point].layer);
 					}
 				}
 			});
@@ -83,7 +84,7 @@ components.drawing = function(){
 			delete this;
 			new CaseView;
 		},
-		colorPoint: function(x, y, slide, tool) {
+		colorPoint: function(x, y, slide) {
 			if(this.slide == slide) {
 				this.ctx.fillStyle = "rgb(255,0,0)";
 				this.ctx.beginPath();
@@ -92,14 +93,19 @@ components.drawing = function(){
 				this.ctx.fill();
 			}
 		},
+		erasePoint: function(x, y, slide) {
+			
+		},
 		startLine: function(event) {
 			event.preventDefault();
 			this.isDrawing = true;
 		},
 		drawLine: function(event) {
 			event.preventDefault();
-			if(this.isDrawing) {
+			if(this.isDrawing && !this.isErasing) {
 				remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: this.slide});
+			} else if(this.isDrawing && this.isErasing) {
+				remote.pointErased(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: this.slide});
 			}
 		},
 		endLine: function(event) {
@@ -122,6 +128,10 @@ components.drawing = function(){
 					$('#slide').html('#'+(n+1));
 				}
 			});
+		},
+		toggleErase: function(event) {
+			event.preventDefault();
+			this.isErasing = !this.isErasing;
 		}
 	});
 };
