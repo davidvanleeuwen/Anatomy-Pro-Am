@@ -39,17 +39,9 @@ components.drawing = function(){
 			// queue per user for drawing points, we might want to refactor this and add this info to the user model?
 			this.users = {};
 			
-			em.on('pointColered', function(player_id, point) {
-				var user = this.users[player_id];
-				
-				if(!user) {
-					user = this.users[player_id] = {};
-				}
-				
-				if(user.x != 0 && user.y != 0) {
-					this.colorPoint(point.x, point.y, point.layer);
-				}
-				
+			em.on('pointColored', function(player_id, point) {
+				var friend = friends.get(player_id);
+				this.colorPoint(point.x, point.y, point.layer, friend.get('player_color'));
 			}.bind(this));
 			
 			em.on('pointErased', function(player_id, point) {
@@ -69,13 +61,16 @@ components.drawing = function(){
 			var self = this;
 			
 			em.on('setColoredPointsForThisLayer', function(points){
-				console.log(points);
+				
 				for(player in points) {
+					var friend = friends.get(player);
+					var color = friend.get('player_color');
+					console.log(color);
 					for(point in points[player]) {
-						self.colorPoint(points[player][point].x, points[player][point].y, points[player][point].layer);
+						self.colorPoint(points[player][point].x, points[player][point].y, points[player][point].layer, color);
 					}
 				}
-			});
+			}.bind(this));
 			
 			// fixtures for the images (scans):
 			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
@@ -95,9 +90,9 @@ components.drawing = function(){
 			delete this;
 			new CaseView;
 		},
-		colorPoint: function(x, y, slide) {
+		colorPoint: function(x, y, slide, color) {
 			if(this.slide == slide) {
-				this.ctx.fillStyle = "rgb(255,0,0)";
+				this.ctx.fillStyle = "#"+color;
 				this.ctx.beginPath();
 				this.ctx.arc(x,y,1,0,Math.PI*2,true);
 				this.ctx.closePath();
