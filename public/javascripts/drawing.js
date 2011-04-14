@@ -45,13 +45,17 @@ components.drawing = function(){
 				}
 				
 				if(user.x != 0 && user.y != 0) {
-					this.colorPoint(point.x, point.y, point.slide, 1);
+					this.colorPoint(point.x, point.y, point.layer, 1);
 				}
 				
 			}.bind(this));
 			
 			em.on('pointErased', function(player_id, point) {
 				console.log(player_id, point)
+			});
+			
+			em.on('setColoredPointsForThisLayer', function(points){
+				console.log('points: ', points);
 			});
 			
 			// fixtures for the images (scans):
@@ -64,7 +68,7 @@ components.drawing = function(){
 			this.slides = this.$('#images').children();
 			
 			$(this.slides[0]).show();
-			
+			this.slide = 0;
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -87,7 +91,7 @@ components.drawing = function(){
 		drawLine: function(event) {
 			event.preventDefault();
 			if(this.isDrawing) {
-				remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, slide: this.slide});
+				remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: this.slide});
 			}
 		},
 		endLine: function(event) {
@@ -98,9 +102,6 @@ components.drawing = function(){
 			this.slide = $('.slider')[0].value;
 			
 			remote.getColoredPointsForThisLayer(this.slide, emit);
-			em.on('setColoredPointsForThisLayer', function(points){
-				console.log(points);
-			});
 			
 			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			

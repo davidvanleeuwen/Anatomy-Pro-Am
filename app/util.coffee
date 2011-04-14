@@ -82,20 +82,25 @@ class ContouringActivity
 	deletePoint: (player_id, point) ->
 		@activityData.removePoint player_id, point
 	getPoints: (layer) ->
-		return @activityData
+		return @activityData.getPointsForLayer layer
 
 ###
 #	CONTOURING ACTIVTY DATA
 ###
 class ContouringActivityData
 	constructor: (@id) ->
-		@data_for_player = []
+		@data_for_layer = []
 	newPoint: (player_id, point) ->
-		if not @data_for_player[player_id]
-			@data_for_player[player_id] = []
-		@data_for_player[player_id][point] = point
+		if not @data_for_layer[point.layer]
+			@data_for_layer[point.layer] = []
+		if not @data_for_layer[point.layer][player_id]
+			@data_for_layer[point.layer][player_id] = []
+		@data_for_layer[point.layer][player_id].push point
+	getPointsForLayer: (layer) ->
+		return @data_for_layer[layer]
 	removePoint: (player_id, point) ->
-		delete @data_for_player[player_id][point]
+		delete @data_for_layer[player_id][point]
+	
 
 ###
 #	MEMORY STORE
