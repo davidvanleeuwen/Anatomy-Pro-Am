@@ -47,21 +47,31 @@ components.drawing = function(){
 				}
 				
 				if(user.x != 0 && user.y != 0) {
-					this.colorPoint(point.x, point.y, point.slide, point.tool);
+					this.colorPoint(point.x, point.y, point.slide);
 				}
 				
 			}.bind(this));
 			
 			em.on('pointErased', function(player_id, point) {
-				console.log(player_id, point)
-			});
+				var user = this.users[player_id];
+				
+				if(!user) {
+					user = this.users[player_id] = {};
+				}
+				
+				if(user.x != 0 && user.y != 0) {
+					this.erasePoint(point.x, point.y, point.slide);
+				}
+				
+			}.bind(this));
+		
 			
 			var self = this;
 			
 			em.on('setColoredPointsForThisLayer', function(points){
 				for(player in points) {
 					for(point in points[player]) {
-						self.colorPoint(points[player][point].x, points[player][point].y, points[player][point].layer, 'draw');
+						self.colorPoint(points[player][point].x, points[player][point].y, points[player][point].layer);
 					}
 				}
 			});
@@ -84,16 +94,13 @@ components.drawing = function(){
 			delete this;
 			new CaseView;
 		},
-		colorPoint: function(x, y, slide, tool) {
+		colorPoint: function(x, y, slide) {
 			if(this.slide == slide) {
-				if(tool == "erase") this.ctx.fillStyle = "rgb(255,255,255)";
-				else this.ctx.fillStyle = "rgb(255,0,0)";
+				this.ctx.fillStyle = "rgb(255,0,0)";
 				this.ctx.beginPath();
-				if(tool == "erase") this.ctx.arc(x,y,5,0,Math.PI*2,true);
-				else this.ctx.arc(x,y,1,0,Math.PI*2,true);
+				this.ctx.arc(x,y,1,0,Math.PI*2,true);
 				this.ctx.closePath();
 				this.ctx.fill();
-				if(tool == "erase") this.updCanv();
 			}
 		},
 		updCanv: function() {
@@ -115,6 +122,14 @@ components.drawing = function(){
 			this.ctx.putImageData(tempImageData, 0, 0);
 		},
 		erasePoint: function(x, y, slide) {
+			if(this.slide == slide) {
+				this.ctx.fillStyle = "rgb(255,255,255)";
+				this.ctx.beginPath();
+				this.ctx.arc(x,y,1,0,Math.PI*2,true);
+				this.ctx.closePath();
+				this.ctx.fill();
+				this.updCanv();
+			}
 		},
 		startLine: function(event) {
 			event.preventDefault();
@@ -123,8 +138,18 @@ components.drawing = function(){
 		drawLine: function(event) {
 			event.preventDefault();
 			if(this.isDrawing) {
-				if(this.isErasing) remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, slide: this.slide, tool: "erase"});
-				else remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, slide: this.slide, tool: "draw"});
+				if(this.isErasing){
+					var xvar = event.clientX-this.canvas.offsetLeft-2;
+					while(xvar < event.clientX-this.canvas.offsetLeft+2){
+						var yvar = event.clientY-this.canvas.offsetTop-2;
+						while(yvar < event.clientY-this.canvas.offsetTop+2){
+							if(xvar>0 && xvar<this.canvas.width && yvar>0 && yvar<this.canvas.height)
+								remote.pointErased(myUID, {x: xvar, y: yvar, slide: this.slide});
+						yvar++;
+						}
+					xvar++;
+					}			
+				}else remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, slide: this.slide});
 			}
 		},
 		drawTool: function(event) {
@@ -158,7 +183,7 @@ components.drawing = function(){
 		},
 		toggleErase: function(event) {
 			event.preventDefault();
-			this.isErasing = !this.isErasing;
+			this.isErasing = true;
 		}
 	});
 };
