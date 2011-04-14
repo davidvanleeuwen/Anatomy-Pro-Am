@@ -96,13 +96,20 @@ class ContouringActivityData
 			@data_for_layer[point.layer] = {}
 		if not @data_for_layer[point.layer][player_id]
 			@data_for_layer[point.layer][player_id] = {}
-		# how to add to push something to an object? JSON.stringify(array) doesnt work
+		_.each @data_for_layer[point.layer][player_id], (p, k) ->
+			if p.x is point.x and p.y is point.y
+				console.log 'points excists'
+				return
 		size = _.size @data_for_layer[point.layer][player_id]
 		@data_for_layer[point.layer][player_id][size+1] = point
 	removePoint: (player_id, point) ->
-		_.each @data_for_layer[point.layer][player_id], (p) ->
-			console.log 'stored: ', p
-			console.log 'received: ', point
+		removePointKey = ''
+		_.each @data_for_layer[point.layer][player_id], (p, k) ->
+			if p.x is point.x and p.y is point.y
+				removePointKey = k
+		erasedPoint = @data_for_layer[point.layer][player_id][removePointKey]
+		delete @data_for_layer[point.layer][player_id][removePointKey]
+		return erasedPoint
 	getPointsForLayer: (layer) ->
 		return @data_for_layer[layer]
 
