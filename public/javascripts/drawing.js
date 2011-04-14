@@ -47,7 +47,7 @@ components.drawing = function(){
 				}
 				
 				if(user.x != 0 && user.y != 0) {
-					this.colorPoint(point.x, point.y, point.slide);
+					this.colorPoint(point.x, point.y, point.layer);
 				}
 				
 			}.bind(this));
@@ -60,7 +60,7 @@ components.drawing = function(){
 				}
 				
 				if(user.x != 0 && user.y != 0) {
-					this.erasePoint(point.x, point.y, point.slide);
+					this.erasePoint(point.x, point.y, point.layer);
 				}
 				
 			}.bind(this));
@@ -69,6 +69,7 @@ components.drawing = function(){
 			var self = this;
 			
 			em.on('setColoredPointsForThisLayer', function(points){
+				console.log(points);
 				for(player in points) {
 					for(point in points[player]) {
 						self.colorPoint(points[player][point].x, points[player][point].y, points[player][point].layer);
@@ -106,19 +107,10 @@ components.drawing = function(){
 		updCanv: function() {
 			var tempImageData=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
 			var pix = tempImageData.data;
-			for (var i = 0, n = pix.length; i < n; i += 4) {
-			    if(pix[i]>0&&pix[i+1]>0&&pix[i+2]>0){
-			    	pix[i+3]=0;
-			    }
-			    pix[i  ] = pix[i  ]; // red
-			    pix[i+1] = pix[i+1]; // green
-			    pix[i+2] = pix[i+2]; // blue
-			    // i+3 is alpha (the fourth element)
-			}
+			for (var i = 0, n = pix.length; i < n; i += 4) 
+			    if(pix[i]>0&&pix[i+1]>0&&pix[i+2]>0) pix[i+3]=0;
 			// Draw the ImageData at the given (x,y) coordinates.
-			this.canvas.width = this.canvas.width; //Purges canvas
-			this.ctx.fillStyle = "rgba(0, 0, 0, 0.0)";
-			this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			this.ctx.putImageData(tempImageData, 0, 0);
 		},
 		erasePoint: function(x, y, slide) {
@@ -139,17 +131,11 @@ components.drawing = function(){
 			event.preventDefault();
 			if(this.isDrawing) {
 				if(this.isErasing){
-					var xvar = event.clientX-this.canvas.offsetLeft-2;
-					while(xvar < event.clientX-this.canvas.offsetLeft+2){
-						var yvar = event.clientY-this.canvas.offsetTop-2;
-						while(yvar < event.clientY-this.canvas.offsetTop+2){
+					for (var xvar = event.clientX-this.canvas.offsetLeft-2; xvar < event.clientX-this.canvas.offsetLeft+2; xvar++)
+						for (var yvar = event.clientY-this.canvas.offsetTop-2; yvar < event.clientY-this.canvas.offsetTop+2; yvar++)
 							if(xvar>0 && xvar<this.canvas.width && yvar>0 && yvar<this.canvas.height)
-								remote.pointErased(myUID, {x: xvar, y: yvar, slide: this.slide});
-						yvar++;
-						}
-					xvar++;
-					}			
-				}else remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, slide: this.slide});
+								remote.pointErased(myUID, {x: xvar, y: yvar, layer: this.slide});
+				}else remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: this.slide});
 			}
 		},
 		drawTool: function(event) {
@@ -165,21 +151,23 @@ components.drawing = function(){
 			this.isDrawing = false;
 		},
 		changeLayer: function(event) {
-			this.slide = $('.slider')[0].value;
+			if($('.slider')[0].value != this.slide){
+				this.slide = $('.slider')[0].value;
 			
-			remote.getColoredPointsForThisLayer(this.slide, emit);
+				remote.getColoredPointsForThisLayer(this.slide, emit);
 			
-			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+				this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			
-			var slide = this.slide;
-			this.slides.each(function(n, el){
-				if(slide != n) {
-					$(el).hide();
-				} else {
-					$(el).show();
-					$('#slide').html('#'+(n+1));
-				}
-			});
+				var slide = this.slide;
+				this.slides.each(function(n, el){
+					if(slide != n) {
+						$(el).hide();
+					} else {
+						$(el).show();
+						$('#slide').html('#'+(n+1));
+					}
+				});
+			}
 		},
 		toggleErase: function(event) {
 			event.preventDefault();
