@@ -24,11 +24,8 @@ exports.createServer = (app) ->
 			session = sessionManager.sessionDisconnected conn
 			sessionManager.publish 'FriendWentOffline', session.fbUser
 		@pointColored = (player_id, point) ->
-			pointStored = activityManager.createPoint player_id, point
-			if pointStored
-				sessionManager.publish 'pointColered', player_id, point
-		@stopColoring = (player_id) ->
-			sessionManager.publish 'stopColoring', player_id
+			activityManager.createPoint player_id, point
+			sessionManager.publish 'pointColored', player_id, point
 		@pointErased = (player_id, point) ->
 			erasedPoint = activityManager.deletePoint player_id, point
 			if erasedPoint
