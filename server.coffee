@@ -34,16 +34,26 @@ app.createServer server
 
 server.get '/', (req, res) ->
 	console.log 'get'
-	res.render 'index', {fb: config.fbconfig, token: ''}
-	
-server.post '/', (req, res) ->
 	fbhelper.renderIndex req, res, (fbUser) ->
 		if fbUser
+			console.log 'fb user' + fbUser
 			# callback for getting the token and returns it to the  original request
 			return app.setFbUserAndGetToken fbUser
+	
+server.post '/', (req, res) ->
+	console.log 'post'
+	fbhelper.renderIndex req, res, (fbUser) ->
+		if fbUser
+			console.log 'fb user' + fbUser
+			# callback for getting the token and returns it to the  original request
+			return app.setFbUserAndGetToken fbUser
+
 server.all '/deleteuser', (req, res) ->
-	#console.log(req)
+	#required to allow url callback from friends collection - doesn't acctually do anything on this end.
 	res.end
+server.all '/finishedsignin', (req, res) ->
+	console.log 'hit finished sign in'
+	res.redirect config.fbconfig.url
 	
 server.get '/authresponse', (req, res) ->
 	console.log('GET @ /authresponse')
