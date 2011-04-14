@@ -37,6 +37,7 @@ components.drawing = function(){
 			// queue per user for drawing points, we might want to refactor this and add this info to the user model?
 			this.users = {};
 			
+			
 			em.on('pointColered', function(player_id, point) {
 				var user = this.users[player_id];
 				
@@ -54,8 +55,14 @@ components.drawing = function(){
 				console.log(player_id, point)
 			});
 			
+			var self = this;
+			
 			em.on('setColoredPointsForThisLayer', function(points){
-				console.log('points: ', points);
+				for(player in points) {
+					for(point in points[player]) {
+						self.colorPoint(points[player][point].x, points[player][point].y, points[player][point].layer, 1);
+					}
+				}
 			});
 			
 			// fixtures for the images (scans):
@@ -69,6 +76,7 @@ components.drawing = function(){
 			
 			$(this.slides[0]).show();
 			this.slide = 0;
+			remote.getColoredPointsForThisLayer(this.slide, emit);
 		},
 		goBack: function(e) {
 			e.preventDefault();
