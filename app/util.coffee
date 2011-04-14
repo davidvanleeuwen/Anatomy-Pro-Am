@@ -5,6 +5,15 @@ _ = require('underscore@1.1.5')._
 #	SESSION MANAGER
 ###
 
+GetColor = () ->
+	chars = "89ABCDEF";
+	key_length = 6
+	ret = ""
+	for x in [0..5]
+		rnum = Math.floor(Math.random() * chars.length)
+		ret += chars.substring(rnum,rnum+1)
+	return ret
+
 GenerateRandomKey = () ->
 	#generate random key for this session
 	chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
@@ -34,6 +43,7 @@ class SessionManager
 		session = new Session(player.id, player)
 		session_key = session.random_key
 		@sessions_for_facebook_id[player.id] = session
+		player.player_color = GetColor()
 		@sessions_for_random_key[session_key] = session		
 		return session_key
 	
@@ -97,8 +107,7 @@ class ContouringActivityData
 		if not @data_for_layer[point.layer][player_id]
 			# set the first point in the array
 			@data_for_layer[point.layer][player_id] = {}
-			size = _.size @data_for_layer[point.layer][player_id]
-			@data_for_layer[point.layer][player_id][size+1] = point
+			@data_for_layer[point.layer][player_id][GenerateRandomKey()] = point
 			return true
 		else
 			duplicatePoint = false
@@ -107,8 +116,8 @@ class ContouringActivityData
 					# this point already exists
 					duplicatePoint = true
 			if not duplicatePoint
-				size = _.size @data_for_layer[point.layer][player_id]
-				@data_for_layer[point.layer][player_id][size+1] = point
+				@data_for_layer[point.layer][player_id][GenerateRandomKey()] = point
+				point
 				return true
 			else
 				return false

@@ -18,16 +18,14 @@ exports.createServer = (app) ->
 	client = DNode (client, conn) ->
 		@subscribe = (auth_token, emit) ->
 			session = sessionManager.sessionConnected auth_token, conn, client, emit
-			emit.apply emit, ['myUID', session.facebook_id]
+			emit.apply emit, ['myUID', session.facebook_id, session.player_color]
 			sessionManager.publish 'FriendCameOnline', session.fbUser
 		conn.on 'end', ->
 			session = sessionManager.sessionDisconnected conn
 			sessionManager.publish 'FriendWentOffline', session.fbUser
 		@pointColored = (player_id, point) ->
 			activityManager.createPoint player_id, point
-			sessionManager.publish 'pointColered', player_id, point
-		@stopColoring = (player_id) ->
-			sessionManager.publish 'stopColoring', player_id
+			sessionManager.publish 'pointColored', player_id, point
 		@pointErased = (player_id, point) ->
 			erasedPoint = activityManager.deletePoint player_id, point
 			if erasedPoint

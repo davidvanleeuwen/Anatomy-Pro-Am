@@ -8,6 +8,7 @@ components.friendbar = function(){
 		initialize: function() {
 			this.template = _.template($('#player-template').html());
 			_.bindAll(this, 'render');
+			//this.model.unbind();
 			this.model.bind('change', this.render);
 			this.model.view = this;
 		},
@@ -17,7 +18,9 @@ components.friendbar = function(){
 			return this;
 		},
 		setContent: function() {
+			console.log ("THIS", this.model);
 			//console.log(this.$('fb_player_img').attr('style'));
+			this.$('.fb_player').attr('style', 'background-color: #' + this.model.get('player_color'));
 			this.$('.fb_player_img').attr('style', 'background: url(\'' + this.model.get('avatar')  + '\');');
 			this.$('span').text(this.model.get('name'));
 		},
@@ -26,6 +29,7 @@ components.friendbar = function(){
 		}
 	});
 	em.on('FriendCameOnline', function(n) { 
+
 		console.log("User Connected: " + JSON.stringify(n)); 
 
 		console.log("friendLength: ", friends.length);
@@ -40,9 +44,11 @@ components.friendbar = function(){
 			console.log("OK TO ADD");
 			friends.add({
 				id: n.id,
-				name: n.first_name,
+				name: n.first_name, 
+				player_color: n.player_color,
 				avatar: "http://graph.facebook.com/" + n.id + "/picture"
 			});
+			console.log (friends);
 		}
 		});
 	em.on('FriendWentOffline', function(n) { 
@@ -56,6 +62,10 @@ components.friendbar = function(){
 	window.FriendBar = Backbone.View.extend({
 		el: '#fb_friends_container',
 		initialize: function() {
+			
+			var inset = '<script type="text/template" id="player-template">				<div class="fb_player">					<div class="fb_player_img"></div>					<span></span>				<div>			</script>';
+			$(this.el).html(inset);
+			friends.unbind();
 			_.bindAll(this, 'addFriend', 'removeFriend', 'refreshFriends', 'render');
 			friends.bind('add', this.addFriend);
 			friends.bind('remove', this.removeFriend);
