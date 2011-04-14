@@ -7,6 +7,7 @@ fbgraph = require 'facebook-graph@0.0.6'
 https = require 'https'
 fbhelper = require './fbhelper'
 app = require './app/app'
+Hash = require 'hashish@0.0.2'
 
 ## server instance
 server = express.createServer()
@@ -68,6 +69,12 @@ server.post '/deauth', (req, res) ->
 	fbhelper.userDeauthed(req)
 	res.end()
 
+server.all '/friends', (req, res) ->
+	playersInfo = app.sessionManager.sessions_for_facebook_id
+	output = []
+	Hash(playersInfo).forEach (player) ->
+		output.push ( {id: player.fbUser.id,name: player.fbUser.first_name,avatar: "http://graph.facebook.com/" + player.fbUser.id + "/picture"})
+	res.send(JSON.stringify(output))
 
 ## other stuff
 ###

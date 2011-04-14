@@ -82,6 +82,7 @@ class ContouringActivity
 		@activityData.newPoint player_id, point
 	deletePoint: (player_id, point) ->
 		@activityData.removePoint player_id, point
+
 	getPoints: (layer) ->
 		return @activityData.getPointsForLayer layer
 

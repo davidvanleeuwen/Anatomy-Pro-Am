@@ -43,3 +43,5 @@ exports.createServer = (app) ->
 exports.setFbUserAndGetToken = (fbUser) ->
 	if fbUser
 		return sessionManager.createSession fbUser
+
+exports.sessionManager = sessionManager
