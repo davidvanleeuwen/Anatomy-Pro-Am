@@ -39,7 +39,7 @@ components.drawing = function(){
 			// queue per user for drawing points, we might want to refactor this and add this info to the user model?
 			this.users = {};
 			
-			em.on('pointColered', function(player_id, point) {
+			em.on('pointColored', function(player_id, point) {
 				var user = this.users[player_id];
 				
 				if(!user) {
@@ -105,19 +105,18 @@ components.drawing = function(){
 		},
 		erasePoint: function(x, y, slide) {
 			if(this.slide == slide) {
-				this.ctx.fillStyle = "rgb(255,255,255)";
-				this.ctx.beginPath();
-				this.ctx.arc(x,y,1,0,Math.PI*2,true);
-				this.ctx.closePath();
-				this.ctx.fill();
-				var tempImageData=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-				var pix = tempImageData.data;
-				for (var i = 0, n = pix.length; i < n; i += 4) 
-				    if(pix[i]>0&&pix[i+1]>0&&pix[i+2]>0) pix[i+3]=0;
+				var imageData=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+				var pix = imageData.data;
+				if(x>0&&y>0){
+					pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
+					pix[((y*(imageData.width*4)) + ((x-1)*4)) + 3]=0;
+					pix[(((y-1)*(imageData.width*4)) + (x*4)) + 3]=0;
+					pix[(((y-1)*(imageData.width*4)) + ((x-1)*4)) + 3]=0;
+				}
 				// Draw the ImageData at the given (x,y) coordinates.
 				this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-				this.ctx.putImageData(tempImageData, 0, 0);
-		}
+				this.ctx.putImageData(imageData, 0, 0);
+			}
 		},
 		startLine: function(event) {
 			event.preventDefault();
