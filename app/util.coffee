@@ -95,13 +95,23 @@ class ContouringActivityData
 		if not @data_for_layer[point.layer]
 			@data_for_layer[point.layer] = {}
 		if not @data_for_layer[point.layer][player_id]
+			# set the first point in the array
 			@data_for_layer[point.layer][player_id] = {}
-		_.each @data_for_layer[point.layer][player_id], (p, k) ->
-			if p.x is point.x and p.y is point.y
-				console.log 'points excists'
-				return
-		size = _.size @data_for_layer[point.layer][player_id]
-		@data_for_layer[point.layer][player_id][size+1] = point
+			size = _.size @data_for_layer[point.layer][player_id]
+			@data_for_layer[point.layer][player_id][size+1] = point
+			return true
+		else
+			duplicatePoint = false
+			_.each @data_for_layer[point.layer][player_id], (p, k) ->
+				if p.x is point.x and p.y is point.y
+					# this point already exists
+					duplicatePoint = true
+			if not duplicatePoint
+				size = _.size @data_for_layer[point.layer][player_id]
+				@data_for_layer[point.layer][player_id][size+1] = point
+				return true
+			else
+				return false
 	removePoint: (player_id, point) ->
 		removePointKey = ''
 		_.each @data_for_layer[point.layer][player_id], (p, k) ->
