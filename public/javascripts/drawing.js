@@ -13,7 +13,8 @@ components.drawing = function(){
 			"click .color": "toggleErase",
 			"click .erase": "toggleErase"
 		},
-		initialize: function() {
+		initialize: function(caseNum) {
+			this.caseNum = caseNum;
 			_.bindAll(this, 'render');
 			this.render();
 		},
@@ -83,7 +84,8 @@ components.drawing = function(){
 			}.bind(this));
 			
 			// fixtures for the images (scans):
-			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
+			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png',
+							'/images/cases/case2/0.png','/images/cases/case2/1.png', '/images/cases/case2/2.png','/images/cases/case2/3.png', '/images/cases/case2/4.png'];
 			
 			imageRefs.forEach(function(img){
 				this.$('#images').append('<img src="'+img+'" style="display: none;" />');
@@ -95,7 +97,7 @@ components.drawing = function(){
 			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
 			window.layer = 0;
 			//remote.getColoredPointsForThisLayer(layer, emit);
-			remote.getColoredPointsForThisLayerAndPlayer(myUID, layer, emit);
+			remote.getColoredPointsForThisLayerAndPlayer(myUID, layer+this.caseNum*5, emit);
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -137,8 +139,8 @@ components.drawing = function(){
 					for (var xvar = event.clientX-this.canvas.offsetLeft-2; xvar < event.clientX-this.canvas.offsetLeft+2; xvar++)
 						for (var yvar = event.clientY-this.canvas.offsetTop-2; yvar < event.clientY-this.canvas.offsetTop+2; yvar++)
 							if(xvar>0 && xvar<this.canvas.width && yvar>0 && yvar<this.canvas.height)
-								remote.pointErased(myUID, {x: xvar, y: yvar, layer: layer});
-				}else remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: layer});
+								remote.pointErased(myUID, {x: xvar, y: yvar, layer: layer+this.caseNum*5});
+				}else remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: layer+this.caseNum*5});
 			}
 		},
 		drawTool: function(event) {
@@ -155,7 +157,7 @@ components.drawing = function(){
 		},
 		changeLayer: function(event) {
 			if($('.slider')[0].value != layer){
-				layer = $('.slider')[0].value;
+				layer = $('.slider')[0].value + this.caseNum*10;
 			
 				//remote.getColoredPointsForThisLayer(layer, emit);
 			
@@ -177,7 +179,7 @@ components.drawing = function(){
 						var a = $(friendEl).find('a');
 						if(!$(a).hasClass('invisible')) {
 							var idEl = $(friendEl).find('.fb_player');
-							remote.getColoredPointsForThisLayerAndPlayer($(idEl).attr('id'), layer, emit);
+							remote.getColoredPointsForThisLayerAndPlayer($(idEl).attr('id'), layer+this.caseNum*5, emit);
 						}
 					}
 				}.bind(this));
