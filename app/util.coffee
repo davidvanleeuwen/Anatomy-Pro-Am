@@ -123,7 +123,7 @@ class ContouringActivity
 	getPoints: (layer) ->
 		return @activityData.getPointsForLayer layer
 	getPointsForPlayer: (layer, player_id) ->
-		return @activityData.getPointsForPlayer player_id
+		return @activityData.getPointsForPlayer layer, player_id
 
 ###
 #	CONTOURING ACTIVTY DATA
@@ -162,7 +162,8 @@ class ContouringActivityData
 	getPointsForLayer: (layer) ->
 		return @data_for_layer[layer]
 	getPointsForPlayer: (layer, player) ->
-		return @data_for_layer[layer][player]
+		if @data_for_layer[layer] and @data_for_layer[layer][player]
+			return { player: player, payload: @data_for_layer[layer][player] }
 
 ###
 #	MEMORY STORE

@@ -34,6 +34,7 @@ exports.createServer = (app) ->
 			data = activityManager.getPoints layer
 			emit.apply emit, ['setColoredPointsForThisLayer', data]
 		@getColoredPointsForThisLayerAndPlayer = (player, layer, emit) ->
+			data = activityManager.getPointsForPlayer layer, player
 			emit.apply emit, ['setColoredPointsForThisLayer', data]
 			
 		# dnode/coffeescript fix:

@@ -40,8 +40,19 @@ components.drawing = function(){
 			this.users = {};
 			
 			em.on('pointColored', function(player_id, point) {
-				var friend = friends.get(player_id);
-				this.colorPoint(point.x, point.y, point.layer, friend.get('player_color'));
+				// refactor this... very UGLY!
+				var friendElements = $('#fb_friends_container').children();
+				friendElements.each(function(i, friendEl) {
+					if($(friendEl).attr('id') != 'player-template') {
+						var a = $(friendEl).children('a');
+						var par = $(a[0]).children('.fb_player');
+						if(!$(a[0]).hasClass('invisible') && $(par).attr('id') == player_id) {
+								var friend = friends.get(player_id);
+								this.colorPoint(point.x, point.y, point.layer, friend.get('player_color'));
+							
+						}
+					}
+				}.bind(this));
 			}.bind(this));
 			
 			em.on('pointErased', function(player_id, point) {
@@ -61,12 +72,11 @@ components.drawing = function(){
 			var self = this;
 			
 			em.on('setColoredPointsForThisLayer', function(points){
-				for(player in points) {
-					var friend = friends.get(player);
+				if(points) {
+					var friend = friends.get(points.player);
 					var color = friend.get('player_color');
-					console.log(color);
-					for(point in points[player]) {
-						self.colorPoint(points[player][point].x, points[player][point].y, points[player][point].layer, color);
+					for(point in points.payload) {
+						self.colorPoint(points.payload[point].x, points.payload[point].y, points.payload[point].layer, color);
 					}
 				}
 			}.bind(this));
@@ -84,6 +94,7 @@ components.drawing = function(){
 			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
 			window.layer = 0;
 			//remote.getColoredPointsForThisLayer(layer, emit);
+			remote.getColoredPointsForThisLayerAndPlayer(myUID, layer, emit);
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -145,7 +156,7 @@ components.drawing = function(){
 			if($('.slider')[0].value != layer){
 				layer = $('.slider')[0].value;
 			
-				remote.getColoredPointsForThisLayer(layer, emit);
+				//remote.getColoredPointsForThisLayer(layer, emit);
 			
 				this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 				
