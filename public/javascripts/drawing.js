@@ -8,6 +8,7 @@ components.drawing = function(){
 			"mousedown .scanvas": "startLine",
 			"mousemove .scanvas" : "drawLine",
 			"mouseup .scanvas": "endLine",
+			"mouseout .scanvas": "endLine",
 			"change .slider": "changeLayer",
 			"click .color": "toggleErase",
 			"click .erase": "toggleErase"
