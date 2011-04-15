@@ -90,10 +90,13 @@ class SessionManager
 	sessionDisconnected: (conn) ->
 		console.log("Session ended! Disconnected ID = " + conn)
 		UnsetColor([@sessions_for_connection[conn.id].facebook_id])
-		return @sessions_for_connection[conn.id]
+		
+		session_conn = @sessions_for_connection[conn.id]
 		
 		delete @sessions_for_facebook_id[@sessions_for_connection[conn.id].facebook_id]
 		delete @sessions_for_connection[conn.id]
+		
+		return session_conn
 	
 	publish: () ->
 		args = arguments

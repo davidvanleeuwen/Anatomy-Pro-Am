@@ -5,6 +5,9 @@ components.friendbar = function(){
 	  
 	window.FriendView = Backbone.View.extend({
 		tagName: 'li',
+		events: {
+			'click a': 'toggleEnabled'
+		},
 		initialize: function() {
 			this.template = _.template($('#player-template').html());
 			_.bindAll(this, 'render');
@@ -22,10 +25,18 @@ components.friendbar = function(){
 			//console.log(this.$('fb_player_img').attr('style'));
 			this.$('.fb_player').attr('style', 'background-color: #' + this.model.get('player_color'));
 			this.$('.fb_player_img').attr('style', 'background: url(\'' + this.model.get('avatar')  + '\');');
-			this.$('span').text(this.model.get('name'));
+			this.$('.fb_player_name').text(this.model.get('name'));
+			if(this.model.get('id') != myUID) {
+				this.$('a').addClass('invisible');
+			}
 		},
 		remove: function() {
 			$(this.el).remove();
+		},
+		toggleEnabled: function(event) {
+			event.preventDefault();
+			this.$('a').toggleClass('invisible')
+			remote.getColoredPointsForThisLayerAndPlayer(this.model.get('id'), layer, emit);
 		}
 	});
 	em.on('FriendCameOnline', function(n) { 
@@ -63,8 +74,8 @@ components.friendbar = function(){
 		el: '#fb_friends_container',
 		initialize: function() {
 			
-			var inset = '<script type="text/template" id="player-template">				<div class="fb_player">					<div class="fb_player_img"></div>					<span></span>				<div>			</script>';
-			$(this.el).html(inset);
+			//var inset = $('#player-template').html();
+			//$(this.el).html(inset);
 			friends.unbind();
 			_.bindAll(this, 'addFriend', 'removeFriend', 'refreshFriends', 'render');
 			friends.bind('add', this.addFriend);
@@ -84,13 +95,7 @@ components.friendbar = function(){
 			$(this.el).append(view.render().el);
 		},
 		removeFriend: function(friend) {
-			console.log('removed player: ', friend);
-			console.log("Clear Friend");
 			friend.clear();
-			var inset = '<script type="text/template" id="player-template">				<div class="fb_player">					<div class="fb_player_img"></div>					<span></span>				<div>			</script>';
-			$(this.el).html(inset);
-			console.log(friends);
-			this.refreshFriends();
 		},
 		refreshFriends: function() {
 		console.log("refresh " + friends.length);

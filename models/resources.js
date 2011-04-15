@@ -43,8 +43,7 @@ resources.models.Person = Backbone.Model.extend({
 		"facebook_id": 0,
 	},
 	clear: function() {
-  	//	this.remove();
-		
+		this.view.remove();
     },
 	url: function() {
 		return 'deleteuser';

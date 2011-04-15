@@ -78,11 +78,12 @@ components.drawing = function(){
 				this.$('#images').append('<img src="'+img+'" style="display: none;" />');
 			});
 			
-			this.slides = this.$('#images').children();
+			layers = this.$('#images').children();
 			
-			$(this.slides[0]).show();
-			this.slide = 0;
-			remote.getColoredPointsForThisLayer(this.slide, emit);
+			$(layers[0]).show();
+			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
+			window.layer = 0;
+			remote.getColoredPointsForThisLayer(layer, emit);
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -90,7 +91,7 @@ components.drawing = function(){
 			new CaseView;
 		},
 		colorPoint: function(x, y, slide, color) {
-			if(this.slide == slide) {
+			if(layer == slide) {
 				this.ctx.fillStyle = "#"+color;
 				this.ctx.beginPath();
 				this.ctx.arc(x,y,1,0,Math.PI*2,true);
@@ -99,7 +100,7 @@ components.drawing = function(){
 			}
 		},
 		erasePoint: function(x, y, slide) {
-			if(this.slide == slide) {
+			if(layer == slide) {
 				var imageData=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
 				var pix = imageData.data;
 				if(x>0&&y>0){
@@ -124,8 +125,8 @@ components.drawing = function(){
 					for (var xvar = event.clientX-this.canvas.offsetLeft-2; xvar < event.clientX-this.canvas.offsetLeft+2; xvar++)
 						for (var yvar = event.clientY-this.canvas.offsetTop-2; yvar < event.clientY-this.canvas.offsetTop+2; yvar++)
 							if(xvar>0 && xvar<this.canvas.width && yvar>0 && yvar<this.canvas.height)
-								remote.pointErased(myUID, {x: xvar, y: yvar, layer: this.slide});
-				}else remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: this.slide});
+								remote.pointErased(myUID, {x: xvar, y: yvar, layer: layer});
+				}else remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: layer});
 			}
 		},
 		drawTool: function(event) {
@@ -141,16 +142,15 @@ components.drawing = function(){
 			this.isDrawing = false;
 		},
 		changeLayer: function(event) {
-			if($('.slider')[0].value != this.slide){
-				this.slide = $('.slider')[0].value;
+			if($('.slider')[0].value != layer){
+				layer = $('.slider')[0].value;
 			
-				remote.getColoredPointsForThisLayer(this.slide, emit);
+				remote.getColoredPointsForThisLayer(layer, emit);
 			
 				this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-			
-				var slide = this.slide;
-				this.slides.each(function(n, el){
-					if(slide != n) {
+				
+				layers.each(function(n, el){
+					if(layer != n) {
 						$(el).hide();
 					} else {
 						$(el).show();
