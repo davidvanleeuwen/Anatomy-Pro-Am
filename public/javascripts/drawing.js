@@ -82,7 +82,8 @@ components.drawing = function(){
 			
 			$(this.slides[0]).show();
 			this.slide = 0;
-			remote.getColoredPointsForThisLayer(this.slide, emit);
+			//remote.getColoredPointsForThisLayer(this.slide, emit);
+			remote.getColoredPointsForThisLayerAndPlayer(this.player_id, this.slide, emit);
 		},
 		goBack: function(e) {
 			e.preventDefault();

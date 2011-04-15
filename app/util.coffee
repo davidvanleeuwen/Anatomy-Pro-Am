@@ -119,6 +119,8 @@ class ContouringActivity
 		@activityData.removePoint player_id, point
 	getPoints: (layer) ->
 		return @activityData.getPointsForLayer layer
+	getPointsForPlayer: (layer, player_id) ->
+		return @activityData.getPointsForPlayer player_id
 
 ###
 #	CONTOURING ACTIVTY DATA
@@ -156,7 +158,8 @@ class ContouringActivityData
 		return erasedPoint
 	getPointsForLayer: (layer) ->
 		return @data_for_layer[layer]
-
+	getPointsForPlayer: (layer, player) ->
+		return @data_for_layer[layer][player]
 
 ###
 #	MEMORY STORE
