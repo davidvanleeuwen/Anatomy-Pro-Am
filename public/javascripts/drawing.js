@@ -83,7 +83,7 @@ components.drawing = function(){
 			$(layers[0]).show();
 			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
 			window.layer = 0;
-			remote.getColoredPointsForThisLayer(layer, emit);
+			//remote.getColoredPointsForThisLayer(layer, emit);
 		},
 		goBack: function(e) {
 			e.preventDefault();
