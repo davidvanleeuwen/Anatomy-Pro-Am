@@ -67,6 +67,7 @@ components.friendbar = function(){
 				name: n.first_name, 
 				player_color: n.player_color,
 				avatar: "http://graph.facebook.com/" + n.id + "/picture"
+				
 			});
 		}
 	});
