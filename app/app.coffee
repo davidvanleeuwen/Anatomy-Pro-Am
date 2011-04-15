@@ -15,12 +15,12 @@ activityManager = new util.ContouringActivity
 
 
 ## log file (for user testing)
-quicklog = (s) ->
-	logpath = "session.log"
+quicklog = (file, s) ->
+	logpath = file+'.log'
 	fs = require('fs')
 	s = s.toString().replace(/\r\n|\r/g, '\n')
 	fd = fs.openSync(logpath, 'a+', 0666)
-	fs.writeSync(fd, s + '\n', 'utf8')
+	fs.writeSync(fd, s+', timestamp: '+ new Date().getTime() + '\n', 'utf8')
 	fs.closeSync(fd)
 
 
@@ -32,29 +32,30 @@ exports.createServer = (app) ->
 			emit.apply emit, ['myUID', session.facebook_id, session.player_color]
 			sessionManager.publish 'FriendCameOnline', session.fbUser
 			# user test log:
-			quicklog 'User came online: '+ session.fbUser.id + ' ('+ session.fbUser.username+ ')'
+			quicklog session.fbUser.id, 'User '+session.fbUser.username+' came online'
 		conn.on 'end', ->
 			session = sessionManager.sessionDisconnected conn
 			sessionManager.publish 'FriendWentOffline', session.fbUser
 			# user test log:
-			quicklog 'User went offline: '+ session.fbUser.id + ' ('+ session.fbUser.username+ ')'
+			quicklog session.fbUser.id, 'User '+ session.fbUser.username+ ' went offline'
 		@pointColored = (player_id, point) ->
 			activityManager.createPoint player_id, point
 			sessionManager.publish 'pointColored', player_id, point
 			# user test log:
-			quicklog 'User colored: '+ player_id + ', x: '+point.x+', y: '+point.y+', layer: '+point.layer
+			quicklog player_id, 'action: colored, x: '+point.x+', y: '+point.y+', layer: '+point.layer
 		@pointErased = (player_id, point) ->
 			erasedPoint = activityManager.deletePoint player_id, point
 			if erasedPoint
 				sessionManager.publish 'pointErased', player_id, erasedPoint
 				# user test log:
-				quicklog 'User erased: '+ player_id + ', x: '+point.x+', y: '+point.y+', layer: '+point.layer
+				quicklog player_id, 'action: erased, x: '+point.x+', y: '+point.y+', layer: '+point.layer
 		@getColoredPointsForThisLayer = (layer, emit) ->
 			data = activityManager.getPoints layer
 			emit.apply emit, ['setColoredPointsForThisLayer', data]
-		@getColoredPointsForThisLayerAndPlayer = (player, layer, emit) ->
+		@getColoredPointsForThisLayerAndPlayer = (player_id, player, layer, emit) ->
 			data = activityManager.getPointsForPlayer layer, player
 			emit.apply emit, ['setColoredPointsForThisLayer', data]
+			quicklog player_id, 'action: get points player, for player: '+player+', layer: '+layer
 			
 		# dnode/coffeescript fix:
 		@version = config.version

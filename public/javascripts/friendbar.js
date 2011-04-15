@@ -47,7 +47,7 @@ components.friendbar = function(){
 					var a = $(friendEl).find('a');
 					if(!$(a).hasClass('invisible')) {
 						var idEl = $(friendEl).find('.fb_player');
-						remote.getColoredPointsForThisLayerAndPlayer($(idEl).attr('id'), layer, emit);
+						remote.getColoredPointsForThisLayerAndPlayer(myUID, $(idEl).attr('id'), layer, emit);
 					}
 				}
 			}.bind(this));

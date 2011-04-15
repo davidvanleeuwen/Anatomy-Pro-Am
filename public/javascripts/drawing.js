@@ -82,7 +82,7 @@ components.drawing = function(){
 			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
 			window.layer = 0;
 			//remote.getColoredPointsForThisLayer(layer, emit);
-			remote.getColoredPointsForThisLayerAndPlayer(myUID, layer, emit);
+			remote.getColoredPointsForThisLayerAndPlayer(myUID, myUID, layer, emit);
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -164,7 +164,7 @@ components.drawing = function(){
 						var a = $(friendEl).find('a');
 						if(!$(a).hasClass('invisible')) {
 							var idEl = $(friendEl).find('.fb_player');
-							remote.getColoredPointsForThisLayerAndPlayer($(idEl).attr('id'), layer, emit);
+							remote.getColoredPointsForThisLayerAndPlayer(myUID, $(idEl).attr('id'), layer, emit);
 						}
 					}
 				}.bind(this));
