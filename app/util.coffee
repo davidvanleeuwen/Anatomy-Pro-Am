@@ -5,15 +5,39 @@ _ = require('underscore@1.1.5')._
 #	SESSION MANAGER
 ###
 
-GetColor = () ->
-	chars = "89ABCDEF";
-	key_length = 6
-	ret = ""
-	for x in [0..5]
-		rnum = Math.floor(Math.random() * chars.length)
-		ret += chars.substring(rnum,rnum+1)
-	return ret
+colors = [
+	{hex: '3D5A9C', user: undefined},
+	{hex: '91E671', user: undefined},
+	{hex: '66993C', user: undefined},
+	{hex: 'E9B061', user: undefined},
+	{hex: 'E73237', user: undefined}
+]
 
+
+GetColor = (userID) ->
+	returnedcolor = 'asdf'
+	assigned = false
+	console.log colors
+	_.each colors, (color) ->
+		console.log color.hex
+		if assigned is false
+			if color.user is undefined 
+				returnedcolor = color.hex
+				color.user = userID
+				assigned = true
+			else
+				returnedcolor = 'no avaialble'
+	console.log colors
+	return returnedcolor
+	
+UnsetColor = (userID) ->
+	console.log "disconnect uid: ", userID
+	_.each colors, (color) ->
+		console.log color.user, userID[0]
+		if color.user is userID[0]
+			console.log "DELETING STUFF"
+			color.user = undefined
+		
 GenerateRandomKey = () ->
 	#generate random key for this session
 	chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
@@ -43,7 +67,8 @@ class SessionManager
 		session = new Session(player.id, player)
 		session_key = session.random_key
 		@sessions_for_facebook_id[player.id] = session
-		player.player_color = GetColor()
+		player.player_color = GetColor(player.id)
+		console.log GetColor()
 		@sessions_for_random_key[session_key] = session		
 		return session_key
 	
@@ -63,12 +88,15 @@ class SessionManager
 			console.log("Session connected started with invalid random_id!!!!")
 			
 	sessionDisconnected: (conn) ->
-		console.log("Session ended! Disconnected ID = "+conn.id)
+		console.log("Session ended! Disconnected ID = " + conn)
+		UnsetColor([@sessions_for_connection[conn.id].facebook_id])
 		
-		return @sessions_for_connection[conn.id]
+		session_conn = @sessions_for_connection[conn.id]
 		
 		delete @sessions_for_facebook_id[@sessions_for_connection[conn.id].facebook_id]
 		delete @sessions_for_connection[conn.id]
+		
+		return session_conn
 	
 	publish: () ->
 		args = arguments
@@ -94,6 +122,8 @@ class ContouringActivity
 		@activityData.removePoint player_id, point
 	getPoints: (layer) ->
 		return @activityData.getPointsForLayer layer
+	getPointsForPlayer: (layer, player_id) ->
+		return @activityData.getPointsForPlayer layer, player_id
 
 ###
 #	CONTOURING ACTIVTY DATA
@@ -131,7 +161,9 @@ class ContouringActivityData
 		return erasedPoint
 	getPointsForLayer: (layer) ->
 		return @data_for_layer[layer]
-
+	getPointsForPlayer: (layer, player) ->
+		if @data_for_layer[layer] and @data_for_layer[layer][player]
+			return { player: player, payload: @data_for_layer[layer][player] }
 
 ###
 #	MEMORY STORE

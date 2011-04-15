@@ -255,9 +255,25 @@ h2{font-family:SteelfishRegular;
                     border-radius:5px;
                     -khtml-border-radius:5px;
                     }
+#fb_friends_container a {
+	color: #fff;
+	text-decoration: none;
+	display: block;
+	float: left;
+	height: 62px;
+	width: 50px;
+	margin: 4px 0 0 3px;
+}
+
+#fb_friends_container a.invisible {
+	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+	filter: alpha(opacity=50);
+	-moz-opacity:0.5;
+	-khtml-opacity: 0.5;
+	opacity: 0.5;
+}
 
 .fb_player {
-	margin: 4px 0 0 3px;
 	float: left;
 	background-color: #385b9d;
 	height: 62px;
@@ -279,9 +295,8 @@ h2{font-family:SteelfishRegular;
 	background-position:; top center;
 }
 
-.fb_player span {
+.fb_player .fb_player_name {
 	float: left;
-	color: #fff;
 	font: 9px Verdana;
 	width: 100%;
 	text-align: center;

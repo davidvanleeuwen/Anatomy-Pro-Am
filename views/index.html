@@ -13,6 +13,7 @@
 	FB.getLoginStatus(function(response) {
 	  if (response.session) {
 	    // logged in and connected user, someone you know
+		console.log('session is set');
 		$('#game_container').show();
 		
 	  } else {

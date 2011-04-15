@@ -5,6 +5,9 @@ components.friendbar = function(){
 	  
 	window.FriendView = Backbone.View.extend({
 		tagName: 'li',
+		events: {
+			'click a': 'toggleEnabled'
+		},
 		initialize: function() {
 			this.template = _.template($('#player-template').html());
 			_.bindAll(this, 'render');
@@ -18,61 +21,70 @@ components.friendbar = function(){
 			return this;
 		},
 		setContent: function() {
-			console.log ("THIS", this.model);
 			//console.log(this.$('fb_player_img').attr('style'));
 			this.$('.fb_player').attr('style', 'background-color: #' + this.model.get('player_color'));
+			this.$('.fb_player').attr('id', this.model.get('id'));
 			this.$('.fb_player_img').attr('style', 'background: url(\'' + this.model.get('avatar')  + '\');');
-			this.$('span').text(this.model.get('name'));
+			this.$('.fb_player_name').text(this.model.get('name'));
+			if(this.model.get('id') == myUID) {
+				this.$('a').toggleClass('invisible');
+			}
 		},
 		remove: function() {
 			$(this.el).remove();
+		},
+		toggleEnabled: function(event) {
+			event.preventDefault();
+			this.$('a').toggleClass('invisible');
+			
+			// refactor this to a non-global selector! GET ALL THIS UGLY CODE OUT OF HERE PLEASE!
+			var canvas = $('canvas')[0];
+			var ctx = canvas.getContext("2d");
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			var friendElements = $('#fb_friends_container').children();
+			friendElements.each(function(i, friendEl) {
+				if($(friendEl).attr('id') != 'player-template') {
+					var a = $(friendEl).find('a');
+					if(!$(a).hasClass('invisible')) {
+						var idEl = $(friendEl).find('.fb_player');
+						remote.getColoredPointsForThisLayerAndPlayer($(idEl).attr('id'), layer, emit);
+					}
+				}
+			}.bind(this));
 		}
 	});
-	em.on('FriendCameOnline', function(n) { 
-
-		console.log("User Connected: " + JSON.stringify(n)); 
-
-		console.log("friendLength: ", friends.length);
+	
+	em.on('FriendCameOnline', function(n) {
 		var okToAdd = true;
 		friends.each(function(friend){
 			if(friend.id == n.id){
-				console.log("DUPLICATE");
 				okToAdd = false;
 			}
 		})
 		if(okToAdd){
-			console.log("OK TO ADD");
 			friends.add({
 				id: n.id,
 				name: n.first_name, 
 				player_color: n.player_color,
 				avatar: "http://graph.facebook.com/" + n.id + "/picture"
 			});
-			console.log (friends);
 		}
-		});
-	em.on('FriendWentOffline', function(n) { 
-		console.log("User Disconnected: " + n); 
+	});
+		
+	em.on('FriendWentOffline', function(n) {
 		var m = friends.get(n.id);
-		console.log(friends);
 		friends.remove(m);
-		console.log(friends);
-		});
+	});
 	
 	window.FriendBar = Backbone.View.extend({
 		el: '#fb_friends_container',
 		initialize: function() {
-			
-			var inset = '<script type="text/template" id="player-template">				<div class="fb_player">					<div class="fb_player_img"></div>					<span></span>				<div>			</script>';
-			$(this.el).html(inset);
 			friends.unbind();
 			_.bindAll(this, 'addFriend', 'removeFriend', 'refreshFriends', 'render');
 			friends.bind('add', this.addFriend);
 			friends.bind('remove', this.removeFriend);
 			friends.bind('refresh', this.refreshFriends);
 			friends.fetch();
-			console.log("initialize " + friends.length);
-			//this.render();
 		},
 		render: function() {
 		console.log("render " + friends.length);
@@ -84,13 +96,7 @@ components.friendbar = function(){
 			$(this.el).append(view.render().el);
 		},
 		removeFriend: function(friend) {
-			console.log('removed player: ', friend);
-			console.log("Clear Friend");
 			friend.clear();
-			var inset = '<script type="text/template" id="player-template">				<div class="fb_player">					<div class="fb_player_img"></div>					<span></span>				<div>			</script>';
-			$(this.el).html(inset);
-			console.log(friends);
-			this.refreshFriends();
 		},
 		refreshFriends: function() {
 		console.log("refresh " + friends.length);
