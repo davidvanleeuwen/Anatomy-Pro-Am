@@ -12,7 +12,8 @@ components.drawing = function(){
 			"click .drawingTool": "drawTool",
 			"click .erasingTool": "eraseTool"
 		},
-		initialize: function() {
+		initialize: function(something) {
+			console.log (something);
 			_.bindAll(this, 'render');
 			this.render();
 		},

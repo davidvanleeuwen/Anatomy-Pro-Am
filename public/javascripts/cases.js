@@ -24,7 +24,7 @@ components.cases = function(){
 		},
 		selectCase: function(e) {
 			e.preventDefault();
-			new ComputerView;
+			new ComputerView("this is passed");
 		}
 	});
 };
