@@ -36,9 +36,6 @@ components.drawing = function(){
 			this.ctx = this.canvas.getContext("2d");
 			this.isErasing = false;
 			
-			// queue per user for drawing points, we might want to refactor this and add this info to the user model?
-			this.users = {};
-			
 			em.on('pointColored', function(player_id, point) {
 				// refactor this... very UGLY!
 				var friendElements = $('#fb_friends_container').children();
@@ -56,16 +53,7 @@ components.drawing = function(){
 			}.bind(this));
 			
 			em.on('pointErased', function(player_id, point) {
-				var user = this.users[player_id];
-				
-				if(!user) {
-					user = this.users[player_id] = {};
-				}
-				
-				if(user.x != 0 && user.y != 0) {
-					this.erasePoint(point.x, point.y, point.layer);
-				}
-				
+				this.erasePoint(point.x, point.y, point.layer);
 			}.bind(this));
 		
 			
