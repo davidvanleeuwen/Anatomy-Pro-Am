@@ -34,18 +34,16 @@ server.use browserify {
 app.createServer server
 
 server.get '/', (req, res) ->
-	console.log 'get'
+	console.log '/ post'
 	fbhelper.renderIndex req, res, (fbUser) ->
 		if fbUser
-			console.log 'fb user' + fbUser
 			# callback for getting the token and returns it to the  original request
 			return app.setFbUserAndGetToken fbUser
 	
 server.post '/', (req, res) ->
-	console.log 'post'
+	console.log '/ post'
 	fbhelper.renderIndex req, res, (fbUser) ->
 		if fbUser
-			console.log 'fb user' + fbUser
 			# callback for getting the token and returns it to the  original request
 			return app.setFbUserAndGetToken fbUser
 
@@ -84,7 +82,7 @@ server.all '/friends', (req, res) ->
 	playersInfo = app.sessionManager.sessions_for_facebook_id
 	output = []
 	Hash(playersInfo).forEach (player) ->
-		output.push ( {id: player.fbUser.id,name: player.fbUser.first_name,player_color: player.fbUser.player_color, avatar: "http://graph.facebook.com/" + player.fbUser.id + "/picture"})
+		output.push ( {id: player.fbUser.id,name: player.fbUser.first_name,player_color: player.fbUser.player_color, avatar: "http://graph.facebook.com/" + player.fbUser.id + "/picture", enabled: false})
 	res.send(JSON.stringify(output))
 
 ## other stuff

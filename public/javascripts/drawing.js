@@ -9,8 +9,8 @@ components.drawing = function(){
 			"mousemove .scanvas" : "drawLine",
 			"mouseup .scanvas": "endLine",
 			"change .slider": "changeLayer",
-			"click .color": "toggleErase",
-			"click .erase": "toggleErase"
+			"click .drawingTool": "drawTool",
+			"click .erasingTool": "eraseTool"
 		},
 		initialize: function() {
 			_.bindAll(this, 'render');
@@ -32,6 +32,8 @@ components.drawing = function(){
 		},
 		setupView: function() {
 			new FriendBar;
+			
+			this.$('.drawingTool').attr('style', 'background:' + friends.get(myUID).get('player_color'));
 			this.canvas = $('canvas')[0];
 			this.ctx = this.canvas.getContext("2d");
 			this.isErasing = false;
@@ -131,10 +133,14 @@ components.drawing = function(){
 		drawTool: function(event) {
 			event.preventDefault();
 			this.isErasing = false;
+			this.$('.drawingTool').attr('style', 'background:' + friends.get(myUID).get('player_color'));
+			this.$('.erasingTool').attr('style', 'background: #FFFFFF');
 		},
 		eraseTool: function(event) {
 			event.preventDefault();
 			this.isErasing = true;
+			this.$('.erasingTool').attr('style', 'background:' + friends.get(myUID).get('player_color'));
+			this.$('.drawingTool').attr('style', 'background: #FFFFFF');
 		},
 		endLine: function(event) {
 			event.preventDefault();
@@ -170,10 +176,6 @@ components.drawing = function(){
 				}.bind(this));
 				
 			}
-		},
-		toggleErase: function(event) {
-			event.preventDefault();
-			this.isErasing = true;
 		}
 	});
 };
