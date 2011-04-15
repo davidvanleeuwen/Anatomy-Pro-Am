@@ -10,8 +10,8 @@ components.drawing = function(){
 			"mouseup .scanvas": "endLine",
 			"mouseout .scanvas": "endLine",
 			"change .slider": "changeLayer",
-			"click .color": "toggleErase",
-			"click .erase": "toggleErase"
+			"click .drawingTool": "drawTool",
+			"click .erasingTool": "eraseTool"
 		},
 		initialize: function(caseNum) {
 			this.caseNum = caseNum;
@@ -34,12 +34,11 @@ components.drawing = function(){
 		},
 		setupView: function() {
 			new FriendBar;
+			
+			this.$('.drawingTool').attr('style', 'background:' + friends.get(myUID).get('player_color'));
 			this.canvas = $('canvas')[0];
 			this.ctx = this.canvas.getContext("2d");
 			this.isErasing = false;
-			
-			// queue per user for drawing points, we might want to refactor this and add this info to the user model?
-			this.users = {};
 			
 			em.on('pointColored', function(player_id, point) {
 				// refactor this... very UGLY!
@@ -58,16 +57,7 @@ components.drawing = function(){
 			}.bind(this));
 			
 			em.on('pointErased', function(player_id, point) {
-				var user = this.users[player_id];
-				
-				if(!user) {
-					user = this.users[player_id] = {};
-				}
-				
-				if(user.x != 0 && user.y != 0) {
-					this.erasePoint(point.x, point.y, point.layer);
-				}
-				
+				this.erasePoint(point.x, point.y, point.layer);
 			}.bind(this));
 		
 			
@@ -97,7 +87,7 @@ components.drawing = function(){
 			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
 			window.layer = 0;
 			//remote.getColoredPointsForThisLayer(layer, emit);
-			remote.getColoredPointsForThisLayerAndPlayer(myUID, layer+this.caseNum*5, emit);
+			remote.getColoredPointsForThisLayerAndPlayer(myUID, myUID, layer, emit);
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -146,10 +136,14 @@ components.drawing = function(){
 		drawTool: function(event) {
 			event.preventDefault();
 			this.isErasing = false;
+			this.$('.drawingTool').attr('style', 'background:' + friends.get(myUID).get('player_color'));
+			this.$('.erasingTool').attr('style', 'background: #FFFFFF');
 		},
 		eraseTool: function(event) {
 			event.preventDefault();
 			this.isErasing = true;
+			this.$('.erasingTool').attr('style', 'background:' + friends.get(myUID).get('player_color'));
+			this.$('.drawingTool').attr('style', 'background: #FFFFFF');
 		},
 		endLine: function(event) {
 			event.preventDefault();
@@ -157,7 +151,7 @@ components.drawing = function(){
 		},
 		changeLayer: function(event) {
 			if($('.slider')[0].value != layer){
-				layer = $('.slider')[0].value + this.caseNum*10;
+				layer = $('.slider')[0].value;
 			
 				//remote.getColoredPointsForThisLayer(layer, emit);
 			
@@ -179,16 +173,12 @@ components.drawing = function(){
 						var a = $(friendEl).find('a');
 						if(!$(a).hasClass('invisible')) {
 							var idEl = $(friendEl).find('.fb_player');
-							remote.getColoredPointsForThisLayerAndPlayer($(idEl).attr('id'), layer+this.caseNum*5, emit);
+							remote.getColoredPointsForThisLayerAndPlayer(myUID, $(idEl).attr('id'), layer, emit);
 						}
 					}
 				}.bind(this));
 				
 			}
-		},
-		toggleErase: function(event) {
-			event.preventDefault();
-			this.isErasing = true;
 		}
 	});
 };

@@ -24,5 +24,6 @@ exports.fbconfig = {
 	appSecret: '123',
 	url: 'http://host/',
 	redirect_uri: 'http://host/authresponse/',
-	scope: 'user_photos,email,user_birthday,user_online_presence,offline_access'
+	#scope: 'user_photos,email,user_birthday,user_online_presence,offline_access'
+	scope: ''
 }

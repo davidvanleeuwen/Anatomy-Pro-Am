@@ -17,9 +17,7 @@ colors = [
 GetColor = (userID) ->
 	returnedcolor = 'asdf'
 	assigned = false
-	console.log colors
 	_.each colors, (color) ->
-		console.log color.hex
 		if assigned is false
 			if color.user is undefined 
 				returnedcolor = color.hex
@@ -33,9 +31,7 @@ GetColor = (userID) ->
 UnsetColor = (userID) ->
 	console.log "disconnect uid: ", userID
 	_.each colors, (color) ->
-		console.log color.user, userID[0]
 		if color.user is userID[0]
-			console.log "DELETING STUFF"
 			color.user = undefined
 		
 GenerateRandomKey = () ->
@@ -68,14 +64,13 @@ class SessionManager
 		session_key = session.random_key
 		@sessions_for_facebook_id[player.id] = session
 		player.player_color = GetColor(player.id)
-		console.log GetColor()
 		@sessions_for_random_key[session_key] = session		
 		return session_key
 	
 	#this should be called when the client sends an authenticate message over dnone. 
 	#this must be done before anything else over dnone
 	sessionConnected: (random_key, conn, client, emit) ->
-		console.log("Session connection started! Connection ID = "+conn.id)
+		console.log("Session connection started! Connection ID = " + conn.id)
 		if @sessions_for_random_key[random_key]
 			session = @sessions_for_random_key[random_key]
 			@sessions_for_connection[conn.id] = session
@@ -88,7 +83,7 @@ class SessionManager
 			console.log("Session connected started with invalid random_id!!!!")
 			
 	sessionDisconnected: (conn) ->
-		console.log("Session ended! Disconnected ID = " + conn)
+		console.log("Session ended! Disconnected ID = " + conn.id)
 		UnsetColor([@sessions_for_connection[conn.id].facebook_id])
 		
 		session_conn = @sessions_for_connection[conn.id]

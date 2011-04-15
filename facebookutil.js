@@ -14,7 +14,6 @@ exports.auth = function (path, method, args, callback) {
             'Accept': 'application/json'
         }
     };
-	console.log(options);
     var request = https.request(options, function (res) {
         res.setEncoding('utf8');
         var body = [];
