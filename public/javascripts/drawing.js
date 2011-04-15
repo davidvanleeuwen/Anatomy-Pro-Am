@@ -14,10 +14,10 @@ components.drawing = function(){
 			"click .erasingTool": "eraseTool",
 			"click .done": "done"
 		},
-		initialize: function(caseNum) {
-			this.caseNum = caseNum;
+		initialize: function() {
 			_.bindAll(this, 'render');
 			this.render();
+			this.locked = false;
 		},
 		render: function() {
 			if (view.computer) {
@@ -130,8 +130,8 @@ components.drawing = function(){
 					for (var xvar = event.clientX-this.canvas.offsetLeft-2; xvar < event.clientX-this.canvas.offsetLeft+2; xvar++)
 						for (var yvar = event.clientY-this.canvas.offsetTop-2; yvar < event.clientY-this.canvas.offsetTop+2; yvar++)
 							if(xvar>0 && xvar<this.canvas.width && yvar>0 && yvar<this.canvas.height)
-								remote.pointErased(myUID, {x: xvar, y: yvar, layer: layer+this.caseNum*5});
-				}else remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: layer+this.caseNum*5});
+								remote.pointErased(myUID, {x: xvar, y: yvar, layer: layer});
+				}else remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: layer});
 			}
 		},
 		drawTool: function(event) {
@@ -178,13 +178,21 @@ components.drawing = function(){
 		},
 		getColorPointsForLayerAndPlayer: function(showAll) {
 			// refactor this - ugly code again ;'(
+			if(showAll) {
+				this.locked = !this.locked;
+				if(this.locked) {
+					$('.done').text('UNLOCK');
+				} else {
+					$('.done').text("I'M DONE");
+				}
+			}
+		
 			var friendElements = $('#fb_friends_container').children();
 			friendElements.each(function(i, friendEl) {
 				if($(friendEl).attr('id') != 'player-template') {
 					var a = $(friendEl).find('a');
 					if(showAll) {
 						$(a).removeClass('invisible');
-						this.locked = !this.locked;
 					}
 					if(!$(a).hasClass('invisible') || showAll) {
 						var idEl = $(friendEl).find('.fb_player');
