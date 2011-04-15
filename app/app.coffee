@@ -56,7 +56,9 @@ exports.createServer = (app) ->
 			data = activityManager.getPointsForPlayer layer, player
 			emit.apply emit, ['setColoredPointsForThisLayer', data]
 			quicklog player_id, 'action: get points player, for player: '+player+', layer: '+layer
-			
+		@done = (player_id) ->
+			quicklog player_id, 'action: DONE'
+		
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen(app)

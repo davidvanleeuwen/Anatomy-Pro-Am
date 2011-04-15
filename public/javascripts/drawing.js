@@ -4,13 +4,14 @@ components.drawing = function(){
 	window.ComputerView = Backbone.View.extend({
 		el: $('#game'),
 		events: {
-			'click .light_grey_gradient_text': 'goBack',
+			'click #current_room_button': 'goBack',
 			"mousedown .scanvas": "startLine",
 			"mousemove .scanvas" : "drawLine",
 			"mouseup .scanvas": "endLine",
 			"change .slider": "changeLayer",
 			"click .drawingTool": "drawTool",
-			"click .erasingTool": "eraseTool"
+			"click .erasingTool": "eraseTool",
+			"click .done": "done"
 		},
 		initialize: function() {
 			_.bindAll(this, 'render');
@@ -121,7 +122,7 @@ components.drawing = function(){
 		},
 		drawLine: function(event) {
 			event.preventDefault();
-			if(this.isDrawing) {
+			if(this.isDrawing && !this.locked) {
 				if(this.isErasing){
 					for (var xvar = event.clientX-this.canvas.offsetLeft-2; xvar < event.clientX-this.canvas.offsetLeft+2; xvar++)
 						for (var yvar = event.clientY-this.canvas.offsetTop-2; yvar < event.clientY-this.canvas.offsetTop+2; yvar++)
@@ -163,19 +164,31 @@ components.drawing = function(){
 					}
 				});
 				
-				// refactor this - ugly code again ;'(
-				var friendElements = $('#fb_friends_container').children();
-				friendElements.each(function(i, friendEl) {
-					if($(friendEl).attr('id') != 'player-template') {
-						var a = $(friendEl).find('a');
-						if(!$(a).hasClass('invisible')) {
-							var idEl = $(friendEl).find('.fb_player');
-							remote.getColoredPointsForThisLayerAndPlayer(myUID, $(idEl).attr('id'), layer, emit);
-						}
-					}
-				}.bind(this));
-				
+				this.getColorPointsForLayerAndPlayer(false);
 			}
+		},
+		done: function(event) {
+			event.preventDefault();
+			remote.done(myUID);
+			
+			this.getColorPointsForLayerAndPlayer(true);
+		},
+		getColorPointsForLayerAndPlayer: function(showAll) {
+			// refactor this - ugly code again ;'(
+			var friendElements = $('#fb_friends_container').children();
+			friendElements.each(function(i, friendEl) {
+				if($(friendEl).attr('id') != 'player-template') {
+					var a = $(friendEl).find('a');
+					if(showAll) {
+						$(a).removeClass('invisible');
+						this.locked = !this.locked;
+					}
+					if(!$(a).hasClass('invisible') || showAll) {
+						var idEl = $(friendEl).find('.fb_player');
+						remote.getColoredPointsForThisLayerAndPlayer(myUID, $(idEl).attr('id'), layer, emit);
+					}
+				}
+			}.bind(this));
 		}
 	});
 };
