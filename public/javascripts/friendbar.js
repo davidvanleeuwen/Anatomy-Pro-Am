@@ -88,11 +88,9 @@ components.friendbar = function(){
 			friends.fetch();
 		},
 		render: function() {
-		console.log("render " + friends.length);
 			this.refreshFriends();
 		},
 		addFriend: function(friend) {
-			console.log('add player: ', friend);
 			var view = new FriendView({model:friend});
 			$(this.el).append(view.render().el);
 		},
@@ -100,7 +98,6 @@ components.friendbar = function(){
 			friend.clear();
 		},
 		refreshFriends: function() {
-		console.log("refresh " + friends.length);
 			friends.each(this.addFriend);
 		}
  	});

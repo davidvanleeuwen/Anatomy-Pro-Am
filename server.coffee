@@ -34,18 +34,16 @@ server.use browserify {
 app.createServer server
 
 server.get '/', (req, res) ->
-	console.log 'get'
+	console.log '/ post'
 	fbhelper.renderIndex req, res, (fbUser) ->
 		if fbUser
-			console.log 'fb user' + fbUser
 			# callback for getting the token and returns it to the  original request
 			return app.setFbUserAndGetToken fbUser
 	
 server.post '/', (req, res) ->
-	console.log 'post'
+	console.log '/ post'
 	fbhelper.renderIndex req, res, (fbUser) ->
 		if fbUser
-			console.log 'fb user' + fbUser
 			# callback for getting the token and returns it to the  original request
 			return app.setFbUserAndGetToken fbUser
 

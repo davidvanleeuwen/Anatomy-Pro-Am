@@ -28,7 +28,6 @@ $(function(){
 	if(AUTH_TOKEN != '') {
 		DNode().connect(function(remote){
 			window.remote = remote;
-			console.log("LIDSJFLJ");
 			remote.subscribe(AUTH_TOKEN, emit);
 			em.on('myUID', function(uid, color) {
 				window.myUID = uid;
