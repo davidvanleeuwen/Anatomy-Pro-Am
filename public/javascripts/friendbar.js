@@ -27,7 +27,8 @@ components.friendbar = function(){
 			this.$('.fb_player_img').attr('style', 'background: url(\'' + this.model.get('avatar')  + '\');');
 			this.$('.fb_player_name').text(this.model.get('name'));
 			if(this.model.get('id') == myUID) {
-				this.$('a').toggleClass('invisible');
+				this.model.set({layer_enabled: true},{silent: true});
+				this.$('a').removeClass('invisible');
 			}
 		},
 		remove: function() {
@@ -35,22 +36,20 @@ components.friendbar = function(){
 		},
 		toggleEnabled: function(event) {
 			event.preventDefault();
-			this.$('a').toggleClass('invisible');
-			
-			// refactor this to a non-global selector! GET ALL THIS UGLY CODE OUT OF HERE PLEASE!
+			this.model.toggleVisibility();
+			if(this.model.get('layer_enabled')){
+				this.$('a').removeClass('invisible');
+			}else{
+				this.$('a').addClass('invisible');
+			}
 			var canvas = $('canvas')[0];
 			var ctx = canvas.getContext("2d");
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			var friendElements = $('#fb_friends_container').children();
-			friendElements.each(function(i, friendEl) {
-				if($(friendEl).attr('id') != 'player-template') {
-					var a = $(friendEl).find('a');
-					if(!$(a).hasClass('invisible')) {
-						var idEl = $(friendEl).find('.fb_player');
-						remote.getColoredPointsForThisLayerAndPlayer(myUID, $(idEl).attr('id'), layer, emit);
-					}
+			friends.each(function(friend){
+				if(friend.get('layer_enabled')){
+					remote.getColoredPointsForThisLayerAndPlayer(myUID, friend.id, layer, emit);
 				}
-			}.bind(this));
+			});
 		}
 	});
 	
@@ -62,14 +61,16 @@ components.friendbar = function(){
 			}
 		})
 		if(okToAdd){
+			console.log("addinguser");
 			friends.add({
 				id: n.id,
 				name: n.first_name, 
 				player_color: n.player_color,
-				avatar: "http://graph.facebook.com/" + n.id + "/picture"
-				
+				avatar: "http://graph.facebook.com/" + n.id + "/picture",
+				layer_enabled: false
 			});
 		}
+		
 	});
 		
 	em.on('FriendWentOffline', function(n) {

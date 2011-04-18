@@ -82,7 +82,7 @@ server.all '/friends', (req, res) ->
 	playersInfo = app.sessionManager.sessions_for_facebook_id
 	output = []
 	Hash(playersInfo).forEach (player) ->
-		output.push ( {id: player.fbUser.id,name: player.fbUser.first_name,player_color: player.fbUser.player_color, avatar: "http://graph.facebook.com/" + player.fbUser.id + "/picture", enabled: false})
+		output.push ( {id: player.fbUser.id,name: player.fbUser.first_name,player_color: player.fbUser.player_color, avatar: "http://graph.facebook.com/" + player.fbUser.id + "/picture", layer_enabled: false})
 	res.send(JSON.stringify(output))
 
 ## other stuff

@@ -4,13 +4,20 @@ _ = require('underscore@1.1.5')._
 ###
 #	SESSION MANAGER
 ###
+#Added more colors to allow more than 5 players at once.  This should be refactored for high contrast colors. 
 
 colors = [
 	{hex: '3D5A9C', user: undefined},
 	{hex: '91E671', user: undefined},
 	{hex: '66993C', user: undefined},
 	{hex: 'E9B061', user: undefined},
-	{hex: 'E73237', user: undefined}
+	{hex: 'E73237', user: undefined},
+	{hex: 'FF0000', user: undefined},
+	{hex: 'FFFF00', user: undefined},
+	{hex: 'FF00FF', user: undefined},
+	{hex: '00FF00', user: undefined},
+	{hex: '00FFFF', user: undefined},
+	{hex: '0000FF', user: undefined},
 ]
 
 
