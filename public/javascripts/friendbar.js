@@ -37,11 +37,7 @@ components.friendbar = function(){
 		toggleEnabled: function(event) {
 			event.preventDefault();
 			this.model.toggleVisibility();
-			if(this.model.get('layer_enabled')){
-				this.$('a').removeClass('invisible');
-			}else{
-				this.$('a').addClass('invisible');
-			}
+			
 			var canvas = $('canvas')[0];
 			var ctx = canvas.getContext("2d");
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
