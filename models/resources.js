@@ -47,6 +47,14 @@ resources.models.Person = Backbone.Model.extend({
     },
 	url: function() {
 		return 'deleteuser';
+	},
+	toggleVisibility: function(){
+		this.set({layer_enabled: !this.get('layer_enabled')}, {silent: true});
+		if(this.get('layer_enabled')){
+			this.view.$('a').removeClass('invisible');
+		}else{
+			this.view.$('a').addClass('invisible');
+		}
 	}
 })
 

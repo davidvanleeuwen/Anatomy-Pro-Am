@@ -42,34 +42,20 @@ components.drawing = function(){
 			this.isErasing = false;
 			
 			em.on('pointColored', function(player_id, point) {
-				// refactor this... very UGLY!
-				var friendElements = $('#fb_friends_container').children();
-				friendElements.each(function(i, friendEl) {
-					if($(friendEl).attr('id') != 'player-template') {
-						var a = $(friendEl).children('a');
-						var par = $(a[0]).children('.fb_player');
-						if(!$(a[0]).hasClass('invisible') && $(par).attr('id') == player_id) {
-								var friend = friends.get(player_id);
-								this.colorPoint(point.x, point.y, point.layer, friend.get('player_color'));
-							
-						}
-					}
-				}.bind(this));
+				if (friends.get(player_id).get('layer_enabled')){
+					this.colorPoint(point.x, point.y, point.layer, friends.get(player_id).get('player_color'));
+				}
 			}.bind(this));
 			
 			em.on('pointErased', function(player_id, point) {
 				this.erasePoint(point.x, point.y, point.layer);
 			}.bind(this));
-		
-			
-			var self = this;
-			
+
 			em.on('setColoredPointsForThisLayer', function(points){
 				if(points) {
-					var friend = friends.get(points.player);
-					var color = friend.get('player_color');
+					var color = friends.get(points.player).get('player_color');
 					for(point in points.payload) {
-						self.colorPoint(points.payload[point].x, points.payload[point].y, points.payload[point].layer, color);
+						this.colorPoint(points.payload[point].x, points.payload[point].y, points.payload[point].layer, color);
 					}
 				}
 			}.bind(this));
@@ -186,20 +172,11 @@ components.drawing = function(){
 					$('.done').text("I'M DONE");
 				}
 			}
-		
-			var friendElements = $('#fb_friends_container').children();
-			friendElements.each(function(i, friendEl) {
-				if($(friendEl).attr('id') != 'player-template') {
-					var a = $(friendEl).find('a');
-					if(showAll) {
-						$(a).removeClass('invisible');
-					}
-					if(!$(a).hasClass('invisible') || showAll) {
-						var idEl = $(friendEl).find('.fb_player');
-						remote.getColoredPointsForThisLayerAndPlayer(myUID, $(idEl).attr('id'), layer, emit);
-					}
+			friends.each(function(friend){
+				if (!friend.get('layer_enabled')){
+					friend.toggleVisibility();
 				}
-			}.bind(this));
+			});
 		}
 	});
 };
