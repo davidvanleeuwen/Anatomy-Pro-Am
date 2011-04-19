@@ -1,6 +1,6 @@
 components.drawing = function(){
 	console.log('loaded drawing');
-	
+
 	window.ComputerView = Backbone.View.extend({
 		el: $('#game'),
 		events: {
@@ -35,18 +35,18 @@ components.drawing = function(){
 		},
 		setupView: function() {
 			new FriendBar;
-			
+
 			this.$('.drawingTool').attr('style', 'background:' + friends.get(myUID).get('player_color'));
 			this.canvas = $('canvas')[0];
 			this.ctx = this.canvas.getContext("2d");
 			this.isErasing = false;
-			
+
 			em.on('pointColored', function(player_id, point) {
 				if (friends.get(player_id).get('layer_enabled')){
 					this.colorPoint(point.x, point.y, point.layer, friends.get(player_id).get('player_color'));
 				}
 			}.bind(this));
-			
+
 			em.on('pointErased', function(player_id, point) {
 				this.erasePoint(point.x, point.y, point.layer);
 			}.bind(this));
@@ -59,17 +59,17 @@ components.drawing = function(){
 					}
 				}
 			}.bind(this));
-			
+
 			// fixtures for the images (scans):
 			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png',
 							'/images/cases/case2/0.png','/images/cases/case2/1.png', '/images/cases/case2/2.png','/images/cases/case2/3.png', '/images/cases/case2/4.png'];
-			
+
 			imageRefs.forEach(function(img){
 				this.$('#images').append('<img src="'+img+'" style="display: none;" />');
 			});
-			
+
 			layers = this.$('#images').children();
-			
+
 			$(layers[0]).show();
 			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
 			window.layer = 0;
@@ -139,11 +139,11 @@ components.drawing = function(){
 		changeLayer: function(event) {
 			if($('.slider')[0].value != layer){
 				layer = $('.slider')[0].value;
-			
+
 				//remote.getColoredPointsForThisLayer(layer, emit);
-			
+
 				this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-				
+
 				layers.each(function(n, el){
 					if(layer != n) {
 						$(el).hide();
@@ -152,14 +152,14 @@ components.drawing = function(){
 						$('#slide').html('#'+(n+1));
 					}
 				});
-				
+
 				this.getColorPointsForLayerAndPlayer(false);
 			}
 		},
 		done: function(event) {
 			event.preventDefault();
 			remote.done(myUID);
-			
+
 			this.getColorPointsForLayerAndPlayer(true);
 		},
 		getColorPointsForLayerAndPlayer: function(showAll) {

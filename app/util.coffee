@@ -8,13 +8,20 @@ redis = require 'redis@0.5.11'
 #	SESSION MANAGER
 ###
 
-colors = [
-	{hex: '3D5A9C', user: undefined},
-	{hex: '91E671', user: undefined},
-	{hex: '66993C', user: undefined},
-	{hex: 'E9B061', user: undefined},
-	{hex: 'E73237', user: undefined}
+colors = [ 
+	{ hex: '3D5A9C', user: undefined },
+	{ hex: '91E671', user: undefined },
+	{ hex: '66993C', user: undefined },
+	{ hex: 'E9B061', user: undefined },
+	{ hex: 'E73237', user: undefined },
+	{ hex: 'FF0000', user: undefined },
+	{ hex: 'FFFF00', user: undefined },
+	{ hex: 'FF00FF', user: undefined },
+	{ hex: '00FF00', user: undefined },
+	{ hex: '00FFFF', user: undefined },
+	{ hex: '0000FF', user: undefined } 
 ]
+
 
 
 GetColor = (userID) ->
@@ -32,9 +39,10 @@ GetColor = (userID) ->
 	return returnedcolor
 	
 UnsetColor = (userID) ->
-	console.log "disconnect uid: ", userID
+	console.log "disconnect uid: " +  userID
 	_.each colors, (color) ->
 		if color.user is userID[0]
+			console.log "Returning color " + color.user
 			color.user = undefined
 		
 GenerateRandomKey = () ->
@@ -45,7 +53,6 @@ GenerateRandomKey = () ->
 	for x in [0..32]
 		rnum = Math.floor(Math.random() * chars.length)
 		ret += chars.substring(rnum,rnum+1)
-
 	return ret
 
 class Session
