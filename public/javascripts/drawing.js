@@ -4,19 +4,20 @@ components.drawing = function(){
 	window.ComputerView = Backbone.View.extend({
 		el: $('#game'),
 		events: {
-			'click .light_grey_gradient_text': 'goBack',
+			'click #current_room_button': 'goBack',
 			"mousedown .scanvas": "startLine",
 			"mousemove .scanvas" : "drawLine",
 			"mouseup .scanvas": "endLine",
 			"mouseout .scanvas": "endLine",
 			"change .slider": "changeLayer",
 			"click .drawingTool": "drawTool",
-			"click .erasingTool": "eraseTool"
+			"click .erasingTool": "eraseTool",
+			"click .done": "done"
 		},
-		initialize: function(caseNum) {
-			this.caseNum = caseNum;
+		initialize: function() {
 			_.bindAll(this, 'render');
 			this.render();
+			this.locked = false;
 		},
 		render: function() {
 			if (view.computer) {
@@ -41,33 +42,20 @@ components.drawing = function(){
 			this.isErasing = false;
 			
 			em.on('pointColored', function(player_id, point) {
-				// refactor this... very UGLY!
-				var friendElements = $('#fb_friends_container').children();
-				friendElements.each(function(i, friendEl) {
-					if($(friendEl).attr('id') != 'player-template') {
-						var a = $(friendEl).children('a');
-						var par = $(a[0]).children('.fb_player');
-						if(!$(a[0]).hasClass('invisible') && $(par).attr('id') == player_id) {
-								var friend = friends.get(player_id);
-								this.colorPoint(point.x, point.y, point.layer + this.caseNum*5, friend.get('player_color'));
-						}
-					}
-				}.bind(this));
+				if (friends.get(player_id).get('layer_enabled')){
+					this.colorPoint(point.x, point.y, point.layer, friends.get(player_id).get('player_color'));
+				}
 			}.bind(this));
 			
 			em.on('pointErased', function(player_id, point) {
 				this.erasePoint(point.x, point.y, point.layer + this.caseNum*5);
 			}.bind(this));
-		
-			
-			var self = this;
-			
+
 			em.on('setColoredPointsForThisLayer', function(points){
 				if(points) {
-					var friend = friends.get(points.player);
-					var color = friend.get('player_color');
-					for(point in points.payload) {
-						self.colorPoint(points.payload[point].x, points.payload[point].y, points.payload[point].layer+this.caseNum*5, color);
+					var color = friends.get(points.player).get('player_color');
+					for(key in points.payload) {
+						this.colorPoint(points.payload[key].point.x, points.payload[key].point.y, points.payload[key].point.layer, color);
 					}
 				}
 			}.bind(this));
@@ -124,16 +112,13 @@ components.drawing = function(){
 		},
 		drawLine: function(event) {
 			event.preventDefault();
-			if(this.isDrawing) {
+			if(this.isDrawing && !this.locked) {
 				if(this.isErasing){
 					for (var xvar = event.clientX-this.canvas.offsetLeft-2; xvar < event.clientX-this.canvas.offsetLeft+2; xvar++)
 						for (var yvar = event.clientY-this.canvas.offsetTop-2; yvar < event.clientY-this.canvas.offsetTop+2; yvar++)
 							if(xvar>0 && xvar<this.canvas.width && yvar>0 && yvar<this.canvas.height)
 								remote.pointErased(myUID, {x: xvar, y: yvar, layer: layer});
-				}else{
-					remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: layer});
-			
-				}
+				}else remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: layer});
 			}
 		},
 		drawTool: function(event) {
@@ -169,19 +154,30 @@ components.drawing = function(){
 					}
 				});
 				
-				// refactor this - ugly code again ;'(
-				var friendElements = $('#fb_friends_container').children();
-				friendElements.each(function(i, friendEl) {
-					if($(friendEl).attr('id') != 'player-template') {
-						var a = $(friendEl).find('a');
-						if(!$(a).hasClass('invisible')) {
-							var idEl = $(friendEl).find('.fb_player');
-							remote.getColoredPointsForThisLayerAndPlayer(myUID, $(idEl).attr('id'), layer, emit);
-						}
-					}
-				}.bind(this));
-				
+				this.getColorPointsForLayerAndPlayer(false);
 			}
+		},
+		done: function(event) {
+			event.preventDefault();
+			remote.done(myUID);
+			
+			this.getColorPointsForLayerAndPlayer(true);
+		},
+		getColorPointsForLayerAndPlayer: function(showAll) {
+			// refactor this - ugly code again ;'(
+			if(showAll) {
+				this.locked = !this.locked;
+				if(this.locked) {
+					$('.done').text('UNLOCK');
+				} else {
+					$('.done').text("I'M DONE");
+				}
+			}
+			friends.each(function(friend){
+				if (!friend.get('layer_enabled')){
+					friend.toggleVisibility();
+				}
+			});
 		}
 	});
 };

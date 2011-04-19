@@ -3,8 +3,7 @@ components.cases = function(){
 	window.CaseView = Backbone.View.extend({
 		el: $('#game'),
 		events: {
-			'click .light_grey_gradient_text0': 'selectCase0',
-			'click .light_grey_gradient_text1': 'selectCase1'
+			'click .light_grey_gradient_text': 'selectCase'
 		},
 		initialize: function() {
 			_.bindAll(this, 'render');
@@ -23,13 +22,9 @@ components.cases = function(){
 				}.bind(this));
 			}
 		},
-		selectCase0: function(e) {
+		selectCase: function(e) {
 			e.preventDefault();
-			new ComputerView(0);
-		},
-		selectCase1: function(e) {
-			e.preventDefault();
-			new ComputerView(1);
+			new ComputerView();
 		}
 	});
 };

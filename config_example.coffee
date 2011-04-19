@@ -14,7 +14,8 @@ exports.server = {
 # Redis server
 exports.redis = {
 	server: '127.0.0.1',
-	port: 6379
+	port: 6379,
+	db: 'apa-dev-name'
 }
 
 # Facebook settings
