@@ -168,15 +168,21 @@ components.drawing = function(){
 				this.locked = !this.locked;
 				if(this.locked) {
 					$('.done').text('UNLOCK');
+					friends.each(function(friend){
+						if (!friend.get('layer_enabled')){
+							friend.toggleVisibility();
+						}
+					});
 				} else {
 					$('.done').text("I'M DONE");
 				}
+			} else {
+				friends.each(function(friend){
+					if (friend.get('layer_enabled')){
+						remote.getColoredPointsForThisLayerAndPlayer(myUID, friend.get('id'), layer, emit);
+					}
+				});
 			}
-			friends.each(function(friend){
-				if (!friend.get('layer_enabled')){
-					friend.toggleVisibility();
-				}
-			});
 		}
 	});
 };
