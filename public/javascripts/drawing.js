@@ -49,15 +49,14 @@ components.drawing = function(){
 						var par = $(a[0]).children('.fb_player');
 						if(!$(a[0]).hasClass('invisible') && $(par).attr('id') == player_id) {
 								var friend = friends.get(player_id);
-								this.colorPoint(point.x, point.y, point.layer, friend.get('player_color'));
-							
+								this.colorPoint(point.x, point.y, point.layer + this.caseNum*5, friend.get('player_color'));
 						}
 					}
 				}.bind(this));
 			}.bind(this));
 			
 			em.on('pointErased', function(player_id, point) {
-				this.erasePoint(point.x, point.y, point.layer);
+				this.erasePoint(point.x, point.y, point.layer + this.caseNum*5);
 			}.bind(this));
 		
 			
@@ -68,7 +67,7 @@ components.drawing = function(){
 					var friend = friends.get(points.player);
 					var color = friend.get('player_color');
 					for(point in points.payload) {
-						self.colorPoint(points.payload[point].x, points.payload[point].y, points.payload[point].layer, color);
+						self.colorPoint(points.payload[point].x, points.payload[point].y, points.payload[point].layer+this.caseNum*5, color);
 					}
 				}
 			}.bind(this));
@@ -82,12 +81,13 @@ components.drawing = function(){
 			});
 			
 			layers = this.$('#images').children();
+			console.log(layers);
 			
 			$(layers[0]).show();
 			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
 			window.layer = 0;
 			//remote.getColoredPointsForThisLayer(layer, emit);
-			remote.getColoredPointsForThisLayerAndPlayer(myUID, myUID, layer, emit);
+			remote.getColoredPointsForThisLayerAndPlayer(myUID, myUID, layer+this.caseNum*5, emit);
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -129,8 +129,11 @@ components.drawing = function(){
 					for (var xvar = event.clientX-this.canvas.offsetLeft-2; xvar < event.clientX-this.canvas.offsetLeft+2; xvar++)
 						for (var yvar = event.clientY-this.canvas.offsetTop-2; yvar < event.clientY-this.canvas.offsetTop+2; yvar++)
 							if(xvar>0 && xvar<this.canvas.width && yvar>0 && yvar<this.canvas.height)
-								remote.pointErased(myUID, {x: xvar, y: yvar, layer: layer+this.caseNum*5});
-				}else remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: layer+this.caseNum*5});
+								remote.pointErased(myUID, {x: xvar, y: yvar, layer: layer});
+				}else{
+					remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: layer});
+			
+				}
 			}
 		},
 		drawTool: function(event) {
