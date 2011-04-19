@@ -109,6 +109,8 @@ components.drawing = function(){
 		startLine: function(event) {
 			event.preventDefault();
 			this.isDrawing = true;
+			this.oldX = event.clientX-this.canvas.offsetLeft;
+			this.oldY = event.clientY-this.canvas.offsetTop;
 		},
 		drawLine: function(event) {
 			event.preventDefault();
@@ -118,7 +120,23 @@ components.drawing = function(){
 						for (var yvar = event.clientY-this.canvas.offsetTop-2; yvar < event.clientY-this.canvas.offsetTop+2; yvar++)
 							if(xvar>0 && xvar<this.canvas.width && yvar>0 && yvar<this.canvas.height)
 								remote.pointErased(myUID, {x: xvar, y: yvar, layer: layer});
-				}else remote.pointColored(myUID, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: layer});
+				}else{
+					var xvar = event.clientX-this.canvas.offsetLeft;
+					var yvar = event.clientY-this.canvas.offsetTop;
+					var points = new Array();
+					var delX = (xvar-this.oldX);
+					var delY = (yvar-this.oldY);
+					if(Math.abs(delX)>Math.abs(delY)) var stepCount=Math.abs(delX);
+					else var stepCount = Math.abs(delY);
+					for(var c = 0; c < stepCount; c++)
+						points[c] = {x: this.oldX+(delX/stepCount)*(c+1),
+							y: this.oldY+(delY/stepCount)*(c+1),
+							layer: layer};
+					this.oldX = xvar;
+					this.oldY = yvar;
+					remote.pointColored(myUID, points);
+				
+				}
 			}
 		},
 		drawTool: function(event) {
