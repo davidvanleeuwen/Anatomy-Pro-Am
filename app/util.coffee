@@ -1,5 +1,8 @@
+config = require '../config'
+
 Hash = require 'hashish@0.0.2'
 _ = require('underscore@1.1.5')._
+redis = require 'redis'
 
 ###
 #	SESSION MANAGER
@@ -115,37 +118,26 @@ class ContouringActivity
 		@activityData.newPoint player_id, point
 	deletePoint: (player_id, point) ->
 		@activityData.removePoint player_id, point
-	getPoints: (layer) ->
-		return @activityData.getPointsForLayer layer
-	getPointsForPlayer: (layer, player_id) ->
-		return @activityData.getPointsForPlayer layer, player_id
+	getPointsForPlayer: (layer, player_id, callback) ->
+		return @activityData.getPointsForPlayer layer, player_id, callback
+		
 
 ###
 #	CONTOURING ACTIVTY DATA
 ###
 class ContouringActivityData
 	constructor: (@id) ->
+		@redisClient = redis.createClient config.redis.port, config.redis.server
+		@redisClient.select config.redis.db
+		
 		@data_for_layer = {}
 	newPoint: (player_id, point) ->
-		if not @data_for_layer[point.layer]
-			@data_for_layer[point.layer] = {}
-		if not @data_for_layer[point.layer][player_id]
-			# set the first point in the array
-			@data_for_layer[point.layer][player_id] = {}
-			@data_for_layer[point.layer][player_id][GenerateRandomKey()] = point
-			return true
-		else
-			duplicatePoint = false
-			_.each @data_for_layer[point.layer][player_id], (p, k) ->
-				if p.x is point.x and p.y is point.y
-					# this point already exists
-					duplicatePoint = true
-			if not duplicatePoint
-				@data_for_layer[point.layer][player_id][GenerateRandomKey()] = point
-				point
-				return true
-			else
-				return false
+		client = @redisClient
+		client.sismember 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, ismember) ->
+			if err then console.log 'SISMEMBER error: ', err
+			if ismember is 0
+				client.sadd 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, added) ->
+					if err then console.log 'SADD error: ', err
 	removePoint: (player_id, point) ->
 		removePointKey = ''
 		_.each @data_for_layer[point.layer][player_id], (p, k) ->
@@ -154,11 +146,10 @@ class ContouringActivityData
 		erasedPoint = @data_for_layer[point.layer][player_id][removePointKey]
 		delete @data_for_layer[point.layer][player_id][removePointKey]
 		return erasedPoint
-	getPointsForLayer: (layer) ->
-		return @data_for_layer[layer]
-	getPointsForPlayer: (layer, player) ->
-		if @data_for_layer[layer] and @data_for_layer[layer][player]
-			return { player: player, payload: @data_for_layer[layer][player] }
+	getPointsForPlayer: (layer, player, callback) ->
+		@redisClient.smembers 'layer:'+layer+':player:'+player+':points', (err, points) ->
+			if err then console.log 'SMEMBERS error: ', err
+			callback points
 
 ###
 #	MEMORY STORE

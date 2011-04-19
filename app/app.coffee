@@ -30,12 +30,9 @@ exports.createServer = (app) ->
 			erasedPoint = activityManager.deletePoint player_id, point
 			if erasedPoint
 				sessionManager.publish 'pointErased', player_id, erasedPoint
-		@getColoredPointsForThisLayer = (layer, emit) ->
-			data = activityManager.getPoints layer
-			emit.apply emit, ['setColoredPointsForThisLayer', data]
 		@getColoredPointsForThisLayerAndPlayer = (player_id, player, layer, emit) ->
-			data = activityManager.getPointsForPlayer layer, player
-			emit.apply emit, ['setColoredPointsForThisLayer', data]
+			activityManager.getPointsForPlayer layer, player, (points) ->
+				emit.apply emit, ['setColoredPointsForThisLayer', points]
 		@done = (player_id) ->
 			
 		
