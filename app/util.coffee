@@ -2,7 +2,7 @@ config = require '../config'
 
 Hash = require 'hashish@0.0.2'
 _ = require('underscore@1.1.5')._
-redis = require 'redis'
+redis = require 'redis@0.5.11'
 
 ###
 #	SESSION MANAGER
