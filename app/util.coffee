@@ -129,8 +129,6 @@ class ContouringActivityData
 	constructor: (@id) ->
 		@redisClient = redis.createClient config.redis.port, config.redis.server
 		@redisClient.select config.redis.db
-		
-		@data_for_layer = {}
 	newPoint: (player_id, point) ->
 		client = @redisClient
 		client.sismember 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, ismember) ->

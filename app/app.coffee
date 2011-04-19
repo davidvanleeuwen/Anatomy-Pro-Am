@@ -30,7 +30,6 @@ exports.createServer = (app) ->
 			activityManager.deletePoint player_id, point, (isRemoved) ->
 				if isRemoved
 					sessionManager.publish 'pointErased', player_id, point
-				
 		@getColoredPointsForThisLayerAndPlayer = (player_id, player, layer, emit) ->
 			activityManager.getPointsForPlayer layer, player, (points) ->
 				emit.apply emit, ['setColoredPointsForThisLayer', {player: player_id, payload: points} ]
