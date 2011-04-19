@@ -54,8 +54,8 @@ components.drawing = function(){
 			em.on('setColoredPointsForThisLayer', function(points){
 				if(points) {
 					var color = friends.get(points.player).get('player_color');
-					for(point in points.payload) {
-						this.colorPoint(points.payload[point].x, points.payload[point].y, points.payload[point].layer, color);
+					for(key in points.payload) {
+						this.colorPoint(points.payload[key].point.x, points.payload[key].point.y, points.payload[key].point.layer, color);
 					}
 				}
 			}.bind(this));
