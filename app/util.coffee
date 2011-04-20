@@ -2,7 +2,7 @@ config = require '../config'
 
 Hash = require 'hashish@0.0.2'
 _ = require('underscore@1.1.5')._
-redis = require 'redis'
+redis = require 'redis@0.5.11'
 
 ###
 #	SESSION MANAGER
@@ -116,8 +116,8 @@ class ContouringActivity
 		@players[player.id] = player
 	createPoint: (player_id, point) ->
 		@activityData.newPoint player_id, point
-	deletePoint: (player_id, point) ->
-		@activityData.removePoint player_id, point
+	deletePoint: (player_id, point, callback) ->
+		return @activityData.removePoint player_id, point, callback
 	getPointsForPlayer: (layer, player_id, callback) ->
 		return @activityData.getPointsForPlayer layer, player_id, callback
 		
@@ -129,8 +129,6 @@ class ContouringActivityData
 	constructor: (@id) ->
 		@redisClient = redis.createClient config.redis.port, config.redis.server
 		@redisClient.select config.redis.db
-		
-		@data_for_layer = {}
 	newPoint: (player_id, point) ->
 		client = @redisClient
 		client.sismember 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, ismember) ->
@@ -138,14 +136,10 @@ class ContouringActivityData
 			if ismember is 0
 				client.sadd 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, added) ->
 					if err then console.log 'SADD error: ', err
-	removePoint: (player_id, point) ->
-		removePointKey = ''
-		_.each @data_for_layer[point.layer][player_id], (p, k) ->
-			if p.x is point.x and p.y is point.y
-				removePointKey = k
-		erasedPoint = @data_for_layer[point.layer][player_id][removePointKey]
-		delete @data_for_layer[point.layer][player_id][removePointKey]
-		return erasedPoint
+	removePoint: (player_id, point, callback) ->
+		@redisClient.srem 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
+			if err then console.log 'SISMEMBER error: ', err
+			callback {isremoved, point}
 	getPointsForPlayer: (layer, player, callback) ->
 		@redisClient.smembers 'layer:'+layer+':player:'+player+':points', (err, points) ->
 			if err then console.log 'SMEMBERS error: ', err

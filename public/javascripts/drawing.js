@@ -48,7 +48,7 @@ components.drawing = function(){
 			}.bind(this));
 			
 			em.on('pointErased', function(player_id, point) {
-				this.erasePoint(point.x, point.y, point.layer + this.caseNum*5);
+				this.erasePoint(point.x, point.y, point.layer);
 			}.bind(this));
 
 			em.on('setColoredPointsForThisLayer', function(points){
@@ -75,7 +75,7 @@ components.drawing = function(){
 			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
 			window.layer = 0;
 			//remote.getColoredPointsForThisLayer(layer, emit);
-			remote.getColoredPointsForThisLayerAndPlayer(myUID, myUID, layer+this.caseNum*5, emit);
+			remote.getColoredPointsForThisLayerAndPlayer(myUID, myUID, layer, emit);
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -85,10 +85,8 @@ components.drawing = function(){
 		colorPoint: function(x, y, slide, color) {
 			if(layer == slide) {
 				this.ctx.fillStyle = "#"+color;
-				this.ctx.beginPath();
-				this.ctx.arc(x,y,1,0,Math.PI*2,true);
-				this.ctx.closePath();
-				this.ctx.fill();
+				this.ctx.moveTo(0,0);
+				this.ctx.fillRect(x,y,1,1);
 			}
 		},
 		erasePoint: function(x, y, slide) {
@@ -97,13 +95,18 @@ components.drawing = function(){
 				var pix = imageData.data;
 				if(x>0&&y>0){
 					pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
-					pix[((y*(imageData.width*4)) + ((x-1)*4)) + 3]=0;
-					pix[(((y-1)*(imageData.width*4)) + (x*4)) + 3]=0;
-					pix[(((y-1)*(imageData.width*4)) + ((x-1)*4)) + 3]=0;
+					//pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
+					//pix[(((y)*(imageData.width*4)) + (x*4)) + 3]=0;
+					//pix[(((y-1)*(imageData.width*4)) + ((x-1)*4)) + 3]=0;
 				}
 				// Draw the ImageData at the given (x,y) coordinates.
 				this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 				this.ctx.putImageData(imageData, 0, 0);
+				/*this.ctx.fillStyle = 'rgb(255,255,255)';
+				this.ctx.moveTo(0,0);
+				console.log('Erase: x: '+x, 'y: '+y);
+				this.ctx.fillRect(x,y,1,1);
+				*/
 			}
 		},
 		startLine: function(event) {
@@ -118,15 +121,30 @@ components.drawing = function(){
 				if(this.isErasing){
 					var xvar = event.clientX-this.canvas.offsetLeft;
 					var yvar = event.clientY-this.canvas.offsetTop;
+					//console.log('Current: x: '+xvar, 'y: '+yvar);
 					var points = new Array();
 					var delX = (xvar-this.oldX);
 					var delY = (yvar-this.oldY);
+					var arrayPos = 0;
 					if(Math.abs(delX)>Math.abs(delY)) var stepCount=Math.abs(delX);
 					else var stepCount = Math.abs(delY);
-					for(var c = 0; c < stepCount; c++)
-						points[c] = {x: this.oldX+(delX/stepCount)*(c+1),
-							y: this.oldY+(delY/stepCount)*(c+1),
+					for(var c = 0; c < stepCount; c++){
+						var curX = Math.floor(this.oldX+(delX/stepCount)*(c+1));
+						var curY = Math.floor(this.oldY+(delY/stepCount)*(c+1));
+						/*for (var xSubset = curX-2; xSubset < curX+2; xSubset++)
+							for (var ySubset = curY-2; ySubset < curY+2; ySubset++)
+								if(xSubset>0 && xSubset<this.canvas.width && ySubset>0 && ySubset<this.canvas.height){
+									points[arrayPos] = {x: xSubset,
+										y: ySubset,
+										layer: layer};
+									arrayPos++;
+								}
+						*/
+						points[c] = {x: 1*(Math.floor(this.oldX+(delX/stepCount)*(c))),
+							y: 1*(Math.floor(this.oldY+(delY/stepCount)*(c))),
 							layer: layer};
+					}
+					//points[0] = {x: xvar, y: yvar, layer: layer};
 					this.oldX = xvar;
 					this.oldY = yvar;
 					remote.pointErased(myUID, points);
@@ -138,10 +156,12 @@ components.drawing = function(){
 					var delY = (yvar-this.oldY);
 					if(Math.abs(delX)>Math.abs(delY)) var stepCount=Math.abs(delX);
 					else var stepCount = Math.abs(delY);
-					for(var c = 0; c < stepCount; c++)
-						points[c] = {x: this.oldX+(delX/stepCount)*(c+1),
-							y: this.oldY+(delY/stepCount)*(c+1),
+					for(var c = 0; c < stepCount; c++){
+						points[c] = {x: Math.floor(this.oldX+(delX/stepCount)*(c)),
+							y: Math.floor(this.oldY+(delY/stepCount)*(c)),
 							layer: layer};
+						//console.log("input: ",points[c]);
+					}
 					this.oldX = xvar;
 					this.oldY = yvar;
 					remote.pointColored(myUID, points);
