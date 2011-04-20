@@ -24,6 +24,8 @@ components.cases = function(){
 		},
 		selectCase: function(e) {
 			e.preventDefault();
+			//Passing 283408 for the room number for now - indicates activity - this will be auto generated later on
+			remote.newCase(283408, me, emit);
 			new ComputerView();
 		}
 	});

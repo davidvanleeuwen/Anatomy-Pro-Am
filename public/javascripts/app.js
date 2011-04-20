@@ -3,6 +3,7 @@ $(function(){
 	
 	// change this to mixin views
 	window.view = {};
+	window.me = new resources.models.Person;
 	
 	window.AppView = Backbone.View.extend({
 		el: $('#game'),
@@ -29,8 +30,19 @@ $(function(){
 		DNode().connect(function(remote){
 			window.remote = remote;
 			remote.subscribe(AUTH_TOKEN, emit);
-			em.on('myUID', function(uid, color) {
-				window.myUID = uid;
+			em.on('myINFO', function(myInfo, color) {
+				me.set({
+					id: myInfo.id,
+					facebook_id: myInfo.id,
+					name: myInfo.first_name,
+					player_color: myInfo.player_color, 
+					avatar: "http://graph.facebook.com/" + myInfo.id + "/picture"
+				}, {silent: true});
+			});
+			em.on('setCurrentCase', function(currentCase) {
+				me.set({
+				current_case_id: currentCase
+				}, {silent: true});
 			});
 		});
 	

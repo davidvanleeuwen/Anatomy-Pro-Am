@@ -78,12 +78,20 @@ server.post '/deauth', (req, res) ->
 	fbhelper.userDeauthed(req)
 	res.end()
 
-server.all '/friends', (req, res) ->
+server.all '/friends/:activity_id?', (req, res) ->
 	playersInfo = app.sessionManager.sessions_for_facebook_id
 	output = []
 	Hash(playersInfo).forEach (player) ->
-		output.push ( {id: player.fbUser.id,name: player.fbUser.first_name,player_color: player.fbUser.player_color, avatar: "http://graph.facebook.com/" + player.fbUser.id + "/picture", layer_enabled: false})
+		output.push ({
+			id: player.fbUser.id,
+			name: player.fbUser.first_name,
+			player_color: player.fbUser.player_color, 
+			avatar: "http://graph.facebook.com/" + player.fbUser.id + "/picture", 
+			layer_enabled: false,
+			current_case_id: {name: "case name", case_id: 0001}
+			})
 	res.send(JSON.stringify(output))
+
 
 ## other stuff
 ###

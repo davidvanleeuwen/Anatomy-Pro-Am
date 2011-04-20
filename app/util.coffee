@@ -114,15 +114,32 @@ class SessionManager
 ###
 #	CONTOURING ACTIVITY
 ###
+class ActivityManager
+	constructor: () ->
+		@current = []
+	newActivity: (case_number, thisPlayer) ->
+		activity = new ContouringActivity
+		activity.addPlayer thisPlayer
+		activity.setCaseID case_number
+		@current[activity.id] = activity	
+		return activity.id
+
+		
 class ContouringActivity
 	constructor: () ->
 		@id = GenerateRandomKey()
 		@activityData = new ContouringActivityData(@id)
 		@players = {}
+	getID: () ->
+		return @id
+	setCaseID: (case_id) ->
+		@caseID = case_id
 	addPlayer: (player) ->
 		@players[player.id] = player
+	getPlayers: (player) ->
+		return @players;
 	createPoint: (player_id, point) ->
-		@activityData.newPoint player_id, point
+		@activityData.newPoint  player_id, point
 	deletePoint: (player_id, point, callback) ->
 		return @activityData.removePoint player_id, point, callback
 	getPointsForPlayer: (layer, player_id, callback) ->
@@ -137,6 +154,7 @@ class ContouringActivityData
 		@redisClient = redis.createClient config.redis.port, config.redis.server
 		@redisClient.select config.redis.db
 	newPoint: (player_id, point) ->
+		console.log  player_id, point
 		client = @redisClient
 		client.sismember 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, ismember) ->
 			if err then console.log 'SISMEMBER error: ', err
@@ -147,7 +165,7 @@ class ContouringActivityData
 		@redisClient.srem 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
 			if err then console.log 'SISMEMBER error: ', err
 			callback isremoved
-	getPointsForPlayer: (layer, player, callback) ->
+	getPointsForPlayer: ( layer, player, callback) ->
 		@redisClient.smembers 'layer:'+layer+':player:'+player+':points', (err, points) ->
 			if err then console.log 'SMEMBERS error: ', err
 			data = []
@@ -186,4 +204,4 @@ class MemoryStore
 
 exports.SessionManager = SessionManager
 exports.MemoryStore = MemoryStore
-exports.ContouringActivity = ContouringActivity
+exports.ActivityManager = ActivityManager

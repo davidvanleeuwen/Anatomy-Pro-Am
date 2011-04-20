@@ -1,8 +1,9 @@
 components.friendbar = function(){
 	console.log('loading friendbar');
 	
-	window.friends = new resources.collections.Friends;
-	  
+	window.online_friends = new resources.collections.Friends;
+	window.friends_in_same_activity = new resources.collections.Friends;
+	
 	window.FriendView = Backbone.View.extend({
 		tagName: 'li',
 		events: {
@@ -26,7 +27,7 @@ components.friendbar = function(){
 			this.$('.fb_player').attr('id', this.model.get('id'));
 			this.$('.fb_player_img').attr('style', 'background: url(\'' + this.model.get('avatar')  + '\');');
 			this.$('.fb_player_name').text(this.model.get('name'));
-			if(this.model.get('id') == myUID) {
+			if(this.model.get('id') == me.id) {
 				this.model.set({layer_enabled: true},{silent: true});
 				this.$('a').removeClass('invisible');
 			}
@@ -41,9 +42,9 @@ components.friendbar = function(){
 			var canvas = $('canvas')[0];
 			var ctx = canvas.getContext("2d");
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			friends.each(function(friend){
+			online_friends.each(function(friend){
 				if(friend.get('layer_enabled')){
-					remote.getColoredPointsForThisLayerAndPlayer(myUID, friend.id, layer, emit);
+					remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.id, layer, emit);
 				}
 			});
 		}
@@ -51,14 +52,17 @@ components.friendbar = function(){
 	
 	em.on('FriendCameOnline', function(n) {
 		var okToAdd = true;
-		friends.each(function(friend){
+		online_friends.each(function(friend){
 			if(friend.id == n.id){
 				okToAdd = false;
+				var activity = me.get('current_case_id');
+				me = n;
+				me.set ({current_case_id: activity},{silent: true});
 			}
 		})
 		if(okToAdd){
 			console.log("addinguser");
-			friends.add({
+			online_friends.add({
 				id: n.id,
 				name: n.first_name, 
 				player_color: n.player_color,
@@ -70,19 +74,19 @@ components.friendbar = function(){
 	});
 		
 	em.on('FriendWentOffline', function(n) {
-		var m = friends.get(n.id);
-		friends.remove(m);
+		var m = online_friends.get(n.id);
+		online_friends.remove(m);
 	});
 	
 	window.FriendBar = Backbone.View.extend({
 		el: '#fb_friends_container',
 		initialize: function() {
-			friends.unbind();
+			online_friends.unbind();
 			_.bindAll(this, 'addFriend', 'removeFriend', 'refreshFriends', 'render');
-			friends.bind('add', this.addFriend);
-			friends.bind('remove', this.removeFriend);
-			friends.bind('refresh', this.refreshFriends);
-			friends.fetch();
+			online_friends.bind('add', this.addFriend);
+			online_friends.bind('remove', this.removeFriend);
+			online_friends.bind('refresh', this.refreshFriends);
+			online_friends.fetch();
 		},
 		render: function() {
 			this.refreshFriends();
@@ -95,7 +99,7 @@ components.friendbar = function(){
 			friend.clear();
 		},
 		refreshFriends: function() {
-			friends.each(this.addFriend);
+			online_friends.each(this.addFriend);
 		}
  	});
 };
