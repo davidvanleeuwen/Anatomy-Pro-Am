@@ -154,23 +154,24 @@ class ContouringActivityData
 		@redisClient = redis.createClient config.redis.port, config.redis.server
 		@redisClient.select config.redis.db
 	newPoint: (player_id, point) ->
-		console.log  player_id, point
 		client = @redisClient
-		client.sismember 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, ismember) ->
+		thisID = @id
+		client.sismember 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, ismember) ->
 			if err then console.log 'SISMEMBER error: ', err
 			if ismember is 0
-				client.sadd 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, added) ->
+				client.sadd 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, added) ->
 					if err then console.log 'SADD error: ', err
 	removePoint: (player_id, point, callback) ->
-		@redisClient.srem 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
+		@redisClient.srem 'activity:'+@id+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
 			if err then console.log 'SISMEMBER error: ', err
 			callback isremoved
 	getPointsForPlayer: ( layer, player, callback) ->
-		@redisClient.smembers 'layer:'+layer+':player:'+player+':points', (err, points) ->
+		@redisClient.smembers 'activity:'+@id+':layer:'+layer+':player:'+player+':points', (err, points) ->
 			if err then console.log 'SMEMBERS error: ', err
 			data = []
 			_.each points, (point) ->
 				data.push JSON.parse point
+			console.log points
 			callback data
 
 ###
