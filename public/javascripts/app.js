@@ -44,6 +44,9 @@ $(function(){
 				current_case_id: currentCase
 				}, {silent: true});
 			});
+			em.on('JoinRequest', function(caseNumber, playerid) {
+				alert ('Join This Case: ' + caseNumber);
+			});
 		});
 	
 		window.app = new AppView;

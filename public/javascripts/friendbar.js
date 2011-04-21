@@ -37,6 +37,7 @@ components.friendbar = function(){
 		},
 		toggleEnabled: function(event) {
 			event.preventDefault();
+			this.joinCase(me.get('id')); //this will be filled with the person of whom you click and want to join, will also not be found here, but on clicking someone else;
 			this.model.toggleVisibility();
 			
 			var canvas = $('canvas')[0];
@@ -47,6 +48,9 @@ components.friendbar = function(){
 					remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.id, layer, emit);
 				}
 			});
+		},
+		joinCase: function (toField){
+			remote.sendJoinRequest('JoinRequest', me.get('current_case_id'), toField);
 		}
 	});
 	

@@ -107,6 +107,13 @@ class SessionManager
 		args = arguments
 		Hash(@sessions_for_connection).forEach (player) ->
 			player.emit.apply player.emit, args
+			
+	sendJoinRequest: () ->
+		args = arguments
+		Hash(@sessions_for_connection).forEach (player) ->
+			if player.facebook_id is args[2]
+				player.emit.apply player.emit, args
+
 	
 	playerForConnection: (conn) ->
 		@sessions_for_connection[conn.id].player

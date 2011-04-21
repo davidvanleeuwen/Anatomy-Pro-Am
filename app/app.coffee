@@ -23,6 +23,9 @@ exports.createServer = (app) ->
 		conn.on 'end', ->
 			session = sessionManager.sessionDisconnected conn
 			sessionManager.publish 'FriendWentOffline', session.fbUser
+		@sendJoinRequest = (fn, id, player_id) ->
+			console.log fn, id, player_id
+			sessionManager.sendJoinRequest fn, id, player_id
 		@newCase = (case_number, thisPlayer, emit) ->
 			returnedValue = activityManager.newActivity case_number, thisPlayer
 			emit.apply emit, ['setCurrentCase', returnedValue]
