@@ -146,7 +146,7 @@ class ContouringActivityData
 	removePoint: (player_id, point, callback) ->
 		@redisClient.srem 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
 			if err then console.log 'SISMEMBER error: ', err
-			callback isremoved
+			callback {isremoved, point}
 	getPointsForPlayer: (layer, player, callback) ->
 		@redisClient.smembers 'layer:'+layer+':player:'+player+':points', (err, points) ->
 			if err then console.log 'SMEMBERS error: ', err

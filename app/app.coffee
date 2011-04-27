@@ -23,13 +23,15 @@ exports.createServer = (app) ->
 		conn.on 'end', ->
 			session = sessionManager.sessionDisconnected conn
 			sessionManager.publish 'FriendWentOffline', session.fbUser
-		@pointColored = (player_id, point) ->
-			activityManager.createPoint player_id, point
-			sessionManager.publish 'pointColored', player_id, point
-		@pointErased = (player_id, point) ->
-			activityManager.deletePoint player_id, point, (isRemoved) ->
-				if isRemoved
-					sessionManager.publish 'pointErased', player_id, point
+		@pointColored = (player_id, points) ->
+			for point in points
+				activityManager.createPoint player_id, point
+				sessionManager.publish 'pointColored', player_id, point
+		@pointErased = (player_id, points) ->
+			for point in points
+				activityManager.deletePoint player_id, point, (removedPoints) ->
+					if removedPoints.isremoved
+						sessionManager.publish 'pointErased', player_id, removedPoints.point
 		@getColoredPointsForThisLayerAndPlayer = (player_id, player, layer, emit) ->
 			activityManager.getPointsForPlayer layer, player, (points) ->
 				emit.apply emit, ['setColoredPointsForThisLayer', {player: player_id, payload: points} ]
