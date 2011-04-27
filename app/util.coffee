@@ -107,6 +107,13 @@ class SessionManager
 		args = arguments
 		Hash(@sessions_for_connection).forEach (player) ->
 			player.emit.apply player.emit, args
+			
+	sendJoinRequest: () ->
+		args = arguments
+		Hash(@sessions_for_connection).forEach (player) ->
+			if player.facebook_id is args[2]
+				player.emit.apply player.emit, args
+
 	
 	playerForConnection: (conn) ->
 		@sessions_for_connection[conn.id].player
@@ -114,15 +121,32 @@ class SessionManager
 ###
 #	CONTOURING ACTIVITY
 ###
+class ActivityManager
+	constructor: () ->
+		@current = []
+	newActivity: (case_number, thisPlayer) ->
+		activity = new ContouringActivity
+		activity.addPlayer thisPlayer
+		activity.setCaseID case_number
+		@current[activity.id] = activity	
+		return activity.id
+
+		
 class ContouringActivity
 	constructor: () ->
 		@id = GenerateRandomKey()
 		@activityData = new ContouringActivityData(@id)
 		@players = {}
+	getID: () ->
+		return @id
+	setCaseID: (case_id) ->
+		@caseID = case_id
 	addPlayer: (player) ->
 		@players[player.id] = player
+	getPlayers: (player) ->
+		return @players;
 	createPoint: (player_id, point) ->
-		@activityData.newPoint player_id, point
+		@activityData.newPoint  player_id, point
 	deletePoint: (player_id, point, callback) ->
 		return @activityData.removePoint player_id, point, callback
 	getPointsForPlayer: (layer, player_id, callback) ->
@@ -138,21 +162,23 @@ class ContouringActivityData
 		@redisClient.select config.redis.db
 	newPoint: (player_id, point) ->
 		client = @redisClient
-		client.sismember 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, ismember) ->
+		thisID = @id
+		@redisClient.sismember 'activity:'+@id+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, ismember) ->
 			if err then console.log 'SISMEMBER error: ', err
 			if ismember is 0
-				client.sadd 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, added) ->
+				client.sadd 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, added) ->
 					if err then console.log 'SADD error: ', err
 	removePoint: (player_id, point, callback) ->
-		@redisClient.srem 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
+		@redisClient.srem 'activity:'+@id+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
 			if err then console.log 'SISMEMBER error: ', err
 			callback {isremoved, point}
-	getPointsForPlayer: (layer, player, callback) ->
-		@redisClient.smembers 'layer:'+layer+':player:'+player+':points', (err, points) ->
+	getPointsForPlayer: ( layer, player, callback) ->
+		@redisClient.smembers 'activity:'+@id+':layer:'+layer+':player:'+player+':points', (err, points) ->
 			if err then console.log 'SMEMBERS error: ', err
 			data = []
 			_.each points, (point) ->
 				data.push JSON.parse point
+			console.log points
 			callback data
 
 ###
@@ -186,4 +212,4 @@ class MemoryStore
 
 exports.SessionManager = SessionManager
 exports.MemoryStore = MemoryStore
-exports.ContouringActivity = ContouringActivity
+exports.ActivityManager = ActivityManager

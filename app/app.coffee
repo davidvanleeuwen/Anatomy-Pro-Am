@@ -11,14 +11,14 @@ util = require './util'
 
 store = new util.MemoryStore
 sessionManager = new util.SessionManager
-activityManager = new util.ContouringActivity
+activityManager = new util.ActivityManager
 
 ## DNode RPC API
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
 		@subscribe = (auth_token, emit) ->
 			session = sessionManager.sessionConnected auth_token, conn, client, emit
-			emit.apply emit, ['myUID', session.facebook_id, session.player_color]
+			emit.apply emit, ['myINFO', session.fbUser, session.player_color]
 			sessionManager.publish 'FriendCameOnline', session.fbUser
 		conn.on 'end', ->
 			session = sessionManager.sessionDisconnected conn
@@ -35,9 +35,16 @@ exports.createServer = (app) ->
 		@getColoredPointsForThisLayerAndPlayer = (player_id, player, layer, emit) ->
 			activityManager.getPointsForPlayer layer, player, (points) ->
 				emit.apply emit, ['setColoredPointsForThisLayer', {player: player_id, payload: points} ]
-		@done = (player_id) ->
-			
-		
+		@sendJoinRequest = (fn, id, player_id) ->
+			console.log fn, id, player_id
+			sessionManager.sendJoinRequest fn, id, player_id
+		@newCase = (case_number, thisPlayer, emit) ->
+			returnedValue = activityManager.newActivity case_number, thisPlayer
+			emit.apply emit, ['setCurrentCase', returnedValue]
+		@getCase = (activity_id) ->
+			return activityManager.getActivity(activity_id)
+		@joinActivity = (activity_id, player) ->
+			activityManager.current[activity_id].addPlayer(activity_id, player)
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen(app)

@@ -36,14 +36,14 @@ components.drawing = function(){
 		setupView: function() {
 			new FriendBar;
 
-			this.$('.drawingTool').attr('style', 'background:' + friends.get(myUID).get('player_color'));
+			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
 			this.canvas = $('canvas')[0];
 			this.ctx = this.canvas.getContext("2d");
 			this.isErasing = false;
 
 			em.on('pointColored', function(player_id, point) {
-				if (friends.get(player_id).get('layer_enabled')){
-					this.colorPoint(point.x, point.y, point.layer, friends.get(player_id).get('player_color'));
+				if (online_friends.get(player_id).get('layer_enabled')){
+					this.colorPoint(point.x, point.y, point.layer, online_friends.get(player_id).get('player_color'));
 				}
 			}.bind(this));
 
@@ -53,7 +53,7 @@ components.drawing = function(){
 
 			em.on('setColoredPointsForThisLayer', function(points){
 				if(points) {
-					var color = friends.get(points.player).get('player_color');
+					var color = online_friends.get(points.player).get('player_color');
 					for(key in points.payload) {
 						this.colorPoint(points.payload[key].point.x, points.payload[key].point.y, points.payload[key].point.layer, color);
 					}
@@ -73,7 +73,7 @@ components.drawing = function(){
 			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
 			window.layer = 0;
 			//remote.getColoredPointsForThisLayer(layer, emit);
-			remote.getColoredPointsForThisLayerAndPlayer(myUID, myUID, layer, emit);
+			remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, me.id, layer, emit);
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -117,6 +117,7 @@ components.drawing = function(){
 			event.preventDefault();
 			if(this.isDrawing && !this.locked) {
 				if(this.isErasing){
+					// Joe: What does this do? Please comment stuff
 					var xvar = event.clientX-this.canvas.offsetLeft;
 					var yvar = event.clientY-this.canvas.offsetTop;
 					//console.log('Current: x: '+xvar, 'y: '+yvar);
@@ -165,18 +166,25 @@ components.drawing = function(){
 					remote.pointColored(myUID, points);
 				
 				}
+				/* -- Greg: What does this do? Please comment stuff
+					for (var xvar = event.clientX-this.canvas.offsetLeft-2; xvar < event.clientX-this.canvas.offsetLeft+2; xvar++)
+						for (var yvar = event.clientY-this.canvas.offsetTop-2; yvar < event.clientY-this.canvas.offsetTop+2; yvar++)
+							if(xvar>0 && xvar<this.canvas.width && yvar>0 && yvar<this.canvas.height)
+								remote.pointErased(me.get('current_case_id'), me.id, {x: xvar, y: yvar, layer: layer});
+				}else remote.pointColored(me.get('current_case_id'), me.id, {x: event.clientX-this.canvas.offsetLeft, y: event.clientY-this.canvas.offsetTop, layer: layer});
+				*/
 			}
 		},
 		drawTool: function(event) {
 			event.preventDefault();
 			this.isErasing = false;
-			this.$('.drawingTool').attr('style', 'background:' + friends.get(myUID).get('player_color'));
+			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
 			this.$('.erasingTool').attr('style', 'background: #FFFFFF');
 		},
 		eraseTool: function(event) {
 			event.preventDefault();
 			this.isErasing = true;
-			this.$('.erasingTool').attr('style', 'background:' + friends.get(myUID).get('player_color'));
+			this.$('.erasingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
 			this.$('.drawingTool').attr('style', 'background: #FFFFFF');
 		},
 		endLine: function(event) {
@@ -205,7 +213,7 @@ components.drawing = function(){
 		},
 		done: function(event) {
 			event.preventDefault();
-			remote.done(myUID);
+			remote.done(me.id);
 
 			this.getColorPointsForLayerAndPlayer(true);
 		},
@@ -215,7 +223,7 @@ components.drawing = function(){
 				this.locked = !this.locked;
 				if(this.locked) {
 					$('.done').text('UNLOCK');
-					friends.each(function(friend){
+					online_friends.each(function(friend){
 						if (!friend.get('layer_enabled')){
 							friend.toggleVisibility();
 						}
@@ -224,9 +232,9 @@ components.drawing = function(){
 					$('.done').text("I'M DONE");
 				}
 			} else {
-				friends.each(function(friend){
+				online_friends.each(function(friend){
 					if (friend.get('layer_enabled')){
-						remote.getColoredPointsForThisLayerAndPlayer(myUID, friend.get('id'), layer, emit);
+						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, friend.get('id'), layer, emit);
 					}
 				});
 			}
