@@ -134,7 +134,7 @@ class ActivityManager
 		
 class ContouringActivity
 	constructor: () ->
-		@id = GenerateRandomKey()
+		@id = 0  #Changed to zero for now to allow multiple people in one room #GenerateRandomKey()
 		@activityData = new ContouringActivityData(@id)
 		@players = {}
 	getID: () ->
@@ -169,8 +169,10 @@ class ContouringActivityData
 				client.sadd 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, added) ->
 					if err then console.log 'SADD error: ', err
 	removePoint: (player_id, point, callback) ->
-		@redisClient.srem 'activity:'+@id+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
+		thisID = @id
+		@redisClient.srem 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
 			if err then console.log 'SISMEMBER error: ', err
+			console.log "erase Attempt: ", thisID, player_id, JSON.stringify({point}) + isremoved
 			callback isremoved
 	getPointsForPlayer: ( layer, player, callback) ->
 		@redisClient.smembers 'activity:'+@id+':layer:'+layer+':player:'+player+':points', (err, points) ->
@@ -178,7 +180,7 @@ class ContouringActivityData
 			data = []
 			_.each points, (point) ->
 				data.push JSON.parse point
-			console.log points
+			console.log "Returned Points: ", points
 			callback data
 
 ###
