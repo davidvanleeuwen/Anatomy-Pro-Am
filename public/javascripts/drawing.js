@@ -9,6 +9,8 @@ components.drawing = function(){
 			"mousemove .scanvas" : "drawLine",
 			"mouseup .scanvas": "endLine",
 			"mouseout .scanvas": "endLine",
+			"mouseover .scanvas": "cursorChangeIn",
+			"mouseout .scanvas": "cursorChangeOut",
 			"change .slider": "changeLayer",
 			"click .drawingTool": "drawTool",
 			"click .erasingTool": "eraseTool",
@@ -87,6 +89,19 @@ components.drawing = function(){
 				this.ctx.fillRect(x,y,1,1);
 			}
 		},
+		cursorChangeIn: function(event) {
+			
+			if(this.isErasing){
+				document.body.style.cursor='url(images/eraser_cursor-2.cur)';
+			}else{
+				document.body.style.cursor='url(images/brush_cursor-2.cur)';
+				
+			} 
+		},
+		cursorChangeOut: function(event) {
+			document.body.style.cursor='default';
+			
+		},
 		erasePoint: function(x, y, slide) {
 			if(layer == slide) {
 				var imageData=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
@@ -110,55 +125,121 @@ components.drawing = function(){
 		startLine: function(event) {
 			event.preventDefault();
 			this.isDrawing = true;
-			this.oldX = event.clientX-this.canvas.offsetLeft;
-			this.oldY = event.clientY-this.canvas.offsetTop;
+			this.oldX = event.clientX-this.canvas.offsetLeft+3;
+			this.oldY = event.clientY-this.canvas.offsetTop+29;
+		},
+		removeDuplicateElement: function(arrayName){
+		        var newArray=new Array();
+		        for(var i=0; i<arrayName.length;i++ )
+		        {  
+					var j;
+		          for(j=0; (newArray[j]!=arrayName[i]) && j<newArray.length;j++ );
+		          if(j==newArray.length) newArray[newArray.length] = arrayName[i];
+		        }
+		        return newArray;
 		},
 		drawLine: function(event) {
+			/*
+
+
+				if(layer == slide) {
+					this.ctx.fillStyle = "#"+color;
+					//this.ctx.fillStyle.parse
+					var imageData=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+					var pix = imageData.data;
+					for( var c = 0; c < points.length; c++){
+						pix[((points[c].y*(imageData.width*4)) + (points[c].x*4)) + 3]=1;
+						pix[((points[c].y*(imageData.width*4)) + (points[c].x*4)) + 3]=0;
+						pix[((points[c].y*(imageData.width*4)) + (points[c].x*4)) + 3]=0;
+						pix[((points[c].y*(imageData.width*4)) + (points[c].x*4)) + 3]=1;
+
+
+					}
+					// Draw the ImageData at the given (x,y) coordinates.
+					this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+					this.ctx.putImageData(imageData, 0, 0);
+					/*this.ctx.fillStyle = 'rgb(255,255,255)';
+					this.ctx.moveTo(0,0);
+					console.log('Erase: x: '+x, 'y: '+y);
+					this.ctx.fillRect(x,y,1,1);
+
+
+				}*/
+			
 			event.preventDefault();
 			if(this.isDrawing && !this.locked) {
 				if(this.isErasing){
-					var xvar = event.clientX-this.canvas.offsetLeft;
-					var yvar = event.clientY-this.canvas.offsetTop;
-					//console.log('Current: x: '+xvar, 'y: '+yvar);
+					var xvar = event.clientX-this.canvas.offsetLeft+3;
+					var yvar = event.clientY-this.canvas.offsetTop+29;
 					var points = new Array();
 					var delX = (xvar-this.oldX);
 					var delY = (yvar-this.oldY);
 					var arrayPos = 0;
-					if(Math.abs(delX)>Math.abs(delY)) var stepCount=Math.abs(delX);
-					else var stepCount = Math.abs(delY);
+					if(Math.abs(delX)>Math.abs(delY)){
+						var stepCount = Math.abs(delX);
+						var isVertical = true;
+					}else{
+						var stepCount = Math.abs(delY);
+						var isVertical = false;
+					}
 					for(var c = 0; c < stepCount; c++){
 						var curX = Math.floor(this.oldX+(delX/stepCount)*(c+1));
 						var curY = Math.floor(this.oldY+(delY/stepCount)*(c+1));
-						/*for (var xSubset = curX-2; xSubset < curX+2; xSubset++)
+						if(isVertical){
 							for (var ySubset = curY-2; ySubset < curY+2; ySubset++)
-								if(xSubset>0 && xSubset<this.canvas.width && ySubset>0 && ySubset<this.canvas.height){
-									points[arrayPos] = {x: xSubset,
+								if(ySubset>0 && ySubset<this.canvas.height){
+									points[arrayPos] = {x: curX,
 										y: ySubset,
 										layer: layer};
 									arrayPos++;
 								}
-						*/
-						points[c] = {x: 1*(Math.floor(this.oldX+(delX/stepCount)*(c))),
-							y: 1*(Math.floor(this.oldY+(delY/stepCount)*(c))),
-							layer: layer};
+						}else{
+							for (var xSubset = curX-2; xSubset < curX+2; xSubset++)
+								if(xSubset>0 && xSubset<this.canvas.width){
+									points[arrayPos] = {x: xSubset,
+										y: curY,
+										layer: layer};
+									arrayPos++;
+								}
+						}
 					}
-					//points[0] = {x: xvar, y: yvar, layer: layer};
 					this.oldX = xvar;
 					this.oldY = yvar;
 					remote.pointErased(myUID, points);
 				}else{
-					var xvar = event.clientX-this.canvas.offsetLeft;
-					var yvar = event.clientY-this.canvas.offsetTop;
+					var xvar = event.clientX-this.canvas.offsetLeft+3;
+					var yvar = event.clientY-this.canvas.offsetTop+29;
 					var points = new Array();
 					var delX = (xvar-this.oldX);
 					var delY = (yvar-this.oldY);
-					if(Math.abs(delX)>Math.abs(delY)) var stepCount=Math.abs(delX);
-					else var stepCount = Math.abs(delY);
+					var arrayPos = 0;
+					if(Math.abs(delX)>Math.abs(delY)){
+						var stepCount = Math.abs(delX);
+						var isVertical = true;
+					}else{
+						var stepCount = Math.abs(delY);
+						var isVertical = false;
+					}
 					for(var c = 0; c < stepCount; c++){
-						points[c] = {x: Math.floor(this.oldX+(delX/stepCount)*(c)),
-							y: Math.floor(this.oldY+(delY/stepCount)*(c)),
-							layer: layer};
-						//console.log("input: ",points[c]);
+						var curX = Math.floor(this.oldX+(delX/stepCount)*(c+1));
+						var curY = Math.floor(this.oldY+(delY/stepCount)*(c+1));
+						if(isVertical){
+							for (var ySubset = curY-2; ySubset < curY+2; ySubset++)
+								if(ySubset>0 && ySubset<this.canvas.height){
+									points[arrayPos] = {x: curX,
+										y: ySubset,
+										layer: layer};
+									arrayPos++;
+								}
+						}else{
+							for (var xSubset = curX-2; xSubset < curX+2; xSubset++)
+								if(xSubset>0 && xSubset<this.canvas.width){
+									points[arrayPos] = {x: xSubset,
+										y: curY,
+										layer: layer};
+									arrayPos++;
+								}
+						}
 					}
 					this.oldX = xvar;
 					this.oldY = yvar;
