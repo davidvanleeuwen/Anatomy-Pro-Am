@@ -9,12 +9,12 @@ redis = require 'redis@0.6.0'
 ###
 
 colors = [ 
-	{ hex: '3D5A9C', user: undefined },
-	{ hex: '91E671', user: undefined },
-	{ hex: '66993C', user: undefined },
-	{ hex: 'E9B061', user: undefined },
-	{ hex: 'E73237', user: undefined },
-	{ hex: 'FF0000', user: undefined },
+	{ hex: 'FFCC00', user: undefined },
+	{ hex: 'FF004E', user: undefined },
+	{ hex: '20E500', user: undefined },
+	{ hex: '009CFF', user: undefined },
+	{ hex: 'FF6C00', user: undefined },
+	{ hex: 'A900A3', user: undefined },
 	{ hex: 'FFFF00', user: undefined },
 	{ hex: 'FF00FF', user: undefined },
 	{ hex: '00FF00', user: undefined },
@@ -35,14 +35,12 @@ GetColor = (userID) ->
 				assigned = true
 			else
 				returnedcolor = 'no avaialble'
-	console.log colors
 	return returnedcolor
 	
 UnsetColor = (userID) ->
 	console.log "disconnect uid: " +  userID
 	_.each colors, (color) ->
 		if color.user is userID[0]
-			console.log "Returning color " + color.user
 			color.user = undefined
 		
 GenerateRandomKey = () ->
@@ -134,7 +132,7 @@ class ActivityManager
 		
 class ContouringActivity
 	constructor: () ->
-		@id = GenerateRandomKey()
+		@id = 0  #Changed to zero for now to allow multiple people in one room #GenerateRandomKey()
 		@activityData = new ContouringActivityData(@id)
 		@players = {}
 	getID: () ->
@@ -169,7 +167,8 @@ class ContouringActivityData
 				client.sadd 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, added) ->
 					if err then console.log 'SADD error: ', err
 	removePoint: (player_id, point, callback) ->
-		@redisClient.srem 'activity:'+@id+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
+		thisID = @id
+		@redisClient.srem 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
 			if err then console.log 'SISMEMBER error: ', err
 			callback {isremoved, point}
 	getPointsForPlayer: ( layer, player, callback) ->
@@ -178,7 +177,6 @@ class ContouringActivityData
 			data = []
 			_.each points, (point) ->
 				data.push JSON.parse point
-			console.log points
 			callback data
 
 ###

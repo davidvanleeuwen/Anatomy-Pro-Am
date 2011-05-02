@@ -43,6 +43,16 @@ exports.createServer = (app) ->
 			emit.apply emit, ['setCurrentCase', returnedValue]
 		@getCase = (activity_id) ->
 			return activityManager.getActivity(activity_id)
+		@pointColored = (activity_id, player_id, point) ->
+			activityManager.current[activity_id].createPoint player_id, point
+			sessionManager.publish 'pointColored', player_id, point
+		@pointErased = (activity_id, player_id, point) ->
+			activityManager.current[activity_id].deletePoint player_id, point, (isRemoved) ->
+				if isRemoved
+					sessionManager.publish 'pointErased', player_id, point
+		@getColoredPointsForThisLayerAndPlayer = (activity_id, requester_id, player, layer, emit) ->
+			activityManager.current[activity_id].getPointsForPlayer layer, player, (points) ->
+				emit.apply emit, ['setColoredPointsForThisLayer', {player: player, payload: points} ]
 		@joinActivity = (activity_id, player) ->
 			activityManager.current[activity_id].addPlayer(activity_id, player)
 		# dnode/coffeescript fix:

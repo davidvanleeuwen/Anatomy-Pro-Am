@@ -410,3 +410,397 @@ height:30px; width:30px;}
                     background: -webkit-linear_gradient(#660505, #ba2f2f);
                     background: -o-linear-gradient(#660505, #ba2f2f);
                     }
+
+/*------------------------------COMPUTER 2 ------------------------*/
+
+.clear{clear: both;}
+.steelfish{font-family:SteelfishRegular;}
+.red_gradient_text{
+    background: -webkit-gradient(linear, left top, left bottom, from(#d20000), to(#630000));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family:SteelfishRegular;
+    color:#d20000;    
+}
+
+.grey_gradient_text{
+    background: -webkit-gradient(linear, left top, left bottom, from(#696969), to(#151515));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family:SteelfishRegular;
+    color:#333333;
+}
+    
+.light_grey_gradient_text{
+    background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#d3d3d3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family:SteelfishRegular;
+    color:#ffffff;
+}
+
+
+
+
+.spacer{margin:0 5px 0 5px;}
+.large{font-size:30px;}
+.left{text-align:left;}
+.float_right{float:right;}
+.float_left{float:left;}
+
+
+.zindex{
+    z-index:9999;
+    float:left;
+    left:0;
+    position:fixed;
+}
+
+.no_margin{margin:0 0 0 0;}
+.no_top_margin{margin-top:0;}
+
+.rotate_ninety_degrees{
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=-3);
+}
+
+
+
+.light_divider_line{
+    height:100%;
+    width:1px;
+    background: #505050;
+    float:left;
+}
+
+.dark_divider_line{
+    height:100%;
+    width:1px;
+    background: #151515;
+    float:left;
+}
+
+
+
+/* ----------------------------------------------------------------------------------END CLASSES */
+
+.game_container_in_game{
+    height:555px;
+    width:744px;
+    margin:0 auto;
+    margin-top:100px;
+    background: url(images/background_tile.png)repeat-x;
+    z-index:-1;
+}
+
+.red_button{
+    background:url(images/red_button_bg.png) repeat-x;
+    margin:5px 10px 0 10px;
+    height:35px;
+    float:left;
+    
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    -khtml-border-radius:5px;
+    
+    border-top: 1px solid #ca1010;
+    border-bottom: 1px solid #505050;
+    
+}
+
+.red_button:hover{
+    background:url(images/red_button_hover_bg.png) repeat-x;
+}
+
+.red_button a{
+    background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#d3d3d3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family:SteelfishRegular;
+    color:#ffffff;
+    font-size:21px;
+    display:block;
+    float:left;
+}
+
+.red_button span{
+    margin:5px 10px 5px 10px;
+    height:100%;
+    width:100%;
+    display:block;
+}
+
+
+.header_divider{
+    float:left;
+    height:49px;
+    width:2px;
+}
+
+
+                                                                                /* chat container */
+                                                                                
+.chat_container{
+    height:284px;
+    width:217px;
+    margin:100px 0 0 0;
+    z-index:100;
+    position:absolute;   
+}
+
+.chat_window{
+    height:211px;
+    width:161px;
+    padding:10px;
+    float:left;
+    background:white;
+    border: 1px solid #151515;
+    
+    -moz-border-radius:5px 5px 0 0;
+    -webkit-border-radius:5px 5px 0 0;
+    border-radius:5px 5px 0 0;
+    -khtml-border-radius:5px 5px 0 0;
+}
+
+
+
+.text_field{
+    height:40px;
+    width:171px;
+    padding:5px;
+    float:left;
+    background: url(images/text_entry_bg.png) repeat-x;
+    border-left: 1px solid #151515;
+    border-bottom: 1px solid #505050;
+    
+    -moz-border-radius:0 0 5px 5px;
+    -webkit-border-radius:0 0 5px 5px;
+    border-radius:0 0 5px 5px;
+    -khtml-border-radius:0 0 5px 5px;
+}
+
+.text_field div{margin:2px 0 0 5px; float:right;}
+
+.type{
+    height: 35px;
+    width:111px;
+    background:white;
+    border: 1px solid #151515;
+    float:right;
+    
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    -khtml-border-radius:5px;
+    
+}
+
+.expand_collapse_button{
+    height:118px;
+    width:34px;
+    float:right;
+    margin:50px 0 0 0;
+    background: url(images/expand_bg.png);
+}
+
+
+.expand_collapse_button:hover{
+    height:118px;
+    width:34px;
+    float:right;
+    margin:50px 0 0 0;
+    background: url(images/expand_bg_hover.png);
+}
+
+.chat_link{
+    height:118px;
+    width:34px;
+    display:block;
+    float:right;
+}
+
+                                                                                /* current info container */
+
+.current_info{
+    width:175px;  
+    background:white;
+    border: 1px solid #151515;
+    padding:5px;
+    
+}
+
+.current_info_container{
+    position:absolute;
+    z-index:10;
+    margin:49px 0 0 525px;
+    float:right;
+}
+
+.case_info_header{
+    font-size:25px;
+    background: -webkit-gradient(linear, left top, left bottom, from(#d20000), to(#630000));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family:SteelfishRegular;
+    color:#d20000;
+}
+
+.case_info_divider{
+    height:1px;
+    width:100%;
+    background:#860000;
+    margin:5px 0 10px 0;
+}
+
+.case_info_text{
+    font-family:verdana;
+    font-size:10px;
+    color:#333;
+    margin:10px;    
+}
+
+.info_collapse{
+    height:30px;
+    width:187px;
+    background: url(images/info_collapse.png);
+}
+
+.info_collapse:hover{
+    height:30px;
+    width:187px;
+    background: url(images/info_collapse_hover.png);
+}
+
+
+
+                                                                                 /* toolbar container */
+
+.toolbar_container{
+    height:49px;
+    width:700px;
+    background:url(images/header_bg_tile.png) repeat-x;
+    margin:0 0 10px 22px;
+    float:left;
+    
+    -moz-border-radius:0 0 5px 5px;
+    -webkit-border-radius:0 0 5px 5px;
+    border-radius:0 0 5px 5px;
+    -khtml-border-radius:0 0 5px 5px;
+}
+
+.tools div{margin:5px 0 0 10px;}
+
+.current_case{float:right;}            
+                                                                                /*scan container--*/
+.scan_container{
+    height:363px;
+    width:700px;
+    background:#151515;
+    float:left;
+    margin:0 0 10px 22px;
+    
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    -khtml-border-radius:5px;
+}
+
+                                                                                /*tabs and slider container--*/
+
+.tabs_and_slider_container{
+    height:44px;
+    width:700px;
+    float:left;
+    margin:0 0 0 22px;
+}
+
+.tabs{
+   height:32px;
+   width:300px;
+   float:left;
+}
+
+.tab{
+    height:32px;
+    width:100px;
+    float:left;
+    margin:12px 10px 0 0;
+    background: url(images/tab_bg.png) repeat-x;
+    border-top: 1px solid #151515;
+    
+    -moz-border-radius:5px 5px 0 0;
+    -webkit-border-radius:5px 5px 0 0;
+    border-radius:5px 5px 0 0;
+    -khtml-border-radius:5px 5px 0 0;    
+}
+
+.tab:hover{
+    background: url(images/tab_bg_hover.png) repeat-x;
+}
+
+.tab a{
+    text-align:center;
+    background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#d3d3d3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family:SteelfishRegular;
+    color:#ffffff;
+    font-size:21px;
+    display:block;
+    float:left;
+}
+
+.tab span{
+    margin:5px 20px 10px 8px;
+    height:100%;
+    width:100%;
+    display:block;
+}
+
+.slider{float:right;}
+.slider div{margin:0 0 0 10px; float:right;}
+.slider img{margin:8px 0 0 0; float:left;}
+
+
+
+                                                                                /*footer container--*/
+
+.footer_container{
+    height:84px;
+    width:744px;
+    background:url(images/friends_container_bg.png) repeat-x;
+    float:left;
+    border-top: 1px solid #151515
+}
+
+.friends_divider{
+    height:84px;
+    width:2px;
+    float:left;
+}
+
+.friends_container{
+    height:72px;
+    width:335px;
+    margin:5px 20px 0 22px;
+    float:left;
+    background:#151515;
+    border: 1px solid #636363;
+    
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    -khtml-border-radius:5px;
+}
+
+.additional_buttons{
+    float:right;
+    margin:22px 22px 0 0;
+}
+
+.additional_buttons div{
+    margin:0 0 0 10px;
+}
+

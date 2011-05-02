@@ -50,7 +50,7 @@ components.friendbar = function(){
 			});
 		},
 		joinCase: function (toField){
-			remote.sendJoinRequest('JoinRequest', me.get('current_case_id'), toField);
+			//remote.sendJoinRequest('JoinRequest', me.get('current_case_id'), toField);
 		}
 	});
 	

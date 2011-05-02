@@ -46,8 +46,10 @@ components.drawing = function(){
 					this.colorPoint(point.x, point.y, point.layer, online_friends.get(player_id).get('player_color'));
 				}
 			}.bind(this));
-
+			
 			em.on('pointErased', function(player_id, point) {
+				
+				console.log ("erased:", player_id, point);
 				this.erasePoint(point.x, point.y, point.layer);
 			}.bind(this));
 
@@ -218,7 +220,6 @@ components.drawing = function(){
 			this.getColorPointsForLayerAndPlayer(true);
 		},
 		getColorPointsForLayerAndPlayer: function(showAll) {
-			// refactor this - ugly code again ;'(
 			if(showAll) {
 				this.locked = !this.locked;
 				if(this.locked) {
