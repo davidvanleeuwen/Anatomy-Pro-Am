@@ -11,31 +11,43 @@ util = require './util'
 
 store = new util.MemoryStore
 sessionManager = new util.SessionManager
-activityManager = new util.ContouringActivity
+activityManager = new util.ActivityManager
 
 ## DNode RPC API
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
 		@subscribe = (auth_token, emit) ->
 			session = sessionManager.sessionConnected auth_token, conn, client, emit
-			emit.apply emit, ['myUID', session.facebook_id, session.player_color]
+			emit.apply emit, ['myINFO', session.fbUser, session.player_color]
 			sessionManager.publish 'FriendCameOnline', session.fbUser
 		conn.on 'end', ->
 			session = sessionManager.sessionDisconnected conn
 			sessionManager.publish 'FriendWentOffline', session.fbUser
-		@pointColored = (player_id, points) ->
+		@sendJoinRequest = (fn, id, player_id) ->
+			console.log fn, id, player_id
+			sessionManager.sendJoinRequest fn, id, player_id
+		@newCase = (case_number, thisPlayer, emit) ->
+			returnedValue = activityManager.newActivity case_number, thisPlayer
+			emit.apply emit, ['setCurrentCase', returnedValue]
+		@getCase = (activity_id) ->
+			return activityManager.getActivity(activity_id)
+		@pointColored = (activity_id, player_id, points) ->
 			for point in points
-				activityManager.createPoint player_id, point
-				sessionManager.publish 'pointColored', player_id, point
-		@pointErased = (player_id, points) ->
+				activityManager.current[activity_id].createPoint player_id, point
+			sessionManager.publish 'pointColored', player_id, points
+		@pointErased = (activity_id, player_id, points) ->
 			for point in points
-				activityManager.deletePoint player_id, point, (removedPoints) ->
-					if removedPoints.isremoved
-						sessionManager.publish 'pointErased', player_id, removedPoints.point
-		@getColoredPointsForThisLayerAndPlayer = (player_id, player, layer, emit) ->
-			activityManager.getPointsForPlayer layer, player, (points) ->
-				emit.apply emit, ['setColoredPointsForThisLayer', {player: player_id, payload: points} ]
+				activityManager.current[activity_id].deletePoint player_id, point, (isRemoved) ->
+					if isRemoved
+						console.log "lets get silly"
+			sessionManager.publish 'pointErased', player_id, points
+		@getColoredPointsForThisLayerAndPlayer = (activity_id, requester_id, player, layer, emit) ->
+			console.log activity_id, requester_id, player, layer, emit
+			activityManager.current[activity_id].getPointsForPlayer layer, player, (points) ->
+				emit.apply emit, ['setColoredPointsForThisLayer', {player: player, payload: points} ]
 		@done = (player_id) ->
+		@joinActivity = (activity_id, player) ->
+			activityManager.current[activity_id].addPlayer(activity_id, player)
 			
 		
 		# dnode/coffeescript fix:

@@ -9,8 +9,11 @@
 			
 		</div>
 		<div id="scan">
-			<canvas class="scanvas" height="325" width="431">
+			<canvas class="scanvas" height="325" width="431" style="position: absolute"></canvas>
+			//<canvas class="scanvas2" height="325" width="431" style="position: absolute"></canvas>
+			
 		</div>
+		
 		
 		<div id="tool_container">
 			<div id="tool_header">
@@ -24,11 +27,8 @@
 					<div class="erasingTool" style="background: #FFFFFF">
 						<a href="#"><img src="images/brush_erase.png" alt="" /></a>
 					</div>
-					<div class="erasingTool2" style="background: #FFFFFF">
-						<a href="#"><img src="images/brush_erase.png" alt="" /></a>
-					</div>
 					<div id="slides">
-						<input type="range" class="slider" min="4" max="7" value="0" />
+						<input type="range" class="slider" min="0" max="3" value="0" />
 						Current image:
 						<span id="slide">#1</span>
 					</div>

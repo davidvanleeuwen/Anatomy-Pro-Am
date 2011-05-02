@@ -9,12 +9,12 @@ redis = require 'redis@0.5.11'
 ###
 
 colors = [ 
-	{ hex: '3D5A9C', user: undefined },
-	{ hex: '91E671', user: undefined },
-	{ hex: '66993C', user: undefined },
-	{ hex: 'E9B061', user: undefined },
-	{ hex: 'E73237', user: undefined },
-	{ hex: 'FF0000', user: undefined },
+	{ hex: 'FFCC00', user: undefined },
+	{ hex: 'FF004E', user: undefined },
+	{ hex: '20E500', user: undefined },
+	{ hex: '009CFF', user: undefined },
+	{ hex: 'FF6C00', user: undefined },
+	{ hex: 'A900A3', user: undefined },
 	{ hex: 'FFFF00', user: undefined },
 	{ hex: 'FF00FF', user: undefined },
 	{ hex: '00FF00', user: undefined },
@@ -35,14 +35,11 @@ GetColor = (userID) ->
 				assigned = true
 			else
 				returnedcolor = 'no avaialble'
-	console.log colors
 	return returnedcolor
 	
 UnsetColor = (userID) ->
-	console.log "disconnect uid: " +  userID
 	_.each colors, (color) ->
 		if color.user is userID[0]
-			console.log "Returning color " + color.user
 			color.user = undefined
 		
 GenerateRandomKey = () ->
@@ -80,7 +77,6 @@ class SessionManager
 	#this should be called when the client sends an authenticate message over dnone. 
 	#this must be done before anything else over dnone
 	sessionConnected: (random_key, conn, client, emit) ->
-		console.log("Session connection started! Connection ID = " + conn.id)
 		if @sessions_for_random_key[random_key]
 			session = @sessions_for_random_key[random_key]
 			@sessions_for_connection[conn.id] = session
@@ -93,7 +89,6 @@ class SessionManager
 			console.log("Session connected started with invalid random_id!!!!")
 			
 	sessionDisconnected: (conn) ->
-		console.log("Session ended! Disconnected ID = " + conn.id)
 		UnsetColor([@sessions_for_connection[conn.id].facebook_id])
 		
 		session_conn = @sessions_for_connection[conn.id]
@@ -107,6 +102,13 @@ class SessionManager
 		args = arguments
 		Hash(@sessions_for_connection).forEach (player) ->
 			player.emit.apply player.emit, args
+			
+	sendJoinRequest: () ->
+		args = arguments
+		Hash(@sessions_for_connection).forEach (player) ->
+			if player.facebook_id is args[2]
+				player.emit.apply player.emit, args
+
 	
 	playerForConnection: (conn) ->
 		@sessions_for_connection[conn.id].player
@@ -114,15 +116,32 @@ class SessionManager
 ###
 #	CONTOURING ACTIVITY
 ###
+class ActivityManager
+	constructor: () ->
+		@current = []
+	newActivity: (case_number, thisPlayer) ->
+		activity = new ContouringActivity
+		activity.addPlayer thisPlayer
+		activity.setCaseID case_number
+		@current[activity.id] = activity	
+		return activity.id
+
+		
 class ContouringActivity
 	constructor: () ->
-		@id = GenerateRandomKey()
+		@id = 0  #Changed to zero for now to allow multiple people in one room #GenerateRandomKey()
 		@activityData = new ContouringActivityData(@id)
 		@players = {}
+	getID: () ->
+		return @id
+	setCaseID: (case_id) ->
+		@caseID = case_id
 	addPlayer: (player) ->
 		@players[player.id] = player
+	getPlayers: (player) ->
+		return @players;
 	createPoint: (player_id, point) ->
-		@activityData.newPoint player_id, point
+		@activityData.newPoint  player_id, point
 	deletePoint: (player_id, point, callback) ->
 		return @activityData.removePoint player_id, point, callback
 	getPointsForPlayer: (layer, player_id, callback) ->
@@ -138,17 +157,20 @@ class ContouringActivityData
 		@redisClient.select config.redis.db
 	newPoint: (player_id, point) ->
 		client = @redisClient
-		client.sismember 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, ismember) ->
+		thisID = @id
+		client.sismember 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, ismember) ->
 			if err then console.log 'SISMEMBER error: ', err
 			if ismember is 0
-				client.sadd 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, added) ->
+				client.sadd 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, added) ->
 					if err then console.log 'SADD error: ', err
 	removePoint: (player_id, point, callback) ->
-		@redisClient.srem 'layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
+		thisID = @id
+		@redisClient.srem 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
 			if err then console.log 'SISMEMBER error: ', err
-			callback {isremoved, point}
-	getPointsForPlayer: (layer, player, callback) ->
-		@redisClient.smembers 'layer:'+layer+':player:'+player+':points', (err, points) ->
+			console.log "erase Attempt: ", thisID, player_id, JSON.stringify({point}) + isremoved
+			callback isremoved
+	getPointsForPlayer: ( layer, player, callback) ->
+		@redisClient.smembers 'activity:'+@id+':layer:'+layer+':player:'+player+':points', (err, points) ->
 			if err then console.log 'SMEMBERS error: ', err
 			data = []
 			_.each points, (point) ->
@@ -186,4 +208,4 @@ class MemoryStore
 
 exports.SessionManager = SessionManager
 exports.MemoryStore = MemoryStore
-exports.ContouringActivity = ContouringActivity
+exports.ActivityManager = ActivityManager

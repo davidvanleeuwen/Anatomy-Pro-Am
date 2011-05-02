@@ -39,8 +39,13 @@ resources.models.Player = Backbone.Model.extend({
 
 resources.models.Person = Backbone.Model.extend({
 	defaults: {
-		"name": "NAME UNDEFINED!",
-		"facebook_id": 0,
+		id: 0,
+		facebook_id: 0,
+		name: 'notassigned', 
+		player_color: '000000',
+		avatar: "http://graph.facebook.com/100001658412828/picture",
+		layer_enabled: false,
+		current_case_id: 0000
 	},
 	clear: function() {
 		this.view.remove();

@@ -38,27 +38,37 @@ components.drawing = function(){
 		setupView: function() {
 			new FriendBar;
 
-			this.$('.drawingTool').attr('style', 'background:' + friends.get(myUID).get('player_color'));
+			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
 			this.canvas = $('canvas')[0];
+			//this.canvas2 = $('canvas')[1];
 			this.ctx = this.canvas.getContext("2d");
+			//this.ctx2 = this.canvas2.getContext("2d");
+			//this.canvas2 = $('canvas2')[0];
+			//this.ctx2 = this.canvas2.getContext("2d");
+			
+			
 			this.isErasing = false;
 
-			em.on('pointColored', function(player_id, point) {
-				if (friends.get(player_id).get('layer_enabled')){
-					this.colorPoint(point.x, point.y, point.layer, friends.get(player_id).get('player_color'));
+			em.on('pointColored', function(player_id, points) {
+				if (online_friends.get(player_id).get('layer_enabled')){
+					this.colorPoint(points, online_friends.get(player_id).get('player_color'), this.ctx);	
 				}
 			}.bind(this));
 
-			em.on('pointErased', function(player_id, point) {
-				this.erasePoint(point.x, point.y, point.layer);
+			em.on('pointErased', function(player_id, points) {
+				this.erasePoint(points,this.ctx);
 			}.bind(this));
 
 			em.on('setColoredPointsForThisLayer', function(points){
 				if(points) {
-					var color = friends.get(points.player).get('player_color');
+					var color = online_friends.get(points.player).get('player_color');
+					var pointArr = new Array();
+					console.log("how many times here");
 					for(key in points.payload) {
-						this.colorPoint(points.payload[key].point.x, points.payload[key].point.y, points.payload[key].point.layer, color);
+						pointArr.push(points.payload[key].point);
 					}
+						this.colorPoint(pointArr, color,this.ctx);
+					
 				}
 			}.bind(this));
 
@@ -75,19 +85,45 @@ components.drawing = function(){
 			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
 			window.layer = 0;
 			//remote.getColoredPointsForThisLayer(layer, emit);
-			remote.getColoredPointsForThisLayerAndPlayer(myUID, myUID, layer, emit);
+			remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, me.id, layer, emit);
 		},
 		goBack: function(e) {
 			e.preventDefault();
 			delete this;
 			new CaseView;
 		},
-		colorPoint: function(x, y, slide, color) {
-			if(layer == slide) {
-				this.ctx.fillStyle = "#"+color;
-				this.ctx.moveTo(0,0);
-				this.ctx.fillRect(x,y,1,1);
+		colorPoint: function(points, color,context) {
+			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+			var pix = imageData.data;
+			console.log(color);
+			var redVal = (parseInt(color.substr(0,2),16));
+			var greenVal = (parseInt(color.substr(2,2),16));
+			var blueVal = (parseInt(color.substr(4,2),16));
+			
+			//var Rval = color[0];
+			//console.log;
+			for(var c = 0; c < points.length; c++){
+				var point = points[c];
+				var x = point.x;
+				var y = point.y; 
+				var slide = point.layer;
+				if(layer == slide) {
+					if(x>0&&y>0){
+						
+						pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
+						pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
+						pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
+						pix[((y*(imageData.width*4)) + (x*4)) + 3]=255;
+						
+						
+					}
+					//this.ctx.fillStyle = "#"+color;
+					//this.ctx.moveTo(0,0);
+					//this.ctx.fillRect(x,y,1,1);
+				}
 			}
+			context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+			context.putImageData(imageData, 0, 0);
 		},
 		cursorChangeIn: function(event) {
 			
@@ -102,25 +138,33 @@ components.drawing = function(){
 			document.body.style.cursor='default';
 			
 		},
-		erasePoint: function(x, y, slide) {
-			if(layer == slide) {
-				var imageData=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-				var pix = imageData.data;
-				if(x>0&&y>0){
-					pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
-					//pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
-					//pix[(((y)*(imageData.width*4)) + (x*4)) + 3]=0;
-					//pix[(((y-1)*(imageData.width*4)) + ((x-1)*4)) + 3]=0;
+		erasePoint: function(points,context) {
+			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+			var pix = imageData.data;
+			for(var c = 0; c < points.length; c++){
+				var point = points[c];
+				var x = point.x;
+				var y = point.y; 
+				var slide = point.layer;
+				if(layer == slide) {
+					
+					if(x>0&&y>0){
+						pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
+						//pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
+						//pix[(((y)*(imageData.width*4)) + (x*4)) + 3]=0;
+						//pix[(((y-1)*(imageData.width*4)) + ((x-1)*4)) + 3]=0;
+					}
+					// Draw the ImageData at the given (x,y) coordinates.
+					/*this.ctx.fillStyle = 'rgb(255,255,255)';
+					this.ctx.moveTo(0,0);
+					console.log('Erase: x: '+x, 'y: '+y);
+					this.ctx.fillRect(x,y,1,1);
+					*/
 				}
-				// Draw the ImageData at the given (x,y) coordinates.
-				this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-				this.ctx.putImageData(imageData, 0, 0);
-				/*this.ctx.fillStyle = 'rgb(255,255,255)';
-				this.ctx.moveTo(0,0);
-				console.log('Erase: x: '+x, 'y: '+y);
-				this.ctx.fillRect(x,y,1,1);
-				*/
 			}
+			context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+			context.putImageData(imageData, 0, 0);
+			
 		},
 		startLine: function(event) {
 			event.preventDefault();
@@ -205,7 +249,7 @@ components.drawing = function(){
 					}
 					this.oldX = xvar;
 					this.oldY = yvar;
-					remote.pointErased(myUID, points);
+					remote.pointErased(me.get('current_case_id'), me.id, points);
 				}else{
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
 					var yvar = event.clientY-this.canvas.offsetTop+29;
@@ -243,7 +287,7 @@ components.drawing = function(){
 					}
 					this.oldX = xvar;
 					this.oldY = yvar;
-					remote.pointColored(myUID, points);
+					remote.pointColored(me.get('current_case_id'), me.id, points);
 				
 				}
 			}
@@ -251,13 +295,13 @@ components.drawing = function(){
 		drawTool: function(event) {
 			event.preventDefault();
 			this.isErasing = false;
-			this.$('.drawingTool').attr('style', 'background:' + friends.get(myUID).get('player_color'));
+			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
 			this.$('.erasingTool').attr('style', 'background: #FFFFFF');
 		},
 		eraseTool: function(event) {
 			event.preventDefault();
 			this.isErasing = true;
-			this.$('.erasingTool').attr('style', 'background:' + friends.get(myUID).get('player_color'));
+			this.$('.erasingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
 			this.$('.drawingTool').attr('style', 'background: #FFFFFF');
 		},
 		endLine: function(event) {
@@ -286,7 +330,7 @@ components.drawing = function(){
 		},
 		done: function(event) {
 			event.preventDefault();
-			remote.done(myUID);
+			remote.done(me.id);
 
 			this.getColorPointsForLayerAndPlayer(true);
 		},
@@ -296,7 +340,7 @@ components.drawing = function(){
 				this.locked = !this.locked;
 				if(this.locked) {
 					$('.done').text('UNLOCK');
-					friends.each(function(friend){
+					online_friends.each(function(friend){
 						if (!friend.get('layer_enabled')){
 							friend.toggleVisibility();
 						}
@@ -305,9 +349,9 @@ components.drawing = function(){
 					$('.done').text("I'M DONE");
 				}
 			} else {
-				friends.each(function(friend){
+				online_friends.each(function(friend){
 					if (friend.get('layer_enabled')){
-						remote.getColoredPointsForThisLayerAndPlayer(myUID, friend.get('id'), layer, emit);
+						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, friend.get('id'), layer, emit);
 					}
 				});
 			}
