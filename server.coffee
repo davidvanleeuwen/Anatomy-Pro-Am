@@ -5,6 +5,8 @@ express = require 'express@2.2.2'
 browserify = require 'browserify@0.3.1'
 fbgraph = require 'facebook-graph@0.0.6'
 https = require 'https'
+http = require 'http'
+httpClient = require './public/javascripts/httpclient.js'
 fbhelper = require './fbhelper'
 app = require './app/app'
 Hash = require 'hashish@0.0.2'
@@ -77,7 +79,8 @@ server.all '/tab', (req, res) ->
 server.post '/deauth', (req, res) ->
 	fbhelper.userDeauthed(req)
 	res.end()
-
+	
+#used to get all players given the activity_id they currently have.  
 server.all '/friends/:activity_id?', (req, res) ->
 	playersInfo = app.sessionManager.sessions_for_facebook_id
 	output = []
@@ -92,6 +95,43 @@ server.all '/friends/:activity_id?', (req, res) ->
 			})
 	res.send(JSON.stringify(output))
 
+server.all '/test:a?', (req, res) ->
+	inData = ({ 
+	id: '511366798',
+	name: 'Jake Ruesch',
+	first_name: 'Jake',
+	last_name: 'Ruesch',
+	link: 'http://www.facebook.com/jake.ruesch',
+	username: 'jake.ruesch',
+	birthday: '08/29/1987',
+	hometown:{ id: '108341582521365', name: 'Wisconsin Rapids, Wisconsin' },
+	location: { id: '107572595931951', name: 'Madison, Wisconsin' },
+	sports: [ { id: '106011416097502', name: 'Ice hockey' } ],
+	favorite_teams: [ { id: '71671905072', name: 'Green Bay Packers' },
+	{ id: '78722009582', name: 'New Jersey Devils' },
+	{ id: '107402292615812', name: 'Minnesota Wild' },
+	{ id: '45083850002', name: 'Milwaukee Brewers' } ],
+	favorite_athletes: 	[ { id: '111500102200037', name: 'Clay Matthews III' },
+	{ id: '112169405467151', name: 'Donald Driver' },
+	{ id: '106080419423961', name: 'Aaron Rodgers' },
+	{ id: '108542475836957', name: 'Alexander Ovechkin' },
+	{ id: '103121619727630', name: 'Zach Parise' },
+	{ id: '107899805905299', name: 'Martin Brodeur' } ],
+	education: 	[ { school: [Object], year: [Object], type: 'College' },
+	{ school: [Object],
+	year: [Object],
+	type: 'High School' } ],
+	gender: 'male',
+	email: 'ruesch_27@hotmail.com',
+	timezone: -5,
+	locale: 'en_US',
+	verified: true,
+	updated_time: '2011-04-16T03:17:02+0000',
+	player_color: 'FFCC00' }
+	)
+
+	result = fbhelper.addUser inData
+	res.send (result)
 
 ## other stuff
 ###

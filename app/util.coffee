@@ -9,12 +9,12 @@ redis = require 'redis@0.5.11'
 ###
 
 colors = [ 
-	{ hex: '3D5A9C', user: undefined },
-	{ hex: '91E671', user: undefined },
-	{ hex: '66993C', user: undefined },
-	{ hex: 'E9B061', user: undefined },
-	{ hex: 'E73237', user: undefined },
-	{ hex: 'FF0000', user: undefined },
+	{ hex: 'FFCC00', user: undefined },
+	{ hex: 'FF004E', user: undefined },
+	{ hex: '20E500', user: undefined },
+	{ hex: '009CFF', user: undefined },
+	{ hex: 'FF6C00', user: undefined },
+	{ hex: 'A900A3', user: undefined },
 	{ hex: 'FFFF00', user: undefined },
 	{ hex: 'FF00FF', user: undefined },
 	{ hex: '00FF00', user: undefined },
@@ -35,14 +35,12 @@ GetColor = (userID) ->
 				assigned = true
 			else
 				returnedcolor = 'no avaialble'
-	console.log colors
 	return returnedcolor
 	
 UnsetColor = (userID) ->
 	console.log "disconnect uid: " +  userID
 	_.each colors, (color) ->
 		if color.user is userID[0]
-			console.log "Returning color " + color.user
 			color.user = undefined
 		
 GenerateRandomKey = () ->
@@ -172,7 +170,6 @@ class ContouringActivityData
 		thisID = @id
 		@redisClient.srem 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
 			if err then console.log 'SISMEMBER error: ', err
-			console.log "erase Attempt: ", thisID, player_id, JSON.stringify({point}) + isremoved
 			callback isremoved
 	getPointsForPlayer: ( layer, player, callback) ->
 		@redisClient.smembers 'activity:'+@id+':layer:'+layer+':player:'+player+':points', (err, points) ->
@@ -180,7 +177,6 @@ class ContouringActivityData
 			data = []
 			_.each points, (point) ->
 				data.push JSON.parse point
-			console.log "Returned Points: ", points
 			callback data
 
 ###
