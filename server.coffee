@@ -35,6 +35,7 @@ server.use browserify {
 ## RPC client
 app.createServer server
 
+	
 server.get '/', (req, res) ->
 	console.log '/ post'
 	fbhelper.renderIndex req, res, (fbUser) ->

@@ -254,7 +254,7 @@ height:30px; width:30px;}
                     -webkit-border-bottom-left-radius: 0;
                     }
 
-#tools{ width:155px; background:white; float:left; font: 11px Verdana;
+#toolsOLD{ width:155px; background:white; float:left; font: 11px Verdana;
                     -moz-border-radius-topleft: 0;
                     -moz-border-radius-topright: 0;
                     -moz-border-radius-bottomright: 5px;
@@ -450,7 +450,7 @@ height:30px; width:30px;}
 
 
 .zindex{
-    z-index:9999;
+    z-index:0;
     float:left;
     left:0;
     position:fixed;
@@ -485,17 +485,17 @@ height:30px; width:30px;}
 
 /* ----------------------------------------------------------------------------------END CLASSES */
 
-.game_container_in_game{
-    height:555px;
+#game_container_in_game{
+    height:800px;
     width:744px;
     margin:0 auto;
-    margin-top:100px;
-    background: url(images/background_tile.png)repeat-x;
+    margin-top:0px;
+    background: url(../images/background_tile.png)repeat-x;
     z-index:-1;
 }
 
 .red_button{
-    background:url(images/red_button_bg.png) repeat-x;
+    background:url(../images/red_button_bg.png) repeat-x;
     margin:5px 10px 0 10px;
     height:35px;
     float:left;
@@ -511,7 +511,7 @@ height:30px; width:30px;}
 }
 
 .red_button:hover{
-    background:url(images/red_button_hover_bg.png) repeat-x;
+    background:url(../images/red_button_hover_bg.png) repeat-x;
 }
 
 .red_button a{
@@ -533,7 +533,7 @@ height:30px; width:30px;}
 }
 
 
-.header_divider{
+#header_divider{
     float:left;
     height:49px;
     width:2px;
@@ -542,7 +542,7 @@ height:30px; width:30px;}
 
                                                                                 /* chat container */
                                                                                 
-.chat_container{
+#chat_container{
     height:284px;
     width:217px;
     margin:100px 0 0 0;
@@ -550,7 +550,7 @@ height:30px; width:30px;}
     position:absolute;   
 }
 
-.chat_window{
+#chat_window{
     height:211px;
     width:161px;
     padding:10px;
@@ -566,12 +566,12 @@ height:30px; width:30px;}
 
 
 
-.text_field{
+#text_field{
     height:40px;
     width:171px;
     padding:5px;
     float:left;
-    background: url(images/text_entry_bg.png) repeat-x;
+    background: url(../images/text_entry_bg.png) repeat-x;
     border-left: 1px solid #151515;
     border-bottom: 1px solid #505050;
     
@@ -581,9 +581,9 @@ height:30px; width:30px;}
     -khtml-border-radius:0 0 5px 5px;
 }
 
-.text_field div{margin:2px 0 0 5px; float:right;}
+#text_field div{margin:2px 0 0 5px; float:right;}
 
-.type{
+#type{
     height: 35px;
     width:111px;
     background:white;
@@ -597,24 +597,24 @@ height:30px; width:30px;}
     
 }
 
-.expand_collapse_button{
+#expand_collapse_button{
     height:118px;
     width:34px;
     float:right;
     margin:50px 0 0 0;
-    background: url(images/expand_bg.png);
+    background: url(../images/expand_bg.png);
 }
 
 
-.expand_collapse_button:hover{
+#expand_collapse_button:hover{
     height:118px;
     width:34px;
     float:right;
     margin:50px 0 0 0;
-    background: url(images/expand_bg_hover.png);
+    background: url(../images/expand_bg_hover.png);
 }
 
-.chat_link{
+#chat_link{
     height:118px;
     width:34px;
     display:block;
@@ -623,7 +623,7 @@ height:30px; width:30px;}
 
                                                                                 /* current info container */
 
-.current_info{
+#current_info{
     width:175px;  
     background:white;
     border: 1px solid #151515;
@@ -631,14 +631,14 @@ height:30px; width:30px;}
     
 }
 
-.current_info_container{
+#current_info_container{
     position:absolute;
     z-index:10;
     margin:49px 0 0 525px;
     float:right;
 }
 
-.case_info_header{
+#case_info_header{
     font-size:25px;
     background: -webkit-gradient(linear, left top, left bottom, from(#d20000), to(#630000));
     -webkit-background-clip: text;
@@ -647,40 +647,40 @@ height:30px; width:30px;}
     color:#d20000;
 }
 
-.case_info_divider{
+#case_info_divider{
     height:1px;
     width:100%;
     background:#860000;
     margin:5px 0 10px 0;
 }
 
-.case_info_text{
+#case_info_text{
     font-family:verdana;
     font-size:10px;
     color:#333;
     margin:10px;    
 }
 
-.info_collapse{
+#info_collapse{
     height:30px;
     width:187px;
-    background: url(images/info_collapse.png);
+    background: url(../images/info_collapse.png);
 }
 
-.info_collapse:hover{
+#info_collapse:hover{
     height:30px;
     width:187px;
-    background: url(images/info_collapse_hover.png);
+    background: url(../images/info_collapse_hover.png);
 }
 
 
 
                                                                                  /* toolbar container */
 
-.toolbar_container{
+#toolbar_container{
     height:49px;
     width:700px;
-    background:url(images/header_bg_tile.png) repeat-x;
+    background:url(../images/header_bg_tile.png) repeat-x;
     margin:0 0 10px 22px;
     float:left;
     
@@ -690,11 +690,11 @@ height:30px; width:30px;}
     -khtml-border-radius:0 0 5px 5px;
 }
 
-.tools div{margin:5px 0 0 10px;}
+#tools div{margin:5px 0 0 10px;}
 
-.current_case{float:right;}            
+#current_case{float:right;}            
                                                                                 /*scan container--*/
-.scan_container{
+#scan_container{
     height:363px;
     width:700px;
     background:#151515;
@@ -709,14 +709,14 @@ height:30px; width:30px;}
 
                                                                                 /*tabs and slider container--*/
 
-.tabs_and_slider_container{
+#tabs_and_slider_container{
     height:44px;
     width:700px;
     float:left;
     margin:0 0 0 22px;
 }
 
-.tabs{
+#tabs{
    height:32px;
    width:300px;
    float:left;
@@ -727,7 +727,7 @@ height:30px; width:30px;}
     width:100px;
     float:left;
     margin:12px 10px 0 0;
-    background: url(images/tab_bg.png) repeat-x;
+    background: url(../images/tab_bg.png) repeat-x;
     border-top: 1px solid #151515;
     
     -moz-border-radius:5px 5px 0 0;
@@ -737,7 +737,7 @@ height:30px; width:30px;}
 }
 
 .tab:hover{
-    background: url(images/tab_bg_hover.png) repeat-x;
+    background: url(../images/tab_bg_hover.png) repeat-x;
 }
 
 .tab a{
@@ -759,29 +759,29 @@ height:30px; width:30px;}
     display:block;
 }
 
-.slider{float:right;}
-.slider div{margin:0 0 0 10px; float:right;}
-.slider img{margin:8px 0 0 0; float:left;}
+#slider{float:right;}
+#slider div{margin:0 0 0 10px; float:right;}
+#slider img{margin:8px 0 0 0; float:left;}
 
 
 
                                                                                 /*footer container--*/
 
-.footer_container{
+#footer_container{
     height:84px;
     width:744px;
-    background:url(images/friends_container_bg.png) repeat-x;
+    background:url(../images/friends_container_bg.png) repeat-x;
     float:left;
     border-top: 1px solid #151515
 }
 
-.friends_divider{
+#friends_divider{
     height:84px;
     width:2px;
     float:left;
 }
 
-.friends_container{
+#friends_container{
     height:72px;
     width:335px;
     margin:5px 20px 0 22px;
@@ -795,12 +795,12 @@ height:30px; width:30px;}
     -khtml-border-radius:5px;
 }
 
-.additional_buttons{
+#additional_buttons{
     float:right;
     margin:22px 22px 0 0;
 }
 
-.additional_buttons div{
+#additional_buttons div{
     margin:0 0 0 10px;
 }
 

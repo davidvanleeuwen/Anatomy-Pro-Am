@@ -16,6 +16,9 @@ activityManager = new util.ActivityManager
 ## DNode RPC API
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
+		@login = (pw, emit) ->
+			if pw is 'tumor'
+				emit.apply emit, ['Continue']
 		@subscribe = (auth_token, emit) ->
 			session = sessionManager.sessionConnected auth_token, conn, client, emit
 			emit.apply emit, ['myINFO', session.fbUser, session.player_color]

@@ -22,29 +22,14 @@
 			+ '<%= fb.appId %>&redirect_uri='
 			+ encodeURIComponent('<%= fb.redirect_uri %>')
 			+ '&scope=<%= fb.scope %>';
-		if(window.allow){
 			top.location.href = url;
-		}
+
 	  }
 	});
-	FB.Canvas.setSize({ width: 744, height: 555 });
-	function validate(){
-		if (document.myform.pword.value == 'tumor'){
-			var url = 'https://graph.facebook.com/oauth/authorize?client_id='
-				+ '<%= fb.appId %>&redirect_uri='
-				+ encodeURIComponent('<%= fb.redirect_uri %>')
-				+ '&scope=<%= fb.scope %>';
-				top.location.href = url;
-					console.log ('hi');
-		}
-	}
+	FB.Canvas.setSize({ width: 744, height: 800 });
+	
 </script>
-<div name='pw' class='pw' id='pw'>
-<form name = "myform">
-<input type="password" name="pword">
-<input type="button" value="Submit" name="Submit" onclick= "validate()">
-</p>
-</div>
+
 
 </form>
 <div id="game"></div>

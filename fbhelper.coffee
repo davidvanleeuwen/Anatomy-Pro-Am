@@ -105,7 +105,7 @@ addUser = (info) ->
 			client2.perform config.sql.fullHost + dbPath, "POST", (resp) -> 
 				result = resp.response.body
 				console.log color '---------------- RESULT OF ADDING USER -------------------\n', 'green'
-				console.log result.response.body.facebook_user.id	
+				console.log result	
 			,postData
 		else 
 			result = color '------------------- USER ALREADY EXISTS -------------------\n', 'green'
@@ -173,9 +173,8 @@ formatUser = (inbound) ->
 				console.log "Skipping: " + key + " : " + value
 		console.log key, value
 	
-		outbound += '}}'
-		console.log  '\n********************\n\nAfter formatUser: \n\n' + outbound  + '\n\n********************\n'
-	
+	outbound += '}}'
+	console.log  '\n********************\n\nAfter formatUser: \n\n' + outbound  + '\n\n********************\n'
 	return outbound
 	
 		

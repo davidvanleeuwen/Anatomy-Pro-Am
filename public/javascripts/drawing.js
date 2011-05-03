@@ -25,7 +25,7 @@ components.drawing = function(){
 				this.el.html(view.computer);
 				this.setupView();
 			} else {
-				$.get('/renders/computer.html', function(t){
+				$.get('/renders/computer2.html', function(t){
 					this.el.html('');
 					view.computer = t;
 					this.el.html(view.computer);
