@@ -4,7 +4,6 @@ fbutil = require './facebookutil.js'
 http = require 'http'
 color = require('./color.js').set
 httpClient = require './public/javascripts/httpclient.js'
-
 Hash = require 'hashish@0.0.2'
 
 storeUser = (userData, userCode) ->
@@ -12,20 +11,20 @@ storeUser = (userData, userCode) ->
 	console.log("StoreUserData", userData, userCode)
 	addUser (userData);
 	
-
-	
-userDeauthed = (reqInfo) ->
+userDeauthed = (reqInfo, res) ->
 	#do something with deauthed user info
-	console.log("-------=== USER REMOVED APP! ===-------")
-	console.log (reqInfo)
-	console.log("-------=== USER REMOVED APP! ===-------")
-
-userDeclinedAccess = (reqInfo) ->
+	console.log(color "-------=== USER REMOVED APP! ===-------", 'red')
+	console.log (JSON.parse(base64decode(reqInfo.body.signed_request.split('.')[1])).user_id)
+	console.log(color "-------=== USER REMOVED APP! ===-------", 'red')
+	res.redirect ('http://www.wisc.edu')
+	
+userDeclinedAccess = (reqInfo,res) ->
 	#so something when a user declines using the app from the access window
-	console.log "-------=== USER DENIED TERMS ===-------"
-	console.log(req.query.error_reason)
-	console.log(req.query.error)
-	console.log(req.query.error_description)
+	console.log color "-------=== USER DENIED TERMS ===-------", 'red'
+	console.log(reqInfo.query.error_reason)
+	console.log(reqInfo.query.error)
+	console.log(reqInfo.query.error_description)
+	res.redirect ('http://www.wisc.edu')
 
 authUser = (req, res) ->
 	if req.query.code
@@ -50,7 +49,7 @@ authUser = (req, res) ->
 		res.redirect config.fbconfig.signedup
 		
 	if req.query.error_reason	
-		userDeclinedAccess(req)
+		userDeclinedAccess(req, res)
 		res.end()
 
 renderIndex =  (req, res, getToken) ->
@@ -79,7 +78,7 @@ renderIndex =  (req, res, getToken) ->
 		res.render 'index', {fb: config.fbconfig, token: ''}
 
 addMyFriends = (d, myID) ->
-	#console.log d, myID
+	console.log d, myID
 	Hash(d.data).forEach (friend) ->
 		#addUser friend
 		
@@ -176,8 +175,27 @@ formatUser = (inbound) ->
 	outbound += '}}'
 	console.log  '\n********************\n\nAfter formatUser: \n\n' + outbound  + '\n\n********************\n'
 	return outbound
-	
+
+base64decode = (input) ->
+	keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+	output = ""
+	i = 0
+	while i < input.length
+		enc1 = keyStr.indexOf(input.charAt(i++))
+		enc2 = keyStr.indexOf(input.charAt(i++))
+		enc3 = keyStr.indexOf(input.charAt(i++))
+		enc4 = keyStr.indexOf(input.charAt(i++))
 		
+		chr1 = (enc1 << 2) | (enc2 >> 4)
+		chr2 = ((enc2 & 15) << 4 | (enc3 >> 2))
+		chr3 = ((enc3 & 3) << 6 | enc4)
+		
+		output += String.fromCharCode chr1
+		if enc3 != 64
+			output += String.fromCharCode chr2
+		if enc4 != 64
+			output += String.fromCharCode chr3
+	return unescape output
 		
 exports.addUser = addUser
 exports.formatUser = formatUser
