@@ -36,12 +36,12 @@ server.use browserify {
 app.createServer server
 
 server.get '/', (req, res) ->
-	console.log '/ post'
+	console.log '/ get'
 	fbhelper.renderIndex req, res, (fbUser) ->
 		if fbUser
 			# callback for getting the token and returns it to the  original request
 			return app.setFbUserAndGetToken fbUser
-	
+
 server.post '/', (req, res) ->
 	console.log '/ post'
 	fbhelper.renderIndex req, res, (fbUser) ->
@@ -52,6 +52,7 @@ server.post '/', (req, res) ->
 server.all '/deleteuser', (req, res) ->
 	#required to allow url callback from friends collection - doesn't acctually do anything on this end.
 	res.end
+
 server.all '/finishedsignin', (req, res) ->
 	console.log 'hit finished sign in'
 	res.redirect config.fbconfig.url

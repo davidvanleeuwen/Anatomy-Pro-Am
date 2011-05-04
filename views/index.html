@@ -1,7 +1,27 @@
 <div id="fb-root"></div>
 
 <script>
+/*
+	window.fbAsyncInit = function() {
+		FB.init({
+			appId: '<%= fb.appId %>',
+			session: 		{"uid":"<%= args.clientid %>","access_token":"<%= args.code %>","expires":1304499600,"sig":"<%= args.client_secret %>"},
+			status: true, // check login status
+			xfbml: false // parse XFBML
+		});
+		
+		FB.Canvas.setAutoResize();
+	};
 
+	(function() {
+		var e = document.createElement('script');
+		e.async = true;
+		e.src = document.location.protocol + '//connect.facebook.net/en_US/all.js';
+		document.getElementById('fb-root').appendChild(e);
+	}());
+	var AUTH_TOKEN = "<%= token %>";
+	*/
+	
 	var AUTH_TOKEN = "<%= token %>";
 	FB.init({ appId  : '<%= fb.appId %>', status : true, cookie : true, xfbml  : true });
 	FB.Event.subscribe('auth.login', function(response) {
@@ -15,38 +35,19 @@
 	    // logged in and connected user, someone you know
 		console.log('session is set');
 		$('#game_container').show();
-		$('#pw').hide();
 		
 	  } else {
 		var url = 'https://graph.facebook.com/oauth/authorize?client_id='
 			+ '<%= fb.appId %>&redirect_uri='
 			+ encodeURIComponent('<%= fb.redirect_uri %>')
 			+ '&scope=<%= fb.scope %>';
-		if(window.allow){
-			top.location.href = url;
-		}
+		top.location.href = url;
 	  }
 	});
 	FB.Canvas.setSize({ width: 744, height: 555 });
-	function validate(){
-		if (document.myform.pword.value == 'tumor'){
-			var url = 'https://graph.facebook.com/oauth/authorize?client_id='
-				+ '<%= fb.appId %>&redirect_uri='
-				+ encodeURIComponent('<%= fb.redirect_uri %>')
-				+ '&scope=<%= fb.scope %>';
-				top.location.href = url;
-					console.log ('hi');
-		}
-	}
+	
 </script>
-<div name='pw' class='pw' id='pw'>
-<form name = "myform">
-<input type="password" name="pword">
-<input type="button" value="Submit" name="Submit" onclick= "validate()">
-</p>
-</div>
 
-</form>
 <div id="game"></div>
 <!-- debug info -->
 <span class="grey_gradient_text" style="position: absolute; top: 10px; right: 24px; font-size: 21px; text-align: center;">v0.01</span>
