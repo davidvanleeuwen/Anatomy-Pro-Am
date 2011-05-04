@@ -41,25 +41,27 @@ authUser = (req, res) ->
 			if code 
 				#if we get the code back, get all user data
 				graph = new fbgraph.GraphAPI code
-				print = (error, userdata) ->
+				printFbObject = (error, userdata) ->
+					# getting error: Invalid access token signature.
 					if userdata
 						storeUser(userdata, code)
-				graph.getObject 'me', print
+				# doesn't work?
+				graph.getObject 'me', printFbObject
 		fbutil.auth path, 'GET', args, print
 		res.redirect config.fbconfig.signedup
-		
 	if req.query.error_reason	
 		userDeclinedAccess(req, res)
 		res.end()
 
 renderIndex =  (req, res, getToken) ->
 	user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
+	# req.cookie is empty (so no user is set), that's why it's refreshing constantly
 	if user
 		graph = new fbgraph.GraphAPI user.access_token
 		graph.getObject 'me', (error, data) ->
 			if error
 				console.log 'fbhelper error: ', error
-				res.render 'index', {fb: config.fbconfig, token: ''}
+				res.render 'auth', {fb: config.fbconfig}
 			else
 				token = getToken data
 				if token
@@ -75,7 +77,7 @@ renderIndex =  (req, res, getToken) ->
 				addMyFriends data, user.uid
 	else
 		console.log '-------=== NO USER - RENDERING INDEX TO DIRECT USER TO AUTH PAGE ===-------'
-		res.render 'index', {fb: config.fbconfig, token: ''}
+		res.render 'auth', {fb: config.fbconfig}
 
 addMyFriends = (d, myID) ->
 	console.log d, myID
