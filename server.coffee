@@ -37,11 +37,8 @@ app.createServer server
 
 	
 server.get '/', (req, res) ->
-	console.log '/ get'
-	fbhelper.renderIndex req, res, (fbUser) ->
-		if fbUser
-			# callback for getting the token and returns it to the  original request
-			return app.setFbUserAndGetToken fbUser
+	console.log('GET @ /')
+	fbhelper.renderIndex
 
 server.post '/', (req, res) ->
 	console.log '/ post'
@@ -55,12 +52,12 @@ server.all '/deleteuser', (req, res) ->
 	res.end
 
 server.all '/finishedsignin', (req, res) ->
-	console.log 'hit finished sign in'
+	console.log '**********************************hit finished sign in'
 	res.redirect config.fbconfig.url
 	
 server.get '/authresponse', (req, res) ->
 	console.log('GET @ /authresponse')
-	fbhelper.authUser(req, res)
+	fbhelper.authresponse(req, res)
 
 ##Used to send privacy policy information.  
 server.all '/privacy', (req, res) ->

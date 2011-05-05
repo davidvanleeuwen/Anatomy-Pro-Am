@@ -26,9 +26,9 @@ userDeclinedAccess = (reqInfo,res) ->
 	console.log(reqInfo.query.error_description)
 	res.redirect ('http://www.wisc.edu')
 
-authUser = (req, res) ->
+authresponse = (req, res) ->
 	if req.query.code
-		console.log "-------=== USER ACCEPTED TERMS, SENDING ACCESS TOKEN ===-------"
+		console.log color "-------=== USER ACCEPTED TERMS, REQUESTING ACCESS TOKEN ===-------", 'green'
 		##compile access token requirements
 		path = '/oauth/access_token'
 		args = {
@@ -37,27 +37,35 @@ authUser = (req, res) ->
 			client_secret: config.fbconfig.appSecret
 			code: req.query.code			
 		}
-		print = (error, code) ->
-			if code 
-				#if we get the code back, get all user data
-				graph = new fbgraph.GraphAPI code
-				printFbObject = (error, userdata) ->
-					# getting error: Invalid access token signature.
+		accessTokenResponse = (error, token) ->
+			if token 
+				#if we get the access token back, get all user data
+				graph = new fbgraph.GraphAPI token
+				meObjectResponse = (error, userdata) ->
+					if error
+						console.log color 'Unable to get user object data', 'red'
+						console.log error
 					if userdata
-						storeUser(userdata, code)
+						storeUser(userdata, token)
 				# doesn't work?
-				graph.getObject 'me', printFbObject
-		fbutil.auth path, 'GET', args, print
-		res.redirect config.fbconfig.signedup
+				graph.getObject 'me', meObjectResponse		#get 'me' object for user
+		fbutil.auth path, 'GET', args, accessTokenResponse 	#get access token
+		res.redirect config.fbconfig.redirect_uri
+	else
+		console.log color 'Req Query Code was empty', 'red'
+		console.log req
+		res.end
 	if req.query.error_reason	
 		userDeclinedAccess(req, res)
 		res.end()
 
 renderIndex =  (req, res, getToken) ->
-	user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
-	# req.cookie is empty (so no user is set), that's why it's refreshing constantly
-	if user
-		graph = new fbgraph.GraphAPI user.access_token
+	user2 = base64decode(req.body.signed_request.split('.')[1])
+	user2 = cleanJSON user2
+	user2 = JSON.parse user2
+	console.log user2
+	if user2.user_id != undefined
+		graph = new fbgraph.GraphAPI user2.oauth_token
 		graph.getObject 'me', (error, data) ->
 			if error
 				console.log 'fbhelper error: ', error
@@ -65,20 +73,25 @@ renderIndex =  (req, res, getToken) ->
 			else
 				token = getToken data
 				if token
-					storeUser data, user.access_token #should add the users info everytime they log in.  
+					storeUser data, user2.oauth_token #should add the users info everytime they log in.  
 					# should the render be in here or in the server.coffee?
+					console.log token
 					res.render 'index', {fb: config.fbconfig, token: token}
-		graph = new fbgraph.GraphAPI user.access_token
+		graph = new fbgraph.GraphAPI user2.oauth_token
 		#console.log user
 		graph.getConnections 'me','friends', (error, data) ->
 			if error
 				console.log 'fbhelper error: ', error
 			else
-				addMyFriends data, user.uid
+				#addMyFriends data, user2.user_id
 	else
-		console.log '-------=== NO USER - RENDERING INDEX TO DIRECT USER TO AUTH PAGE ===-------'
+		console.log color '-------=== NO USER - RENDERING INDEX TO DIRECT USER TO AUTH PAGE ===-------', 'blue'
 		res.render 'auth', {fb: config.fbconfig}
 
+justRenderIndex = (res, req) ->
+	console.log req
+	res.render 'index', {fb: config.fbconfig, token: '-1'}
+	
 addMyFriends = (d, myID) ->
 	console.log d, myID
 	Hash(d.data).forEach (friend) ->
@@ -177,11 +190,25 @@ formatUser = (inbound) ->
 	outbound += '}}'
 	console.log  '\n********************\n\nAfter formatUser: \n\n' + outbound  + '\n\n********************\n'
 	return outbound
-
+	
+cleanJSON = (input) ->
+	keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=:-_{}[]".,|'
+	output = ""
+	k = 0
+	o = ''
+	while k < input.length
+		a = input.charAt(k++)
+		j = 0
+		while j < keyStr.length
+			if a is keyStr.charAt(j++)
+				o += a
+	return o
+	
 base64decode = (input) ->
 	keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
 	output = ""
 	i = 0
+
 	while i < input.length
 		enc1 = keyStr.indexOf(input.charAt(i++))
 		enc2 = keyStr.indexOf(input.charAt(i++))
@@ -204,5 +231,6 @@ exports.formatUser = formatUser
 exports.store_user = storeUser
 exports.userDeauthed = userDeauthed
 exports.userDeclinedAccess = userDeclinedAccess
-exports.authUser = authUser
+exports.authresponse = authresponse
 exports.renderIndex = renderIndex
+exports.justRenderIndex = justRenderIndex
