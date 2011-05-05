@@ -38,7 +38,10 @@ app.createServer server
 	
 server.get '/', (req, res) ->
 	console.log('GET @ /')
-	fbhelper.renderIndex
+	fbhelper.renderIndex req, res, (fbUser) ->
+		if fbUser
+			# callback for getting the token and returns it to the  original request
+			return app.setFbUserAndGetToken fbUser
 
 server.post '/', (req, res) ->
 	console.log '/ post'
