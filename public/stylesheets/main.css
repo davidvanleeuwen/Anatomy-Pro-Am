@@ -17,6 +17,9 @@ a{
 .my_class {
 	
 }
+#my_id {
+	
+}
 
 @font-face {
     font-family: 'SteelfishRegular';
@@ -339,14 +342,18 @@ height:30px; width:30px;}
 
 #images {
 	position: absolute;
-	left: 270px;
-	top: 40px;
+	left: 40px;
+	top: 60px;
 	z-index: 1;
+	float: left;
 }
 
 .scanvas {
 	position: absolute;
-	z-index: 2;
+	left: 40px;
+	top: 60px;
+	z-index: 10;
+	float: left;
 }
 
 #badge_status{text-align:center; margin: 55px 0 0 0;}
@@ -553,10 +560,12 @@ height:30px; width:30px;}
 #chat_container{
     height:284px;
     width:217px;
-    margin:100px 0 0 0;
+    margin:100px 0 0 -193px;
     z-index:100;
     position:absolute;   
 }
+
+
 
 #chat_window{
     height:211px;
@@ -579,7 +588,7 @@ height:30px; width:30px;}
     width:171px;
     padding:5px;
     float:left;
-    background: url(../images/text_entry_bg.png) repeat-x;
+   background: url(../images/text_entry_bg.png) repeat-x;
     border-left: 1px solid #151515;
     border-bottom: 1px solid #505050;
     
@@ -592,11 +601,12 @@ height:30px; width:30px;}
 #text_field div{margin:2px 0 0 5px; float:right;}
 
 #type{
+	margin: 2px 0 0 3px;
     height: 35px;
     width:111px;
     background:white;
     border: 1px solid #151515;
-    float:right;
+    float:left;
     
     -moz-border-radius:5px;
     -webkit-border-radius:5px;
@@ -606,7 +616,7 @@ height:30px; width:30px;}
 }
 
 #expand_collapse_button{
-    height:118px;
+    height:116px;
     width:34px;
     float:right;
     margin:50px 0 0 0;
@@ -615,7 +625,7 @@ height:30px; width:30px;}
 
 
 #expand_collapse_button:hover{
-    height:118px;
+    height:116px;
     width:34px;
     float:right;
     margin:50px 0 0 0;
@@ -641,8 +651,8 @@ height:30px; width:30px;}
 
 #current_info_container{
     position:absolute;
-    z-index:10;
-    margin:49px 0 0 525px;
+    z-index:12;
+    margin:30px 0 0 525px;
     float:right;
 }
 
@@ -669,13 +679,13 @@ height:30px; width:30px;}
     margin:10px;    
 }
 
-#info_collapse{
+#current_case_info_close{
     height:30px;
     width:187px;
     background: url(../images/info_collapse.png);
 }
 
-#info_collapse:hover{
+#current_case_info_close:hover{
     height:30px;
     width:187px;
     background: url(../images/info_collapse_hover.png);
@@ -691,6 +701,7 @@ height:30px; width:30px;}
     background:url(../images/header_bg_tile.png) repeat-x;
     margin:0 0 10px 22px;
     float:left;
+	z-index: 11;
     
     -moz-border-radius:0 0 5px 5px;
     -webkit-border-radius:0 0 5px 5px;
@@ -701,7 +712,7 @@ height:30px; width:30px;}
 #tools div{margin:5px 0 0 10px;}
 
 #current_case{float:right;}            
-                                                                                /*scan container--*/
+                                                         /*scan container--*/
 #scan_container{
     height:363px;
     width:700px;
@@ -767,12 +778,17 @@ height:30px; width:30px;}
     display:block;
 }
 
-#slider{float:right;}
+#slider{float:right; }
 #slider div{margin:0 0 0 10px; float:right;}
 #slider img{margin:8px 0 0 0; float:left;}
 
+#done_button{
+	float: right;	
+}
 
-
+#slider_input{
+	float: left;
+}
                                                                                 /*footer container--*/
 
 #footer_container{
@@ -790,17 +806,7 @@ height:30px; width:30px;}
 }
 
 #friends_container{
-    height:72px;
-    width:335px;
-    margin:5px 20px 0 22px;
-    float:left;
-    background:#151515;
-    border: 1px solid #636363;
-    
-    -moz-border-radius:5px;
-    -webkit-border-radius:5px;
-    border-radius:5px;
-    -khtml-border-radius:5px;
+    z-index: 10;
 }
 
 #additional_buttons{

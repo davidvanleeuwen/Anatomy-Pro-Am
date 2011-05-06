@@ -22,15 +22,15 @@
                 
                 <div id="tools">
                 
-                    <div  class="red_button" id='brush_icon'>
+                    <div  class="red_button" id='drawingTool'>
                         <a href=""><span><img src="images/brush_icon.png"/></span></a>                
                     </div>
                     
-                    <div class="red_button" id='undo_icon'>
+                    <div class="red_button" id='undoTool'>
                         <a href=""><span><img src="images/undo_icon.png"/></span></a>
                     </div>
                     
-                    <div class="red_button" id='eraser_icon'>
+                    <div class="red_button" id='erasingTool'>
                         <a href=""><span><img src="images/eraser_icon.png"/></span></a>
                     </div>
                     
@@ -58,7 +58,7 @@
                 
                 <div id="current_case">
                     
-                    <div  class="red_button" id='current_case_info'>
+                    <div class="red_button" id='current_case_info_open'>
                         <a href=""><span>CURRENT CASE INFO</span></a>
                     </div>
                     
@@ -66,15 +66,15 @@
                 
             </div>
           
-            
+
             <div id="scan_container">
-				
-					<canvas id="scanvas" height="325" width="431">
-				
+            	<div id="images">
+					<!--images go here -->
+				</div>	
+				<canvas class="scanvas" height="363" width="700">
             </div>
+                                                   <!-- CHAT SLIDE IN-->
             
-                                                                                <!-- CHAT SLIDE IN-->
-            <!--
                     <div id="chat_container">
                         
                         <a href="" id="chat_link"><div id="expand_collapse_button">                                                      
@@ -83,19 +83,18 @@
                         <div id="chat_window">
                         </div>
                         
-                        <div id="text_field">                            
-                           
+                        <div id="text_field">                     
                             <div class="red_button" id='send_chat'>
                                 <a href=""><span>SEND</span></a>
                             </div>
                             
-                             <div id="type">
-                            </div>
+		       
+          <input type='text' id='type'></input>
                             
                         </div>    
                         
                     </div>
--->
+
             
                                                                                 <!-- TABS AND IMAGES SLIDER -->
                 
@@ -113,17 +112,16 @@
                     
                 </div>
                 
-                <div id="slides">
-					<input type="range" class="slider" min="0" max="3" value="0" />
-					Slide:
-					<span id="slide">#1</span>
-				   	<div class='red_button' id='done_button'>
-	                    <a href=""><span>I'M DONE</span></a>
+                <div id="slider">
+					<input type="range" id="slider_input" class="slider" min="0" max="3" value="0" />
+	                <div class='red_button' id='done'>
+	                    <a href=""><span id='done_text'>I'M DONE</span></a>
 	                </div>
+
 				</div>  
 
-                    
-        
+
+
                 
             </div>
             
@@ -133,18 +131,18 @@
             
             <div id="footer_container">
                 
-               <!--  <div id="friends_container"> -->
+               <div id="friends_container"> 
 					<ul id="fb_friends_container">
 						<script type="text/template" id="player-template">
-							<a href="#" id="invisible">
-								<span id="fb_player">
-									<span id="fb_player_img"></span>
-									<span id="fb_player_name"></span>
-								<span>
+							<a href="#" class="invisible">
+								<span class="fb_player">
+									<span class="fb_player_img"></span>
+									<span class="fb_player_name"></span>
+								</span>
 							</a>
 						</script>
 					</ul>
-                <!-- </div> -->
+               </div> 
                 
                 <div id="friends_divider">
                     <div id="light_divider_line"></div>
@@ -173,7 +171,7 @@
                                 
                     
                                                                               <!-- CURRENT CASE INFO DROPDOWN -->
-            <!--  <div id="current_info_container">
+             <div id="current_info_container">
                     
                     <div id="current_info">
                         
@@ -195,15 +193,15 @@
                         
                     </div>                
                                         
-                        <a href=""><div id="info_collapse">
+                        <a href=""><div id="current_case_info_close">
                         </div></a>
                                         
                 </div>
-               -->
+               
                 
-            </div><!-- ----------------------------------------------------END GAME CONTAINER -->
+            </div>															<!--END GAME CONTAINER -->
     
-    
+
     
 <div id="clear">
 </div>

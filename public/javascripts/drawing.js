@@ -4,20 +4,31 @@ components.drawing = function(){
 	window.ComputerView = Backbone.View.extend({
 		el: $('#game'),
 		events: {
-			'click #current_room_button': 'goBack',
+			'click #back_to_cases': 'goBack',
+			'click #current_case_info_open': 'expandInfo', //added to allow current case info roll down
+			'click #current_case_info_close': 'retractInfo', //added to allow current case info roll up
+			'click #expand_collapse_button':'chatExpandRetract',
 			"mousedown .scanvas": "startLine",
 			"mousemove .scanvas" : "drawLine",
 			"mouseup .scanvas": "endLine",
 			"mouseout .scanvas": "endLine",
 			"change .slider": "changeLayer",
-			"click .drawingTool": "drawTool",
-			"click .erasingTool": "eraseTool",
-			"click .done": "done"
+			'click #invite_friends':'inviteFriends',
+			'click #hide_drawing':'hideDrawing',
+			'click #reset_drawing':'resetDrawing',
+			"click #drawingTool": "drawTool",
+			"click #erasingTool": "eraseTool",
+			'click #team_tab':'teamTab',
+			'click #online_tab':'onlineTab',
+			'click #undoTool': 'undoTool',
+			'click #send_chat':'sendChat',
+			"click #done": "done"
 		},
 		initialize: function() {
 			_.bindAll(this, 'render');
 			this.render();
 			this.locked = false;
+			this.chatExpanded = false;
 		},
 		render: function() {
 			if (view.computer) {
@@ -35,7 +46,8 @@ components.drawing = function(){
 		},
 		setupView: function() {
 			new FriendBar;
-
+			
+			this.$('#current_info_container').hide();
 			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
 			this.canvas = $('canvas')[0];
 			this.ctx = this.canvas.getContext("2d");
@@ -148,7 +160,7 @@ components.drawing = function(){
 					//points[0] = {x: xvar, y: yvar, layer: layer};
 					this.oldX = xvar;
 					this.oldY = yvar;
-					remote.pointErased(myUID, points);
+					remote.pointErased(me.id, points);
 				}else{
 					var xvar = event.clientX-this.canvas.offsetLeft;
 					var yvar = event.clientY-this.canvas.offsetTop;
@@ -165,10 +177,11 @@ components.drawing = function(){
 					}
 					this.oldX = xvar;
 					this.oldY = yvar;
-					remote.pointColored(myUID, points);
+					remote.pointColored(me.id, points);
 				
 				}
 				/* -- Greg: What does this do? Please comment stuff
+				Dave:  This isn't my code -Greg
 					for (var xvar = event.clientX-this.canvas.offsetLeft-2; xvar < event.clientX-this.canvas.offsetLeft+2; xvar++)
 						for (var yvar = event.clientY-this.canvas.offsetTop-2; yvar < event.clientY-this.canvas.offsetTop+2; yvar++)
 							if(xvar>0 && xvar<this.canvas.width && yvar>0 && yvar<this.canvas.height)
@@ -216,21 +229,60 @@ components.drawing = function(){
 		done: function(event) {
 			event.preventDefault();
 			remote.done(me.id);
-
 			this.getColorPointsForLayerAndPlayer(true);
+		},
+		expandInfo: function (e) { //added to allow current case info roll down
+			e.preventDefault();
+			this.$('#current_info_container').show();
+		},
+		retractInfo: function (e) { //added to allow current case info roll up
+			e.preventDefault();
+			this.$('#current_info_container').hide();
+		},
+		undoTool: function (e) { //added to allow undo functions
+			e.preventDefault();
+			//TODO - Allow for Undo
+		},
+		inviteFriends: function (e){ // added to allow invitation of friends
+			e.preventDefault();
+		},
+		hideDrawing: function (e){ //added to allow hiding of all drawings 
+			e.preventDefault();
+		},
+		resetDrawing: function (e){ //added to allow reset of entire drawing (clear all my points)
+			e.preventDefault();
+		},
+		teamTab: function (e){ // added to allow team tab clicking
+			e.preventDefault();
+		},
+		onlineTab: function (e){ //added to allow online tab clicking
+			e.preventDefault();
+		},
+		sendChat: function (e){ //added to control send-chat functions
+			e.preventDefault();
+		},
+		chatExpandRetract: function (e){
+			e.preventDefault();
+			this.chatExpanded = !this.chatExpanded;
+			if(this.chatExpanded){
+				this.$('#chat_container').attr('style', 'margin: 100px 0px 0px 0px');
+			}else{
+				this.$('#chat_container').attr('style', 'margin:100px 0px 0px -193px;');
+			}
 		},
 		getColorPointsForLayerAndPlayer: function(showAll) {
 			if(showAll) {
 				this.locked = !this.locked;
 				if(this.locked) {
-					$('.done').text('UNLOCK');
+					$('#done_text').text('UNLOCK');
 					online_friends.each(function(friend){
 						if (!friend.get('layer_enabled')){
 							friend.toggleVisibility();
+							remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, friend.get('id'), layer, emit);
 						}
 					});
 				} else {
-					$('.done').text("I'M DONE");
+					$('#done_text').text("I'M DONE");
 				}
 			} else {
 				online_friends.each(function(friend){

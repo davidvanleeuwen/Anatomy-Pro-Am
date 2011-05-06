@@ -116,7 +116,7 @@ fbGetMeObject = (authToken, callback) ->
 			callback {data: data}
 			
 addMyFriends = (d, myID) ->
-	console.log d, myID
+	#console.log d, myID
 	Hash(d.data).forEach (friend) ->
 		#addUser friend
 		

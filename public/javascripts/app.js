@@ -22,8 +22,8 @@ $(function(){
 		startGame: function(e) {
 			e.preventDefault();
 			// change this to something global to destroy it
-			//new CaseView;
-			remote.login(document.myform.pword.value, emit);
+			new CaseView;
+			//remote.login(document.myform.pword.value, emit);
 		}
 	});
 	if(AUTH_TOKEN != '') {
