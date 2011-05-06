@@ -66,18 +66,18 @@ renderIndex =  (req, res, getToken) ->
 		console.log color '------------------- USER AUTHED BY SIGNED_REQUEST -------------------', 'blue'
 		user2 = JSON.parse base64decode(req.body.signed_request.split('.')[1])
 		gatherInitLogin user2.oauth_token, user2.user_id, getToken, (callback) ->
-			if callback.data
-				res.render 'index', {fb: config.fbconfig, token: callback.data.token}
 			if callback.error
 				res.render 'auth', {fb: config.fbconfig}
+			else	
+				res.render 'index', {fb: config.fbconfig, token: callback.data.token}
 	else
 		if user
 			console.log color '------------------- USER AUTHED BY COOKIE -------------------', 'blue'
 			gatherInitLogin user.access_token, user.uid, getToken, (callback) ->
-				if callback.data 
-					res.render 'index', {fb: config.fbconfig, token: callback.token}
 				if callback.error
 					res.render 'auth', {fb: config.fbconfig}
+				else	
+					res.render 'index', {fb: config.fbconfig, token: callback.data.token}
 		else
 			console.log color '------------------- NO USER - RENDERING AUTH PAGE -------------------', 'blue'
 			res.render 'auth', {fb: config.fbconfig}
@@ -94,8 +94,6 @@ gatherInitLogin = (authToken, userID, getToken, cb) ->
 	fbGetFriendsObject authToken, (callback) ->
 		if callback.data
 			addMyFriends callback.data, userID
-		if callback.error
-			cb {error: callback.error}
 	
 fbGetFriendsObject = (authToken, callback) ->
 	graph = new fbgraph.GraphAPI authToken

@@ -10,7 +10,10 @@ h2{font-family:SteelfishRegular;
         font-family:SteelfishRegular;
         color:#d20000;
         }
-
+a{
+	text-decoration:none;
+	color:white;
+}
 .my_class {
 	
 }
@@ -66,6 +69,11 @@ h2{font-family:SteelfishRegular;
 #header{height:52px; width:646px; float:left;}   
 #logo{height:48px; width:227px; background: url(../images/ap-a_logo.png); float:left;}
 #header_navigation{height:48px; width:372px; float:right; margin:10px 0 0 0;}
+#header_navigation a{background: -webkit-gradient(linear, left top, left bottom, from(#d20000), to(#630000));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+font-family:SteelfishRegular;
+color:#d20000;}
 #header_navigation ul{float:right;}
 #header_navigation li{display:inline; font-size:25px; text-align:right;}
 #header_navigation li a{margin:0 5px 0 5px;}
