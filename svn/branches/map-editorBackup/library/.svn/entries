@@ -1,0 +1,95 @@
+10
+
+dir
+169
+http://jgen.googlecode.com/svn/branches/map-editor/library
+http://jgen.googlecode.com/svn
+
+
+
+2011-01-11T09:08:04.738594Z
+36
+matveev.ruslan
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+767c675e-8d8d-ae7e-3894-c4cacb5b5dd5
+
+grass
+dir
+
+rocks
+dir
+
+water
+dir
+
+grassWater
+dir
+
+unsorted
+dir
+
+library.xml
+file
+
+
+
+
+2011-04-22T19:17:31.000000Z
+62c5c2925a749a2928cbde017022bc4f
+2011-01-11T09:08:04.738594Z
+36
+matveev.ruslan
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9625
+
+terrain
+dir
+
+surface
+dir
+
+bushes
+dir
+
+hills
+dir
+
+ground
+dir
+
+cave
+dir
+

@@ -77,6 +77,11 @@ server.all '/tab', (req, res) ->
 server.post '/deauth', (req, res) ->
 	fbhelper.userDeauthed(req)
 	res.end()
+server.all '/map', (req, res) ->
+	res.sendfile("svn/branches/map-editor/index.html")
+	
+	
+	
 
 server.all '/friends/:activity_id?', (req, res) ->
 	playersInfo = app.sessionManager.sessions_for_facebook_id

@@ -1,0 +1,12 @@
+#summary constant, which used to convert degrees into radians and all the way around
+
+This constant is internally used by [jgenMath_rad2deg jgen.Math.rad2deg] and [jgenMath_deg2rad jgen.Math.deg2rad].
+
+*Value:*
+180 / Math.PI
+
+*Example:*
+{{{
+// will return: 57.29577951308232
+var iDegToRad = jgen.Math.DEG_TO_RAD;
+}}}

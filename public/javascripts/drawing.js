@@ -37,38 +37,46 @@ components.drawing = function(){
 		},
 		setupView: function() {
 			new FriendBar;
-
 			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
-			this.canvas = $('canvas')[0];
-			//this.canvas2 = $('canvas')[1];
+			this.canvasArr = {};
+			this.ctxArr = {};
+			this.index = 0;
+			var self = this;
+			online_friends.each(function(item){
+				var playerID = item.get('id');
+				//document.getElementById('scan').innerHTML += '<canvas class="scanvas" id="scanvas" height="325" width="431" style="position: absolute; top:'+(1*(self.index*100+50))+';left:250; z-index: 5"></canvas>';
+				self.canvasArr[playerID] = ($('canvas')[9-self.index]);
+				self.ctxArr[playerID] = self.canvasArr[playerID].getContext("2d");
+				self.index++;
+			});
+			this.canvas = $('canvas')[10];
 			this.ctx = this.canvas.getContext("2d");
-			//this.ctx2 = this.canvas2.getContext("2d");
-			//this.canvas2 = $('canvas2')[0];
-			//this.ctx2 = this.canvas2.getContext("2d");
-			
-			
 			this.isErasing = false;
-
 			em.on('pointColored', function(player_id, points) {
 				if (online_friends.get(player_id).get('layer_enabled')){
-					this.colorPoint(points, online_friends.get(player_id).get('player_color'), this.ctx);	
+					this.colorPoint(points, online_friends.get(player_id).get('player_color'), this.ctxArr[player_id]);	
 				}
 			}.bind(this));
 
 			em.on('pointErased', function(player_id, points) {
-				this.erasePoint(points,this.ctx);
+				this.erasePoint(points,this.ctxArr[player_id]);
 			}.bind(this));
 
 			em.on('setColoredPointsForThisLayer', function(points){
 				if(points) {
 					var color = online_friends.get(points.player).get('player_color');
 					var pointArr = new Array();
-					console.log("how many times here");
-					for(key in points.payload) {
-						pointArr.push(points.payload[key].point);
+					var playerID = points.player;
+					if(!this.canvasArr[playerID]){
+						this.canvasArr[playerID] = ($('canvas')[9-this.index]);
+						this.ctxArr[playerID] = this.canvasArr[playerID].getContext("2d");
+						this.index++;
 					}
-						this.colorPoint(pointArr, color,this.ctx);
-					
+					for(key in points.payload) {
+						if(points.payload[key].point.layer == window.layer)
+							pointArr.push(points.payload[key].point);
+					}
+						this.colorPoint(pointArr, color,this.ctxArr[points.player]);
 				}
 			}.bind(this));
 
@@ -84,8 +92,40 @@ components.drawing = function(){
 			$(layers[0]).show();
 			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
 			window.layer = 0;
-			//remote.getColoredPointsForThisLayer(layer, emit);
 			remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, me.id, layer, emit);
+		},
+		canvasMerge: function() {
+			/*Function is presently not necessary
+			
+			
+			var pixArr = new Array();
+			var imageData;
+			//console.log("Merging time");
+			for(ctxKey in this.ctxArr){
+				//console.log(this.ctxArr[ctxKey]);
+				imageData=this.ctxArr[ctxKey].getImageData(0, 0, this.canvas.width, this.canvas.height);
+				pixArr.push(imageData.data);
+			}	
+			
+			imageData=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+			var pix = imageData.data;
+		
+			for(var c = 0; c < (pix.length)/4; c++)
+				for(pixT in pixArr)
+					if(pixT[c*4+3]!=0){
+						pix[c*4+0]=0;
+						pix[c*4+1]=0;
+						pix[c*4+2]=255;
+						pix[c*4+3]=pixT[c*4+3];
+					}
+			
+						this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+						this.ctx.putImageData(imageData, 0, 0);
+				
+				
+				*/
+		
+			
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -95,13 +135,9 @@ components.drawing = function(){
 		colorPoint: function(points, color,context) {
 			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
 			var pix = imageData.data;
-			console.log(color);
 			var redVal = (parseInt(color.substr(0,2),16));
 			var greenVal = (parseInt(color.substr(2,2),16));
 			var blueVal = (parseInt(color.substr(4,2),16));
-			
-			//var Rval = color[0];
-			//console.log;
 			for(var c = 0; c < points.length; c++){
 				var point = points[c];
 				var x = point.x;
@@ -109,7 +145,6 @@ components.drawing = function(){
 				var slide = point.layer;
 				if(layer == slide) {
 					if(x>0&&y>0){
-						
 						pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
 						pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
 						pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
@@ -117,9 +152,6 @@ components.drawing = function(){
 						
 						
 					}
-					//this.ctx.fillStyle = "#"+color;
-					//this.ctx.moveTo(0,0);
-					//this.ctx.fillRect(x,y,1,1);
 				}
 			}
 			context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -150,9 +182,6 @@ components.drawing = function(){
 					
 					if(x>0&&y>0){
 						pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
-						//pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
-						//pix[(((y)*(imageData.width*4)) + (x*4)) + 3]=0;
-						//pix[(((y-1)*(imageData.width*4)) + ((x-1)*4)) + 3]=0;
 					}
 					// Draw the ImageData at the given (x,y) coordinates.
 					/*this.ctx.fillStyle = 'rgb(255,255,255)';
@@ -183,33 +212,6 @@ components.drawing = function(){
 		        return newArray;
 		},
 		drawLine: function(event) {
-			/*
-
-
-				if(layer == slide) {
-					this.ctx.fillStyle = "#"+color;
-					//this.ctx.fillStyle.parse
-					var imageData=this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-					var pix = imageData.data;
-					for( var c = 0; c < points.length; c++){
-						pix[((points[c].y*(imageData.width*4)) + (points[c].x*4)) + 3]=1;
-						pix[((points[c].y*(imageData.width*4)) + (points[c].x*4)) + 3]=0;
-						pix[((points[c].y*(imageData.width*4)) + (points[c].x*4)) + 3]=0;
-						pix[((points[c].y*(imageData.width*4)) + (points[c].x*4)) + 3]=1;
-
-
-					}
-					// Draw the ImageData at the given (x,y) coordinates.
-					this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-					this.ctx.putImageData(imageData, 0, 0);
-					/*this.ctx.fillStyle = 'rgb(255,255,255)';
-					this.ctx.moveTo(0,0);
-					console.log('Erase: x: '+x, 'y: '+y);
-					this.ctx.fillRect(x,y,1,1);
-
-
-				}*/
-			
 			event.preventDefault();
 			if(this.isDrawing && !this.locked) {
 				if(this.isErasing){
@@ -311,11 +313,10 @@ components.drawing = function(){
 		changeLayer: function(event) {
 			if($('.slider')[0].value != layer){
 				layer = $('.slider')[0].value;
-
-				//remote.getColoredPointsForThisLayer(layer, emit);
-
-				this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
+				for(ctxKey in this.ctxArr){
+					var imageData=this.ctxArr[ctxKey].getImageData(0, 0, this.canvas.width, this.canvas.height);
+					this.ctxArr[ctxKey].clearRect(0, 0, this.canvas.width, this.canvas.height);
+				}
 				layers.each(function(n, el){
 					if(layer != n) {
 						$(el).hide();
@@ -324,14 +325,12 @@ components.drawing = function(){
 						$('#slide').html('#'+(n+1));
 					}
 				});
-
 				this.getColorPointsForLayerAndPlayer(false);
 			}
 		},
 		done: function(event) {
 			event.preventDefault();
 			remote.done(me.id);
-
 			this.getColorPointsForLayerAndPlayer(true);
 		},
 		getColorPointsForLayerAndPlayer: function(showAll) {
