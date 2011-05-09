@@ -35,8 +35,9 @@ server.use browserify {
 ## RPC client
 app.createServer server
 
+	
 server.get '/', (req, res) ->
-	console.log '/ get'
+	console.log('GET @ /')
 	fbhelper.renderIndex req, res, (fbUser) ->
 		if fbUser
 			# callback for getting the token and returns it to the  original request
@@ -54,12 +55,12 @@ server.all '/deleteuser', (req, res) ->
 	res.end
 
 server.all '/finishedsignin', (req, res) ->
-	console.log 'hit finished sign in'
+	console.log '**********************************hit finished sign in'
 	res.redirect config.fbconfig.url
 	
 server.get '/authresponse', (req, res) ->
 	console.log('GET @ /authresponse')
-	fbhelper.authUser(req, res)
+	fbhelper.authresponse(req, res)
 
 ##Used to send privacy policy information.  
 server.all '/privacy', (req, res) ->
@@ -77,9 +78,9 @@ server.all '/tab', (req, res) ->
 	console.log(req.method)
 	res.send("TAB")
 ##Used when someone stops using the application
-server.post '/deauth', (req, res) ->
-	fbhelper.userDeauthed(req)
-	res.end()
+server.all '/deauth:a?', (req, res) ->
+	fbhelper.userDeauthed(req, res)
+	#res.end()
 	
 #used to get all players given the activity_id they currently have.  
 server.all '/friends/:activity_id?', (req, res) ->

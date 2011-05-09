@@ -4,32 +4,31 @@ fbutil = require './facebookutil.js'
 http = require 'http'
 color = require('./color.js').set
 httpClient = require './public/javascripts/httpclient.js'
-
 Hash = require 'hashish@0.0.2'
 
 storeUser = (userData, userCode) ->
 	##Will store user to DB.  
-	console.log("StoreUserData", userData, userCode)
 	addUser (userData);
 	
-
-	
-userDeauthed = (reqInfo) ->
+userDeauthed = (reqInfo, res) ->
 	#do something with deauthed user info
-	console.log("-------=== USER REMOVED APP! ===-------")
-	console.log (reqInfo)
-	console.log("-------=== USER REMOVED APP! ===-------")
-
-userDeclinedAccess = (reqInfo) ->
+	console.log(color "------------------- USER REMOVED APP! ----------------", 'red')
+	console.log (JSON.parse(base64decode(reqInfo.body.signed_request.split('.')[1])).user_id)
+	console.log(color "------------------- USER REMOVED APP! ----------------", 'red')
+	res.redirect ('http://www.wisc.edu')
+	
+userDeclinedAccess = (reqInfo,res) ->
 	#so something when a user declines using the app from the access window
-	console.log "-------=== USER DENIED TERMS ===-------"
-	console.log(req.query.error_reason)
-	console.log(req.query.error)
-	console.log(req.query.error_description)
+	console.log color "------------------- USER DENIED TERMS ----------------", 'red'
+	console.log(reqInfo.query.error_reason)
+	console.log(reqInfo.query.error)
+	console.log(reqInfo.query.error_description)
+	console.log color "------------------- USER DENIED TERMS ----------------", 'red'
+	res.redirect ('http://www.wisc.edu')
 
-authUser = (req, res) ->
+authresponse = (req, res) ->
 	if req.query.code
-		console.log "-------=== USER ACCEPTED TERMS, SENDING ACCESS TOKEN ===-------"
+		console.log color "------------------- USER ACCEPTED TERMS, REQUESTING ACCESS TOKEN ----------------", 'green'
 		##compile access token requirements
 		path = '/oauth/access_token'
 		args = {
@@ -38,48 +37,84 @@ authUser = (req, res) ->
 			client_secret: config.fbconfig.appSecret
 			code: req.query.code			
 		}
-		print = (error, code) ->
-			if code 
-				#if we get the code back, get all user data
-				graph = new fbgraph.GraphAPI code
-				printFbObject = (error, userdata) ->
-					# getting error: Invalid access token signature.
-					if userdata
-						storeUser(userdata, code)
-				# doesn't work?
-				graph.getObject 'me', printFbObject
-		fbutil.auth path, 'GET', args, print
-		res.redirect config.fbconfig.signedup
+		fbutil.auth path, 'GET', args, (error, token) ->
+			if token
+				graph = new fbgraph.GraphAPI token
+				graph.getObject 'me', (error, userData) ->
+					if error
+						console.log color '------------------- UNABLE TO RETRIEVE USER OBJECT FROM FACEBOOK ----------------', 'red'
+						console.log error
+					if userData
+							storeUser userData, token
+		res.redirect config.fbconfig.url
+	else
+		console.log color '------------------- NO CODE RETURNED FROM SERVER! ----------------', 'red'
+		console.log req
+		res.end
 	if req.query.error_reason	
-		userDeclinedAccess(req)
+		userDeclinedAccess(req, res)
 		res.end()
+		
+###
+renderIndex :
+Renders gathers user info based on either a signed request or the users cookie, or ref's to auth page. 
 
+###
 renderIndex =  (req, res, getToken) ->
 	user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
-	# req.cookie is empty (so no user is set), that's why it's refreshing constantly
-	if user
-		graph = new fbgraph.GraphAPI user.access_token
-		graph.getObject 'me', (error, data) ->
-			if error
-				console.log 'fbhelper error: ', error
+	if req.body
+		console.log color '------------------- USER AUTHED BY SIGNED_REQUEST -------------------', 'blue'
+		user2 = JSON.parse base64decode(req.body.signed_request.split('.')[1])
+		gatherInitLogin user2.oauth_token, user2.user_id, getToken, (callback) ->
+			if callback.error
 				res.render 'auth', {fb: config.fbconfig}
-			else
-				token = getToken data
-				if token
-					storeUser data, user.access_token #should add the users info everytime they log in.  
-					# should the render be in here or in the server.coffee?
-					res.render 'index', {fb: config.fbconfig, token: token}
-		graph = new fbgraph.GraphAPI user.access_token
-		#console.log user
-		graph.getConnections 'me','friends', (error, data) ->
-			if error
-				console.log 'fbhelper error: ', error
-			else
-				addMyFriends data, user.uid
+			else	
+				res.render 'index', {fb: config.fbconfig, token: callback.data.token}
 	else
-		console.log '-------=== NO USER - RENDERING INDEX TO DIRECT USER TO AUTH PAGE ===-------'
-		res.render 'auth', {fb: config.fbconfig}
-
+		if user
+			console.log color '------------------- USER AUTHED BY COOKIE -------------------', 'blue'
+			gatherInitLogin user.access_token, user.uid, getToken, (callback) ->
+				if callback.error
+					res.render 'auth', {fb: config.fbconfig}
+				else	
+					res.render 'index', {fb: config.fbconfig, token: callback.data.token}
+		else
+			console.log color '------------------- NO USER - RENDERING AUTH PAGE -------------------', 'blue'
+			res.render 'auth', {fb: config.fbconfig}
+			
+gatherInitLogin = (authToken, userID, getToken, cb) ->
+	fbGetMeObject authToken, (callback) ->
+		if callback.data
+			token = getToken callback.data
+			if token
+				storeUser callback.data, authToken
+				cb {data: {token: token}}
+		if callback.error
+			cb {error: callback.error}
+	fbGetFriendsObject authToken, (callback) ->
+		if callback.data
+			addMyFriends callback.data, userID
+	
+fbGetFriendsObject = (authToken, callback) ->
+	graph = new fbgraph.GraphAPI authToken
+	graph.getConnections 'me','friends', (error, data) ->
+		if error
+			console.log color 'fbGetFriendsObject error: ', 'red'
+			console.log error
+			callback {error: error}
+		else
+			callback {data: data}
+			
+fbGetMeObject = (authToken, callback) ->
+	graph = new fbgraph.GraphAPI authToken
+	graph.getObject 'me', (error, data) ->
+		if error
+			console.log color 'fbGetMeObject error: ', 'red'
+			console.log error
+			callback {error: error}
+		else
+			callback {data: data}
+			
 addMyFriends = (d, myID) ->
 	#console.log d, myID
 	Hash(d.data).forEach (friend) ->
@@ -100,19 +135,19 @@ addUser = (info) ->
 	result = ''
 	client.perform config.sql.fullHost + dbPath, "GET", (res) ->
 		if res.response.status is 500
-			console.log color '---------------- USER DOES NOT EXIST - CREATING -------------------\n', 'green'
+			console.log color '------------------- USER DOES NOT EXIST - CREATING -------------------\n', 'green'
 			postData = formatUser info
 			dbPath = '/facebook_users.json'
 			client2 = new httpClient.httpclient
 			client2.perform config.sql.fullHost + dbPath, "POST", (resp) -> 
 				result = resp.response.body
-				console.log color '---------------- RESULT OF ADDING USER -------------------\n', 'green'
-				console.log result.response.body.facebook_user.id	
+				console.log color '------------------- RESULT OF ADDING USER -------------------\n', 'green'
+				console.log result	
 			,postData
 		else 
 			result = color '------------------- USER ALREADY EXISTS -------------------\n', 'green'
 			result += JSON.parse(res.response.body).facebook_user.id + " - " + JSON.parse(res.response.body).facebook_user.first_name + " " + JSON.parse(res.response.body).facebook_user.last_name
-		console.log '\n********************\n\naddUser Result: \n\n' + result + '\n\n********************\n'
+		console.log result
 
 	
 getUser = (fbid) ->
@@ -123,11 +158,11 @@ getUser = (fbid) ->
 			result = 'error'
 		else 
 			result = res.response.body
-		console.log '\n********************\n\ngetUser Result: \n\n' + result + '\n\n********************\n'
+		console.log '\n-------------------\n\ngetUser Result: \n\n' + result + '\n\n----------------\n'
 		return result
 	
 formatUser = (inbound) ->
-	console.log  '\n********************\n\nBefore formatUser: \n\n' + inbound  + '\n\n********************\n'
+	console.log  '\n-------------------\n\nBefore formatUser: \n\n' + inbound  + '\n\n----------------\n'
 	outbound = '{"facebook_user": { '
 	Hash(inbound).forEach (value, key) ->
 		switch key
@@ -175,17 +210,47 @@ formatUser = (inbound) ->
 				console.log "Skipping: " + key + " : " + value
 		console.log key, value
 	
-		outbound += '}}'
-		console.log  '\n********************\n\nAfter formatUser: \n\n' + outbound  + '\n\n********************\n'
-	
+	outbound += '}}'
+	console.log  '\n-------------------\n\nAfter formatUser: \n\n' + outbound  + '\n\n----------------\n'
 	return outbound
 	
+cleanJSON = (input) ->
+	keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=:-_{}[]".,|'
+	output = ""
+	k = 0
+	o = ''
+	while k < input.length
+		a = input.charAt(k++)
+		j = 0
+		while j < keyStr.length
+			if a is keyStr.charAt(j++)
+				o += a
+	return o
+	
+base64decode = (input) ->
+	keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+	output = ""
+	i = 0
+	while i < input.length
+		enc1 = keyStr.indexOf(input.charAt(i++))
+		enc2 = keyStr.indexOf(input.charAt(i++))
+		enc3 = keyStr.indexOf(input.charAt(i++))
+		enc4 = keyStr.indexOf(input.charAt(i++))
+		chr1 = (enc1 << 2) | (enc2 >> 4)
+		chr2 = ((enc2 & 15) << 4 | (enc3 >> 2))
+		chr3 = ((enc3 & 3) << 6 | enc4)
 		
+		output += String.fromCharCode chr1
+		if enc3 != 64
+			output += String.fromCharCode chr2
+		if enc4 != 64
+			output += String.fromCharCode chr3
+	return cleanJSON unescape output
 		
 exports.addUser = addUser
 exports.formatUser = formatUser
 exports.store_user = storeUser
 exports.userDeauthed = userDeauthed
 exports.userDeclinedAccess = userDeclinedAccess
-exports.authUser = authUser
+exports.authresponse = authresponse
 exports.renderIndex = renderIndex
