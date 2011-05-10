@@ -18,6 +18,13 @@ exports.redis = {
 	db: 'apa-dev-name'
 }
 
+exports.sql = {
+#	server: 'http://10.129.3.163',
+	server: 'http://c.apa.dev.mirerca.com',
+	port: '9006',
+	fullHost: 'http://127.0.0.1:9006'
+}
+
 # Facebook settings
 exports.fbconfig = {
 

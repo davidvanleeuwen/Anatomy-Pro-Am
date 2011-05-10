@@ -16,6 +16,9 @@ activityManager = new util.ActivityManager
 ## DNode RPC API
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
+		@login = (pw, emit) ->
+			if pw is 'tumor'
+				emit.apply emit, ['Continue']
 		@subscribe = (auth_token, emit) ->
 			session = sessionManager.sessionConnected auth_token, conn, client, emit
 			emit.apply emit, ['myINFO', session.fbUser, session.player_color]
@@ -45,7 +48,8 @@ exports.createServer = (app) ->
 			console.log activity_id, requester_id, player, layer, emit
 			activityManager.current[activity_id].getPointsForPlayer layer, player, (points) ->
 				emit.apply emit, ['setColoredPointsForThisLayer', {player: player, payload: points} ]
-		@done = (player_id) ->
+		@done = (player_id) -> #yes, this is empty for now - it is connected to the done button in the computer view and will be used eventually
+
 		@joinActivity = (activity_id, player) ->
 			activityManager.current[activity_id].addPlayer(activity_id, player)
 			
