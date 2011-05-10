@@ -1,6 +1,6 @@
 <script> 
 		top.location.href 	= 'https://graph.facebook.com/oauth/authorize?client_id='
 							+ '<%= fb.appId %>&redirect_uri='
-							+ encodeURIComponent('<%= fb.redirect_uri %>')
+							+ encodeURIComponent('<%= fb.signedup %>')
 							+ '&scope=<%= fb.scope %>';	
 </script>

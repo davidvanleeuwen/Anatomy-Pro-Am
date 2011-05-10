@@ -1,15 +1,12 @@
 <div id="fb-root"></div>
 
 <script>
-/*
 	window.fbAsyncInit = function() {
 		FB.init({
 			appId: '<%= fb.appId %>',
-			session: 		{"uid":"<%= args.clientid %>","access_token":"<%= args.code %>","expires":1304499600,"sig":"<%= args.client_secret %>"},
 			status: true, // check login status
 			xfbml: false // parse XFBML
 		});
-		
 		FB.Canvas.setAutoResize();
 	};
 
@@ -20,46 +17,11 @@
 		document.getElementById('fb-root').appendChild(e);
 	}());
 	var AUTH_TOKEN = "<%= token %>";
-	*/
-	
-	var AUTH_TOKEN = "<%= token %>";
-	FB.init({ appId  : '<%= fb.appId %>', status : true, cookie : true, xfbml  : true });
-	FB.Event.subscribe('auth.login', function(response) {
-	  // Reload the entire page. Could also do an Ajax request and dynamically
-	  // update the already loaded page.
-	  window.location.reload(true);
-	});
-	
-	FB.getLoginStatus(function(response) {
-	  if (response.session) {
-	    // logged in and connected user, someone you know
-		console.log('session is set');
-		$('#game_container').show();
-		
-	  } else {
-		var url = 'https://graph.facebook.com/oauth/authorize?client_id='
-			+ '<%= fb.appId %>&redirect_uri='
-			+ encodeURIComponent('<%= fb.redirect_uri %>')
-			+ '&scope=<%= fb.scope %>';
-		top.location.href = url;
-	  }
-	});
-	FB.Canvas.setSize({ width: 744, height: 555 });
-	
 </script>
 
 <div id="game"></div>
 <!-- debug info -->
-<span class="grey_gradient_text" style="position: absolute; top: 10px; right: 24px; font-size: 21px; text-align: center;">v0.01</span>
+<span class="grey_gradient_text" style="position: absolute; top: 10px; right: 24px; font-size: 21px; text-align: center;">v0.20</span>
 <div class="clear">
 </div>
 
-<!--
-<div class="area" style="display: none;">
-	<div class="images">
-		<img src="images/image.png" />
-	</div>
-	<canvas class="game" width="668" height="587"></canvas>
-	<a href="#" class="clear">CLEAR</a>
-</div>
--->

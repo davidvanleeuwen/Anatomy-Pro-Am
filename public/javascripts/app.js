@@ -21,9 +21,9 @@ $(function(){
 		},
 		startGame: function(e) {
 			e.preventDefault();
-			
 			// change this to something global to destroy it
 			new CaseView;
+			//remote.login(document.myform.pword.value, emit);
 		}
 	});
 	if(AUTH_TOKEN != '') {
@@ -46,6 +46,9 @@ $(function(){
 			});
 			em.on('JoinRequest', function(caseNumber, playerid) {
 				alert ('Join This Case: ' + caseNumber);
+			});
+			em.on('Continue', function(){
+				new CaseView;
 			});
 		});
 	
