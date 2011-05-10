@@ -49,6 +49,7 @@ exports.createServer = (app) ->
 			activityManager.current[activity_id].getPointsForPlayer layer, player, (points) ->
 				emit.apply emit, ['setColoredPointsForThisLayer', {player: player, payload: points} ]
 		@done = (player_id) -> #yes, this is empty for now - it is connected to the done button in the computer view and will be used eventually
+
 		@joinActivity = (activity_id, player) ->
 			activityManager.current[activity_id].addPlayer(activity_id, player)
 			

@@ -48,6 +48,7 @@ components.drawing = function(){
 		},
 		setupView: function() {
 			new FriendBar;
+
 			this.$('#current_info_container').hide();
 			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
 			this.canvasArr = {};
@@ -262,6 +263,7 @@ components.drawing = function(){
 					}
 					this.oldX = xvar;
 					this.oldY = yvar;
+					
 					remote.pointErased(me.get('current_case_id'), me.id, points);
 				}else{
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
@@ -300,6 +302,8 @@ components.drawing = function(){
 					}
 					this.oldX = xvar;
 					this.oldY = yvar;
+					
+
 					remote.pointColored(me.get('current_case_id'), me.id, points);
 				}
 			}

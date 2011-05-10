@@ -78,10 +78,11 @@ server.all '/tab', (req, res) ->
 	console.log(req.method)
 	res.send("TAB")
 ##Used when someone stops using the application
-server.all '/deauth:a?', (req, res) ->
-	fbhelper.userDeauthed(req, res)
-	#res.end()
-	
+
+server.post '/deauth', (req, res) ->
+	fbhelper.userDeauthed(req)
+	res.end()
+
 #used to get all players given the activity_id they currently have.  
 server.all '/friends/:activity_id?', (req, res) ->
 	playersInfo = app.sessionManager.sessions_for_facebook_id
