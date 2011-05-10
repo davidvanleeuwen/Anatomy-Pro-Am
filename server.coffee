@@ -78,6 +78,7 @@ server.all '/tab', (req, res) ->
 	console.log(req.method)
 	res.send("TAB")
 ##Used when someone stops using the application
+
 server.post '/deauth', (req, res) ->
 	fbhelper.userDeauthed(req)
 	res.end()

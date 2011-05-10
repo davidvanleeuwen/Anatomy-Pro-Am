@@ -303,6 +303,7 @@ components.drawing = function(){
 					this.oldX = xvar;
 					this.oldY = yvar;
 					
+
 					remote.pointColored(me.get('current_case_id'), me.id, points);
 				}
 			}
