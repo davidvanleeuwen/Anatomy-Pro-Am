@@ -8,7 +8,8 @@ Hash = require 'hashish@0.0.2'
 
 storeUser = (userData, userCode) ->
 	##Will store user to DB.  
-	addUser (userData);
+	addUser userData, (cb) ->
+	
 	
 userDeauthed = (reqInfo, res) ->
 	#do something with deauthed user info
@@ -76,12 +77,12 @@ renderIndex =  (req, res, getToken) ->
 			gatherInitLogin user.access_token, user.uid, getToken, (callback) ->
 				if callback.error
 					res.render 'auth', {fb: config.fbconfig}
-				else	
+				else
 					res.render 'index', {fb: config.fbconfig, token: callback.data.token}
 		else
 			console.log color '------------------- NO USER - RENDERING AUTH PAGE -------------------', 'blue'
 			res.render 'auth', {fb: config.fbconfig}
-			
+
 gatherInitLogin = (authToken, userID, getToken, cb) ->
 	fbGetMeObject authToken, (callback) ->
 		if callback.data
@@ -104,7 +105,7 @@ fbGetFriendsObject = (authToken, callback) ->
 			callback {error: error}
 		else
 			callback {data: data}
-			
+
 fbGetMeObject = (authToken, callback) ->
 	graph = new fbgraph.GraphAPI authToken
 	graph.getObject 'me', (error, data) ->
@@ -116,102 +117,95 @@ fbGetMeObject = (authToken, callback) ->
 			callback {data: data}
 			
 addMyFriends = (d, myID) ->
-	#console.log d, myID
 	Hash(d.data).forEach (friend) ->
-		#addUser friend
-		
-getFriends = (uid) ->
+		addUserAsFriend myID, friend
+	getUser myID, (getUserResult) -> 
+		getFriends JSON.parse(getUserResult).facebook_user.id, (friendsResult) ->
+			#console.log friendsResult
+			
+getFriends = (uid, cb) ->
 	dbPath = '/users/' + uid + '/friends.json'
 	client = new httpClient.httpclient
 	client.perform config.sql.fullHost + dbPath, "GET", (res) ->
 		result = res.response.body
-		console.log result
-		return result
-	
-addUser = (info) ->
-	console.log info.id
-	dbPath = '/facebook_users/uid/' + info.id + '.json'
+		cb result
+		
+associateFriend = (uid, friendID) ->
+	dbPath = '/users/' + uid + '/friends'
+	postData = '{"friend_id":' + friendID + '}'
 	client = new httpClient.httpclient
-	result = ''
-	client.perform config.sql.fullHost + dbPath, "GET", (res) ->
-		if res.response.status is 500
+	client.perform config.sql.fullHost + dbPath, "POST", (res) ->
+		result = res.response.body
+		#console.log result
+	,postData
+
+addUser = (info, callback) ->
+	getUser info.id, (cb) ->
+		if cb.error is 404
 			console.log color '------------------- USER DOES NOT EXIST - CREATING -------------------\n', 'green'
+			console.log info.id + " " + info.name
 			postData = formatUser info
 			dbPath = '/facebook_users.json'
 			client2 = new httpClient.httpclient
 			client2.perform config.sql.fullHost + dbPath, "POST", (resp) -> 
 				result = resp.response.body
 				console.log color '------------------- RESULT OF ADDING USER -------------------\n', 'green'
-				console.log result	
+				console.log JSON.parse(result).facebook_user.id, JSON.parse(result).facebook_user.name 
+				callback result
 			,postData
 		else 
 			result = color '------------------- USER ALREADY EXISTS -------------------\n', 'green'
-			result += JSON.parse(res.response.body).facebook_user.id + " - " + JSON.parse(res.response.body).facebook_user.first_name + " " + JSON.parse(res.response.body).facebook_user.last_name
-		console.log result
+			result += JSON.parse(cb).facebook_user.id + " - " + JSON.parse(cb).facebook_user.name
+			#console.log result
 
+addUserAsFriend = (playerID, friendInfo) ->
+	myID = ''
+	getUser playerID, (cb) ->
+		myID = JSON.parse(cb).facebook_user.id
+		addUser friendInfo, (cb) ->
+			associateFriend myID, JSON.parse(cb).facebook_user.id
 	
-getUser = (fbid) ->
+getUser = (fbid, cb) ->
 	dbPath = '/facebook_users/uid/' + fbid + '.json'
 	client = new httpClient.httpclient
 	client.perform config.sql.fullHost + dbPath, "GET", (res) -> 
-		if res.response.status is 500
-			result = 'error'
+		if res.response.status is 404
+			result = {error: 404}
 		else 
-			result = res.response.body
-		console.log '\n-------------------\n\ngetUser Result: \n\n' + result + '\n\n----------------\n'
-		return result
+			result = res.response.body		
+		cb result
+		#console.log '\n-------------------\n\ngetUser Result: \n\n' + result + '\n\n----------------\n'
+
 	
 formatUser = (inbound) ->
-	console.log  '\n-------------------\n\nBefore formatUser: \n\n' + inbound  + '\n\n----------------\n'
-	outbound = '{"facebook_user": { '
+	outbound = {}
+	#console.log  '\n-------------------\n\nBefore formatUser: \n\n' + inbound  + '\n\n----------------\n'
 	Hash(inbound).forEach (value, key) ->
 		switch key
 			when 'id'
-				outbound += '"uid":' + '"' + value + '",'
+				outbound["uid"] = value
 			when 'hometown'
-				outbound += '"hometown":{'
+				outbound['hometown'] = {}
 				Hash(value).forEach (v2, k2) ->
 					if k2 is 'id'
-						outbound += '"facebook_id":' + '"' + v2 + '",'
+						outbound['hometown']["facebook_id"] =  v2 
 					else
-						outbound += '"' + k2 + '":' + '"' + v2 + '"'
-				outbound += "},"
+						outbound['hometown'][k2] = v2 
 			when 'location'
-				outbound += '"location":{' 
+				outbound['location'] = {} 
 				Hash(value).forEach (v2, k2) ->
 					if k2 is 'id'
-						outbound += '"facebook_id":' + '"' + v2 + '",'
+						outbound['location']["facebook_id"] = v2 
 					else
-						outbound += '"' + k2 + '":' + '"' + v2 + '"'	
-				outbound += "},"	
-			when 'name'	
-				outbound += '"' + key + '":' + '"' + value + '",'
-			when 'first_name'	
-				outbound += '"' + key + '":' + '"' + value + '",'
-			when 'last_name'	
-				outbound += '"' + key + '":' + '"' + value + '",'
-			when 'link'	
-				outbound += '"' + key + '":' + '"' + value + '",'
-			when 'username'	
-				outbound += '"' + key + '":' + '"' + value + '",'
-			when 'birthday'	
-				outbound += '"' + key + '":' + '"' + value + '",'
-			when 'email'	
-				outbound += '"' + key + '":' + '"' + value + '",'
-			when 'timezone'	
-				outbound += '"' + key + '":' + '"' + value + '",'
-			when 'locale'	
-				outbound += '"' + key + '":' + '"' + value + '",'
-			when 'verified'	
-				outbound += '"' + key + '":' + '"' + value + '"'
-			when 'gender'	
-				outbound += '"' + key + '":' + '"' + value + '",'
+						outbound['location'][k2] = v2
+			when 'name','first_name','last_name','link','username','birthday','email','timezone','locale','verified','gender'
+				outbound[key] =  value
 			else
 				console.log "Skipping: " + key + " : " + value
-		console.log key, value
-	
-	outbound += '}}'
-	console.log  '\n-------------------\n\nAfter formatUser: \n\n' + outbound  + '\n\n----------------\n'
+	f = {}
+	f['facebook_user'] = outbound
+	outbound = JSON.stringify f
+	#console.log  '\n-------------------\n\nAfter formatUser: \n\n' + outbound  + '\n\n----------------\n'
 	return outbound
 	
 cleanJSON = (input) ->

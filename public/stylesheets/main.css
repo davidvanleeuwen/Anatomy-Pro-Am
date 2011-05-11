@@ -778,9 +778,17 @@ height:30px; width:30px;}
     display:block;
 }
 
-#slider{float:right; }
-#slider div{margin:0 0 0 10px; float:right;}
-#slider img{margin:8px 0 0 0; float:left;}
+#slider{float:right; display:inline;}
+#slider div{ margin:0 0 0 10px; float: right;}
+#slider_input {width: 150px; height: 30px;}
+
+#slider_control{
+}
+
+#tick_holder {
+	position: absolute;
+	top: 30;
+}
 
 #done_button{
 	float: right;	
