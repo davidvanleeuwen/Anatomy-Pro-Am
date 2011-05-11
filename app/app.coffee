@@ -52,7 +52,10 @@ exports.createServer = (app) ->
 
 		@joinActivity = (activity_id, player) ->
 			activityManager.current[activity_id].addPlayer(activity_id, player)
-			
+		
+		@find = (client, model) ->
+			console.log client
+			console.log model
 		
 		# dnode/coffeescript fix:
 		@version = config.version
