@@ -53,7 +53,7 @@ $(function(){
 		});
 	
 		window.app = new AppView;
-		util.sync();
+		
 		components.cases();
 		components.friendbar();
 		components.drawing();	

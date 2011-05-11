@@ -24,6 +24,7 @@ components.drawing = function(){
 			'click #online_tab':'onlineTab',
 			'click #undoTool': 'undoTool',
 			'click #send_chat':'sendChat',
+			'keyup #type':'sendChat',
 			"click #done": "done"
 		},
 		initialize: function() {
@@ -377,8 +378,17 @@ components.drawing = function(){
 		onlineTab: function (e){ //added to allow online tab clicking
 			e.preventDefault();
 		},
-		sendChat: function (e){ //added to control send-chat functions
+		sendChat: function (e){
 			e.preventDefault();
+			if(e.type == "click" || e.keyCode == 13) {
+				this.$('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+me.get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+this.$('#type')[0].value+'</span></div>');
+				this.$('#type')[0].value = '';
+				
+				this.$('#chat_window')[0].scrollTop = this.$('#chat_window')[0].scrollHeight;
+			}
+			
+			//this.$('#chat_window').scrollTop = 
+			//remote.sendChat(me.get('current_case_id'), me.id);
 		},
 		chatExpandRetract: function (e){
 			e.preventDefault();

@@ -51,9 +51,9 @@ exports.createServer = (app) ->
 		@joinActivity = (activity_id, player) ->
 			activityManager.current[activity_id].addPlayer(activity_id, player)
 		
-		@find = (client, model) ->
-			console.log client
-			console.log model
+		@sendChat = (activity_id, player, message) ->
+			#activityManager.current[activity_id].
+			sessionManager.publish 'newChat', player_id, message
 		
 		# dnode/coffeescript fix:
 		@version = config.version

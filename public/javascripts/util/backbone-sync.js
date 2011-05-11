@@ -1,5 +1,6 @@
 util.sync = function(){
 	Backbone.sync = function(method, model, success, error) {
+		/*
 		var resp;
 		
 		if(model instanceof Backbone.Model) {
@@ -25,5 +26,6 @@ util.sync = function(){
 		} else {
 			error("Record not found");
 		}
+		*/
 	};
 };
