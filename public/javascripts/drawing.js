@@ -93,11 +93,14 @@ components.drawing = function(){
 			}.bind(this));
 
 			// fixtures for the images (scans):
-			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png',
-							'/images/cases/case2/0.png','/images/cases/case2/1.png', '/images/cases/case2/2.png','/images/cases/case2/3.png', '/images/cases/case2/4.png'];
-
+			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
+			this.$('#slider_input').attr('style', 'width:' + (imageRefs.length * 40));
+			
+			var tickTemplate = '<div class="tick"><span>|</span></div>';
+						
 			imageRefs.forEach(function(img){
 				this.$('#images').append('<img src="'+img+'" style="display: none;" />');
+				this.$('#slider').append(tickTemplate);
 			});
 
 			layers = this.$('#images').children();

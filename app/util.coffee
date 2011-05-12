@@ -163,12 +163,10 @@ class ContouringActivityData
 			if ismember is 0
 				client.sadd 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, added) ->
 					if err then console.log 'SADD error: ', err
-	removePoint: (player_id, point, callback) ->
+	removePoint: (player_id, point) ->
 		thisID = @id
-		@redisClient.srem 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, isremoved) ->
+		@redisClient.srem 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err) ->
 			if err then console.log 'SISMEMBER error: ', err
-			console.log "erase Attempt: ", thisID, player_id, JSON.stringify({point}) + isremoved
-			callback isremoved
 	getPointsForPlayer: ( layer, player, callback) ->
 		@redisClient.smembers 'activity:'+@id+':layer:'+layer+':player:'+player+':points', (err, points) ->
 			if err then console.log 'SMEMBERS error: ', err
