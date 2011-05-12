@@ -144,7 +144,7 @@ components.drawing = function(){
 			delete this;
 			new CaseView;
 		},
-		colorPoint: function(points, color,context) {
+		colorPoint: function(points, color, context) {
 			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
 			var pix = imageData.data;
 			var redVal = (parseInt(color.substr(0,2),16));
@@ -264,6 +264,7 @@ components.drawing = function(){
 					this.oldX = xvar;
 					this.oldY = yvar;
 					
+					//this.eraseLocally(points);
 					remote.pointErased(me.get('current_case_id'), me.id, points);
 				}else{
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
@@ -282,8 +283,9 @@ components.drawing = function(){
 					for(var c = 0; c < stepCount; c++){
 						var curX = Math.floor(this.oldX+(delX/stepCount)*(c+1));
 						var curY = Math.floor(this.oldY+(delY/stepCount)*(c+1));
+						var penWidth = 1;
 						if(isVertical){
-							for (var ySubset = curY-2; ySubset < curY+2; ySubset++)
+							for (var ySubset = curY-Math.floor(penWidth/2); ySubset < curY+penWidth-Math.floor(penWidth/2); ySubset++)
 								if(ySubset>0 && ySubset<this.canvas.height){
 									points[arrayPos] = {x: curX,
 										y: ySubset,
@@ -291,7 +293,7 @@ components.drawing = function(){
 									arrayPos++;
 								}
 						}else{
-							for (var xSubset = curX-2; xSubset < curX+2; xSubset++)
+							for (var xSubset = curX-Math.floor(penWidth/2); xSubset < curX+penWidth-Math.floor(penWidth/2); xSubset++)
 								if(xSubset>0 && xSubset<this.canvas.width){
 									points[arrayPos] = {x: xSubset,
 										y: curY,
@@ -303,7 +305,7 @@ components.drawing = function(){
 					this.oldX = xvar;
 					this.oldY = yvar;
 					
-
+					//this.drawLocally(points);
 					remote.pointColored(me.get('current_case_id'), me.id, points);
 				}
 			}
