@@ -57,7 +57,7 @@ exports.createServer = (app) ->
 		
 		# dnode/coffeescript fix:
 		@version = config.version
-	.listen(app)
+	.listen(app, {transports : 'websocket xhr-multipart xhr-polling htmlfile'.split(' ')})
 
 # creates a new session with the facebook_id and returns a token
 exports.setFbUserAndGetToken = (fbUser) ->
