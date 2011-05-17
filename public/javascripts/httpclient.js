@@ -212,7 +212,7 @@ function httpclient() {
 
 	this.end = function() {
 		clients.forEach(function(client) {
-			client.http.end();		
+			client.http.destroy();		
 		});
 	}
 }
