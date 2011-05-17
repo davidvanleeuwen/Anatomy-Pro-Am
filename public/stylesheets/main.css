@@ -745,6 +745,11 @@ height:30px; width:30px;}
    float:left;
 }
 
+#team_tab {
+	
+	
+    background: url(../images/tab_bg_active.png) repeat-x;
+}
 .tab{
     height:32px;
     width:100px;
@@ -787,6 +792,7 @@ height:30px; width:30px;}
 #slider_input {width: 150px; height: 30px;}
 
 #slider_control{
+	
 }
 
 #tick_holder {
@@ -828,5 +834,152 @@ height:30px; width:30px;}
 
 #additional_buttons div{
     margin:0 0 0 10px;
+}
+
+ /* =-=-=-=-=-=-==-=-=-=-=-=-=-=- PAGER -=-=-=-=-=-=-=-=-=-=-=-=-=- */
+
+@font-face {
+    font-family: 'FFFAtlantisCondensedRegular';
+    src: url('pf_ronda_seven-webfont.eot');
+    src: url('pf_ronda_seven-webfont.eot?#iefix') format('embedded-opentype'),
+         url('pf_ronda_seven-webfont.woff') format('woff'),
+         url('pf_ronda_seven-webfont.ttf') format('truetype'),
+         url('pf_ronda_seven-webfont.svg#FFFAtlantisCondensedRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.pager{
+	display: none;
+    height:230px;
+    width:453px;
+    background: url(../images/pager.png);
+    z-index:110;
+    position:absolute;
+    margin:120px 0 0 150px;
+}
+
+.pager_facebook_image{
+    height:168px;
+    width:124px;
+    margin:0 0 0 0;
+    float:left;
+}
+
+.pager_type{
+    font-family:'FFFAtlantisCondensedRegular';
+    color:#232c16;
+    height:92px;
+    width:248px;
+    margin:25px 35px 0 0;
+    float:right;
+}
+
+.pager_type h3{
+    margin:20px 0 0 0;
+    text-align:center;
+}
+
+.pager_accept_decline_buttons{
+    height:66px;
+    width:249px;
+    margin:23px 25px 0 20px;
+    float:right;
+}
+
+
+									/* INVITE WINDOW*/
+
+.generic{
+    background: -webkit-gradient(linear, left top, left bottom, from(#4a4a4a), to(#262626));
+    -webkit-text-fill-color: transparent;
+    
+    float:left;    
+    border-bottom:1px solid #3e3e3e;
+    border-top:1px solid #7d7d7d;  
+    z-index:100;
+    position:absolute;
+    padding:15px;    
+    
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    -khtml-border-radius:5px;
+}
+
+.invite_popup{
+	display:none;
+    margin:120px 0 0 100px;
+    width:533px;
+}
+
+.friend_container_2{
+    float:left;
+    width:80px;
+    height:100px;
+    padding:10px;
+    background:#151515;
+    border-top: 2px solid #090909;
+    text-align:center;
+    
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    -khtml-border-radius:5px;
+}
+
+.invitation_text{
+    float:right;
+    width:80%;
+    padding:20px 0 20px 0;
+    background:#151515;
+    border-top: 2px solid #090909;
+    text-align:center;
+    
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    -khtml-border-radius:5px;
+}
+
+.invitation_button_container_left{
+    float:left;
+    margin:10px 0 0 10px;
+}
+
+.invitation_button_container_left div{
+    margin:0 0 0 0;
+    float:left;
+    text-align:center;
+    width:200px;
+}
+
+.invitation_button_container_left div span{
+    float:left;
+    margin:5px 10px 5px 10px;
+    height:25px;
+    width:175px;
+    display:block;
+}
+
+.invitation_button_container_right{
+    float:right;
+    margin:10px 0 0 0;
+}
+
+.invitation_button_container_right div{
+    margin:0 0 0 0;
+    margin-left:0;
+    float:right;
+    text-align:center;
+    width:200px;
+}
+
+.invitation_button_container_right div span{
+    float:right;
+    margin:5px 10px 5px 10px;
+    height:25px;
+    width:175px;
+    display:block;
 }
 

@@ -40,18 +40,15 @@ $(function(){
 				}, {silent: true});
 			});
 			em.on('setCurrentCase', function(currentCase) {
+				console.log ('current case' + currentCase);
 				me.set({
 				current_case_id: currentCase
 				}, {silent: true});
-			});
-			em.on('JoinRequest', function(caseNumber, playerid) {
-				alert ('Join This Case: ' + caseNumber);
 			});
 			em.on('Continue', function(){
 				new CaseView;
 			});
 		});
-	
 		window.app = new AppView;
 		
 		components.cases();
