@@ -408,10 +408,18 @@ components.drawing = function(){
 			}else{	
 				this.$(".pager").hide();
 			}
-		},
+		}	,	
 		pagerAcceptInvite: function (e){
 			e.preventDefault();
-			remote.joinActivity(invitation['case_id'], me.get('id'));
+			console.log ('received case id ' + invitation['case_id']);
+			remote.joinActivity(invitation['case_id'], me);
+			me.set({current_case_id: invitation['case_id']});
+			online_friends.each(function (friend){
+				if (friend.get('id') == me.get('id')){
+					friend.set({current_case_id: invitation['case_id']});
+					console.log ('changed friend case id');
+				}
+			});
 			new ComputerView;
 		},
 		pagerDeclineInvite: function (e){
