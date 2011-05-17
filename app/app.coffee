@@ -1,7 +1,7 @@
 config = require '../config'
 
 ## dependencies
-DNode = require 'dnode@0.6.7'
+DNode = require 'dnode@0.6.10'
 _ = require('underscore@1.1.5')._
 Backbone = require 'backbone@0.3.3'
 resources  = require '../models/resources'
