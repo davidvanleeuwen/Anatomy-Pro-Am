@@ -27,10 +27,12 @@ components.drawing = function(){
 			"click #done": "done"
 		},
 		initialize: function() {
+			window.dThis=this;
 			_.bindAll(this, 'render');
 			this.render();
 			this.locked = false;
 			this.chatExpanded = false;
+			online_friends.bind('change', this.collectionChanged);
 		},
 		render: function() {
 			if (view.computer) {
@@ -267,8 +269,9 @@ components.drawing = function(){
 					this.oldX = xvar;
 					this.oldY = yvar;
 					
-					//this.eraseLocally(points);
 					remote.pointErased(me.get('current_case_id'), me.id, points);
+					this.erasePoint(points,this.ctxArr[me.id]);
+					
 				}else{
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
 					var yvar = event.clientY-this.canvas.offsetTop+29;
@@ -310,6 +313,9 @@ components.drawing = function(){
 					
 					//this.drawLocally(points);
 					remote.pointColored(me.get('current_case_id'), me.id, points);
+					this.colorPoint(points, me.get('player_color'), this.ctxArr[me.id]);	
+				
+					
 				}
 			}
 		},
@@ -333,7 +339,7 @@ components.drawing = function(){
 			if($('.slider')[0].value != layer){
 				layer = $('.slider')[0].value;
 				for(ctxKey in this.ctxArr){
-					var imageData=this.ctxArr[ctxKey].getImageData(0, 0, this.canvas.width, this.canvas.height);
+					//var imageData=this.ctxArr[ctxKey].getImageData(0, 0, this.canvas.width, this.canvas.height);
 					this.ctxArr[ctxKey].clearRect(0, 0, this.canvas.width, this.canvas.height);
 				}
 				layers.each(function(n, el){

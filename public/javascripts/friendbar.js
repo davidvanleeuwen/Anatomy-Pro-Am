@@ -3,7 +3,7 @@ components.friendbar = function(){
 	
 	window.online_friends = new resources.collections.Friends;
 	window.friends_in_same_activity = new resources.collections.Friends;
-	
+	windSelf = window;
 	window.FriendView = Backbone.View.extend({
 		tagName: 'li',
 		events: {
@@ -40,9 +40,10 @@ components.friendbar = function(){
 			this.joinCase(me.get('id')); //this will be filled with the person of whom you click and want to join, will also not be found here, but on clicking someone else;
 			this.model.toggleVisibility();
 			
-			var canvas = $('canvas')[0];
-			var ctx = canvas.getContext("2d");
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			//console.log(window.drawing);
+			if(window.dThis.ctxArr&&window.dThis.ctxArr[this.model.get('id')])	window.dThis.ctxArr[this.model.get('id')].clearRect(0, 0, window.dThis.canvas.width, window.dThis.canvas.height);
+			
+			
 			online_friends.each(function(friend){
 				if(friend.get('layer_enabled')){
 					remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.id, layer, emit);
