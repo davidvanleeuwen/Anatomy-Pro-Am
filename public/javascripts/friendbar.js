@@ -122,18 +122,26 @@ components.friendbar = function(){
 		},
 		refreshFriends: function() {
 			$('#friends_container').html(this.bar_template());
+			var online = 0;
+			var onteam = 0;
 			online_friends.each(function (friend){
-				if (currentView == 0){
-					if (friend.get('current_case_id') == me.get('current_case_id')){
+				
+				if (friend.get('current_case_id') == me.get('current_case_id')){
+					onteam++;
+					if (currentView == 0){
 						window.friendbar.addFriend (friend);
 					}
 				}
-				if (currentView == 1){
-					if (friend.get('current_case_id') != me.get('current_case_id')){
+				if (friend.get('current_case_id') != me.get('current_case_id')){
+					online++;
+					if (currentView == 1){
 						window.friendbar.addFriend (friend);
 					}
 				}
 			});
+			$('#team_tab').html('<a href=""><span>TEAM (' + onteam +'/5)</span></a>');
+			
+			$('#online_tab').html('<a href=""><span>ONLINE (' + online +')</span></a>');
 		}
  	});
 };

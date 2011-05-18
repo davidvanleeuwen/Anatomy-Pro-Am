@@ -102,7 +102,7 @@ components.drawing = function(){
 				invitation['player_name'] = player_name;
 				invitation['player_avitar'] = player_avatar;
 				$('.pager_facebook_image').attr('style', 'background: url(\'' + player_avatar + '?type=normal\') no-repeat;');
-				$('#invitation_text').html('<h3>' + player_name + ' has requested your consultation.</h3>');
+				$('#invitation_text').html('<h3>' + player_name + ' requests your opinion.</h3>');
 			});
 			
 			
