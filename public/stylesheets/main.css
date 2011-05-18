@@ -788,24 +788,27 @@ height:30px; width:30px;}
 }
 
 #slider{float:right; display:inline;}
-#slider div{ margin:0 0 0 10px; float: right;}
-#slider_input {width: 150px; height: 30px;}
-
-#slider_control{
-	
-}
+#slider div{display:block;}
+#slider_input {width: 150px; height: 30px; z-index: 1000;}
 
 #tick_holder {
 	position: absolute;
-	top: 30;
+	margin: 20px 0 0 0px;
+	z-index: 0;
+}
+
+.tick {
+	position: absolute;
 }
 
 #done_button{
+	margin:0 0 0 10px;
 	float: right;	
 }
 
 #slider_input{
 	float: left;
+	margin-right: 10px;
 }
                                                                                 /*footer container--*/
 
@@ -861,11 +864,7 @@ height:30px; width:30px;}
 }
 
 .pager_facebook_image{
-   /* height:168px;
-    width:124px;
-    margin:0 0 0 0;
-    float:left;
-*/
+
 	float: left;
     width:75px;
     height:100px;
