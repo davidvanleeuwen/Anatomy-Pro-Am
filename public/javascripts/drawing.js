@@ -1,6 +1,6 @@
 components.drawing = function(){
 	console.log('loaded drawing');
-
+	window.invitation = {};
 	window.ComputerView = Backbone.View.extend({
 		el: $('#game'),
 		events: {
@@ -24,7 +24,12 @@ components.drawing = function(){
 			'click #online_tab':'onlineTab',
 			'click #undoTool': 'undoTool',
 			'click #send_chat':'sendChat',
-			"click #done": "done"
+			'keyup #type':'sendChat',
+			"click #done": "done",
+			"click #accept_invite":"pagerAcceptInvite",
+			"click #decline_invite":"pagerDeclineInvite",
+			"click #invite":"invite",
+			"click #dont_invite":"dontInvite"
 		},
 		initialize: function() {
 			window.dThis=this;
@@ -49,7 +54,7 @@ components.drawing = function(){
 			}
 		},
 		setupView: function() {
-			new FriendBar;
+			window.friendbar = new FriendBar;
 
 			this.$('#current_info_container').hide();
 			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
@@ -75,7 +80,6 @@ components.drawing = function(){
 			em.on('pointErased', function(player_id, points) {
 				this.erasePoint(points,this.ctxArr[player_id]);
 			}.bind(this));
-
 			em.on('setColoredPointsForThisLayer', function(points){
 				if(points) {
 					var color = online_friends.get(points.player).get('player_color');
@@ -93,7 +97,16 @@ components.drawing = function(){
 						this.colorPoint(pointArr, color,this.ctxArr[points.player]);
 				}
 			}.bind(this));
-
+			//Removed the below function from apps.js, placed here to make it more relevant for the drawing pager.  This will be changed later. 
+			em.on('JoinRequest', function(caseNumber, player_id, player_name, player_avatar) {
+				invitation['case_id'] = caseNumber;
+				invitation['player_id'] = player_id;
+				invitation['player_name'] = player_name;
+				invitation['player_avitar'] = player_avatar;
+				$('#invitation_text').text(player_name + ' has invited you to help with their case.  Would you like to join them?');
+			});
+			
+			
 			// fixtures for the images (scans):
 			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 			this.$('#slider_input').attr('style', 'width:' + (imageRefs.length * 40));
@@ -381,12 +394,55 @@ components.drawing = function(){
 		},
 		teamTab: function (e){ // added to allow team tab clicking
 			e.preventDefault();
+			currentView = 0;
+			//friendbar.refreshFriends();
+			friendbar = new FriendBar();
+			this.$('#team_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
+			this.$('#online_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 		},
 		onlineTab: function (e){ //added to allow online tab clicking
 			e.preventDefault();
+			currentView = 1;
+			//friendbar.refreshFriends();
+			friendbar = new FriendBar();
+			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
+			this.$('#online_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 		},
-		sendChat: function (e){ //added to control send-chat functions
+		sendChat: function (e){
 			e.preventDefault();
+			if(e.type == "click" || e.keyCode == 13) {
+				this.$('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+me.get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+this.$('#type')[0].value+'</span></div>');
+				this.$('#type')[0].value = '';
+				
+				this.$('#chat_window')[0].scrollTop = this.$('#chat_window')[0].scrollHeight;
+			}
+			
+			//this.$('#chat_window').scrollTop = 
+			//remote.sendChat(me.get('current_case_id'), me.id);
+		},
+		showPager: function (b){
+			if(b){
+				this.$(".pager").show();
+			}else{	
+				this.$(".pager").hide();
+			}
+		}	,	
+		pagerAcceptInvite: function (e){
+			e.preventDefault();
+			console.log ('received case id ' + invitation['case_id']);
+			remote.joinActivity(invitation['case_id'], me);
+			me.set({current_case_id: invitation['case_id']});
+			online_friends.each(function (friend){
+				if (friend.get('id') == me.get('id')){
+					friend.set({current_case_id: invitation['case_id']});
+					console.log ('changed friend case id');
+				}
+			});
+			new ComputerView;
+		},
+		pagerDeclineInvite: function (e){
+			e.preventDefault();
+			showPager (false);
 		},
 		chatExpandRetract: function (e){
 			e.preventDefault();
@@ -396,6 +452,18 @@ components.drawing = function(){
 			}else{
 				this.$('#chat_container').attr('style', 'margin:100px 0px 0px -193px;');
 			}
+		},
+		invite: function (e) {
+			e.preventDefault();
+			var inv_id = invited['player_id']
+			var inv_name = me.get('name')
+			var inv_avatar = me.get('avatar')
+			remote.sendJoinRequest('JoinRequest', me.get('current_case_id'), inv_id, inv_name, inv_avatar);
+			this.$('.invite_popup').hide();
+		},
+		dontInvite: function (e) {
+			e.preventDefault();
+			this.$('.invite_popup').hide();
 		},
 		getColorPointsForLayerAndPlayer: function(showAll) {
 			if(showAll) {

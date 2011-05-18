@@ -8,8 +8,33 @@ Hash = require 'hashish@0.0.2'
 
 storeUser = (userData, userCode) ->
 	##Will store user to DB.  
-	addUser userData, (cb) ->
-	
+	console.log 'store user'
+	addUser userData, (callback) ->
+		console.log callback
+		getUser userData.id, (cb) ->
+			if not cb.error
+				addOauthCredental JSON.parse(cb).facebook_user.id, userCode, (callback) ->
+					console.log 'get user response back from adding oauth'
+					#console.log callback
+			else
+				console.log "this is coming from storeUser.getUser"
+				#console.log cb
+
+addOauthCredental = (userID, userCode, callback) ->
+	#/users/:user_id/facebook_user/authorizations(.:format)  
+	console.log 'this is the oauth area'
+	console.log userID + " " + userCode  
+	dbPath = '/users/' + userID + '/facebook_user/authorizations.json' 
+	postData = {}
+	postData["id"] = config.fbconfig.internalAppID
+	postData["user_id"] = userID
+	postData["auth_code"] = userCode
+	postData = JSON.stringify postData
+	client = new httpClient.httpclient
+	console.log postData
+	client.perform config.sql.fullHost + dbPath, "POST", (res) ->
+		callback res.response.body
+	,postData
 	
 userDeauthed = (reqInfo, res) ->
 	#do something with deauthed user info
@@ -59,8 +84,8 @@ authresponse = (req, res) ->
 ###
 renderIndex :
 Renders gathers user info based on either a signed request or the users cookie, or ref's to auth page. 
-
 ###
+
 renderIndex =  (req, res, getToken) ->
 	user = fbgraph.getUserFromCookie(req.cookies, config.fbconfig.appId, config.fbconfig.appSecret)
 	if req.body
@@ -69,7 +94,7 @@ renderIndex =  (req, res, getToken) ->
 		gatherInitLogin user2.oauth_token, user2.user_id, getToken, (callback) ->
 			if callback.error
 				res.render 'auth', {fb: config.fbconfig}
-			else	
+			else					
 				res.render 'index', {fb: config.fbconfig, token: callback.data.token}
 	else
 		if user
@@ -84,7 +109,7 @@ renderIndex =  (req, res, getToken) ->
 			res.render 'auth', {fb: config.fbconfig}
 
 gatherInitLogin = (authToken, userID, getToken, cb) ->
-	fbGetMeObject authToken, (callback) ->
+	fbGetMeObject authToken, (callback) -> #get "ME" object from facebook (name, id, bday, etc)
 		if callback.data
 			token = getToken callback.data
 			if token
@@ -119,9 +144,14 @@ fbGetMeObject = (authToken, callback) ->
 addMyFriends = (d, myID) ->
 	Hash(d.data).forEach (friend) ->
 		addUserAsFriend myID, friend
-	getUser myID, (getUserResult) -> 
-		getFriends JSON.parse(getUserResult).facebook_user.id, (friendsResult) ->
-			#console.log friendsResult
+	getUser myID, (getUserResult) ->
+		if not getUserResult.error
+			getFriends JSON.parse(getUserResult).facebook_user.id, (friendsResult) ->
+				#console.log friendsResult
+		else
+		 	console.log "This is from addMyFriends.getUser"
+			console.log getUserResult
+				
 			
 getFriends = (uid, cb) ->
 	dbPath = '/users/' + uid + '/friends.json'
@@ -142,6 +172,7 @@ associateFriend = (uid, friendID) ->
 addUser = (info, callback) ->
 	getUser info.id, (cb) ->
 		if cb.error is 404
+			console.log 'get user response with error'
 			console.log color '------------------- USER DOES NOT EXIST - CREATING -------------------\n', 'green'
 			console.log info.id + " " + info.name
 			postData = formatUser info
@@ -156,6 +187,7 @@ addUser = (info, callback) ->
 		else 
 			result = color '------------------- USER ALREADY EXISTS -------------------\n', 'green'
 			result += JSON.parse(cb).facebook_user.id + " - " + JSON.parse(cb).facebook_user.name
+			callback cb
 			#console.log result
 
 addUserAsFriend = (playerID, friendInfo) ->

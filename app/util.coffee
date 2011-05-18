@@ -63,7 +63,8 @@ class SessionManager
 		@sessions_for_connection = {}
 		@sessions_for_facebook_id = {}
 		@sessions_for_random_key = {}
-	
+		@currentActivity = 0
+		
 	#call this when the user has done the facebook authentication
 	#this returns a random session key that should be used to authenticate the dnode connection
 	createSession: (player) =>
@@ -71,7 +72,8 @@ class SessionManager
 		session_key = session.random_key
 		@sessions_for_facebook_id[player.id] = session
 		player.player_color = GetColor(player.id)
-		@sessions_for_random_key[session_key] = session		
+		@sessions_for_random_key[session_key] = session	
+		@currentActivity = 0	
 		return session_key
 	
 	#this should be called when the client sends an authenticate message over dnone. 
@@ -88,6 +90,9 @@ class SessionManager
 		else
 			console.log("Session connected started with invalid random_id!!!!")
 			
+	setActivity: (playerInfo, activityID) ->
+		@sessions_for_facebook_id[playerInfo.id].currentActivity = activityID
+		
 	sessionDisconnected: (conn) ->
 		UnsetColor([@sessions_for_connection[conn.id].facebook_id])
 		
@@ -129,7 +134,7 @@ class ActivityManager
 		
 class ContouringActivity
 	constructor: () ->
-		@id = 0  #Changed to zero for now to allow multiple people in one room #GenerateRandomKey()
+		@id = GenerateRandomKey()
 		@activityData = new ContouringActivityData(@id)
 		@players = {}
 	getID: () ->
@@ -175,6 +180,7 @@ class ContouringActivityData
 				data.push JSON.parse point
 			callback data
 
+	
 ###
 #	MEMORY STORE
 ###

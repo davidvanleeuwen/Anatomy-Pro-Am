@@ -11,4 +11,4 @@ window.emit = em.emit.bind(em);
 
 
 var components = {};
-var util = {};
+//var util = {};
