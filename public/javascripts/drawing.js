@@ -101,7 +101,8 @@ components.drawing = function(){
 				invitation['player_id'] = player_id;
 				invitation['player_name'] = player_name;
 				invitation['player_avitar'] = player_avatar;
-				$('#invitation_text').text(player_name + ' has invited you to help with their case.  Would you like to join them?');
+				$('.pager_facebook_image').attr('style', 'background: url(\'' + player_avatar + '?type=normal\') no-repeat;');
+				$('#invitation_text').html('<h3>' + player_name + ' has requested your consultation.</h3>');
 			});
 			
 			
@@ -387,7 +388,6 @@ components.drawing = function(){
 		teamTab: function (e){ // added to allow team tab clicking
 			e.preventDefault();
 			currentView = 0;
-			//friendbar.refreshFriends();
 			friendbar = new FriendBar();
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
@@ -395,7 +395,6 @@ components.drawing = function(){
 		onlineTab: function (e){ //added to allow online tab clicking
 			e.preventDefault();
 			currentView = 1;
-			//friendbar.refreshFriends();
 			friendbar = new FriendBar();
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');

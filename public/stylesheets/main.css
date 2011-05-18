@@ -840,11 +840,11 @@ height:30px; width:30px;}
 
 @font-face {
     font-family: 'FFFAtlantisCondensedRegular';
-    src: url('pf_ronda_seven-webfont.eot');
-    src: url('pf_ronda_seven-webfont.eot?#iefix') format('embedded-opentype'),
-         url('pf_ronda_seven-webfont.woff') format('woff'),
-         url('pf_ronda_seven-webfont.ttf') format('truetype'),
-         url('pf_ronda_seven-webfont.svg#FFFAtlantisCondensedRegular') format('svg');
+    src: url('../fonts/pf_ronda_seven-webfont.eot');
+    src: url('../fonts/pf_ronda_seven-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/pf_ronda_seven-webfont.woff') format('woff'),
+         url('../fonts/pf_ronda_seven-webfont.ttf') format('truetype'),
+         url('../fonts/pf_ronda_seven-webfont.svg#FFFAtlantisCondensedRegular') format('svg');
     font-weight: normal;
     font-style: normal;
 }
@@ -856,14 +856,28 @@ height:30px; width:30px;}
     background: url(../images/pager.png);
     z-index:110;
     position:absolute;
+	float: left;
     margin:120px 0 0 150px;
 }
 
 .pager_facebook_image{
-    height:168px;
+   /* height:168px;
     width:124px;
     margin:0 0 0 0;
     float:left;
+*/
+	float: left;
+    width:75px;
+    height:100px;
+	margin: 30px 0 0 40px;
+    padding:10px;
+    background:#151515;
+    border-top: 2px solid #090909;
+    text-align:center;
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    -khtml-border-radius:5px;
 }
 
 .pager_type{
@@ -914,14 +928,13 @@ height:30px; width:30px;}
 }
 
 .friend_container_2{
-    float:left;
-    width:80px;
+	float: left;
+    width:75px;
     height:100px;
     padding:10px;
     background:#151515;
     border-top: 2px solid #090909;
     text-align:center;
-    
     -moz-border-radius:5px;
     -webkit-border-radius:5px;
     border-radius:5px;
