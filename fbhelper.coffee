@@ -171,6 +171,21 @@ associateFriend = (uid, friendID) ->
 
 addUser = (info, callback) ->
 	getUser info.id, (cb) ->
+		console.log 'info and callback info'
+		console.log cb, info
+		if cb.error is 100 and info.first_name is not null
+			#this is set when the user exists, but they have invalid info.  This will then overwrite the user.  console.log 'get user response with error'
+			console.log color '------------------- USER EXISTS AS FRIEND ADDITION - RECREATING -------------------\n', 'green'
+			console.log info.id + " " + info.name
+			postData = formatUser info
+			dbPath = '/facebook_users.json'
+			client2 = new httpClient.httpclient
+			client2.perform config.sql.fullHost + dbPath, "PUT", (resp) -> 
+				result = resp.response.body
+				console.log color '------------------- RESULT OF ADDING USER -------------------\n', 'green'
+				console.log JSON.parse(result).facebook_user.id, JSON.parse(result).facebook_user.name 
+				callback result
+			,postData
 		if cb.error is 404
 			console.log 'get user response with error'
 			console.log color '------------------- USER DOES NOT EXIST - CREATING -------------------\n', 'green'
@@ -184,7 +199,7 @@ addUser = (info, callback) ->
 				console.log JSON.parse(result).facebook_user.id, JSON.parse(result).facebook_user.name 
 				callback result
 			,postData
-		else 
+		if not cb.error 
 			result = color '------------------- USER ALREADY EXISTS -------------------\n', 'green'
 			result += JSON.parse(cb).facebook_user.id + " - " + JSON.parse(cb).facebook_user.name
 			callback cb
@@ -204,7 +219,10 @@ getUser = (fbid, cb) ->
 		if res.response.status is 404
 			result = {error: 404}
 		else 
-			result = res.response.body		
+			if JSON.parse(res.response.body).facebook_user.first_name is null
+				result = {error: 100}
+			else
+				result = res.response.body		
 		cb result
 		#console.log '\n-------------------\n\ngetUser Result: \n\n' + result + '\n\n----------------\n'
 

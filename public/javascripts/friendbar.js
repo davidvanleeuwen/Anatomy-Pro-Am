@@ -40,9 +40,6 @@ components.friendbar = function(){
 		},
 		clickHandler: function(event) {
 			event.preventDefault();
-			console.log(this.model);
-			console.log (this.model.get('current_case_id') );
-			console.log	(me.get('current_case_id'));
 			if (this.model.get('current_case_id') == me.get('current_case_id')){
 				this.model.toggleVisibility();
 				var canvas = $('canvas')[0];
@@ -58,7 +55,7 @@ components.friendbar = function(){
 			}
 		},
 		invitePlayer: function (model){
-			$('.friend_container_2').attr('style', 'background: url(\'' + model.get('avatar')  + '\');');
+			$('.friend_container_2').attr('style', 'background: url(\'' + model.get('avatar')  + '?type=normal\') no-repeat; background-size: 100%;');
 			$('.invitation_text').html('<h2 class="light_grey_gradient_text">WOULD YOU LIKE TO INVITE ' + model.get('name').toUpperCase() + ' TO THIS CASE?</h2>');
 			$('.invite_popup').show();
 			invited['player_id'] = model.get('id');
@@ -73,7 +70,6 @@ components.friendbar = function(){
 			}
 		})
 		if(okToAdd){
-			console.log("addinguser to onlineusers");
 			online_friends.add({
 				id: n.id,
 				facebook_id: n.id,
@@ -125,24 +121,27 @@ components.friendbar = function(){
 			friend.clear();
 		},
 		refreshFriends: function() {
-			console.log ('Ahh, Refreshing!');
-			console.log (online_friends.length);
 			$('#friends_container').html(this.bar_template());
+			var online = 0;
+			var onteam = 0;
 			online_friends.each(function (friend){
-				console.log (friend.get('current_case_id')  + "     " + me.get('current_case_id'));
-				if (currentView == 0){
-					if (friend.get('current_case_id') == me.get('current_case_id')){
-						console.log (' adding for 0');
+				
+				if (friend.get('current_case_id') == me.get('current_case_id')){
+					onteam++;
+					if (currentView == 0){
 						window.friendbar.addFriend (friend);
 					}
 				}
-				if (currentView == 1){
-					if (friend.get('current_case_id') != me.get('current_case_id')){
-						console.log (' adding for 1');
+				if (friend.get('current_case_id') != me.get('current_case_id')){
+					online++;
+					if (currentView == 1){
 						window.friendbar.addFriend (friend);
 					}
 				}
 			});
+			$('#team_tab').html('<a href=""><span>TEAM (' + onteam +'/5)</span></a>');
+			
+			$('#online_tab').html('<a href=""><span>ONLINE (' + online +')</span></a>');
 		}
  	});
 };

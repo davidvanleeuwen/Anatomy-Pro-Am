@@ -101,19 +101,23 @@ components.drawing = function(){
 				invitation['player_id'] = player_id;
 				invitation['player_name'] = player_name;
 				invitation['player_avitar'] = player_avatar;
-				$('#invitation_text').text(player_name + ' has invited you to help with their case.  Would you like to join them?');
+				$('.pager_facebook_image').attr('style', 'background: url(\'' + player_avatar + '?type=normal\') no-repeat;');
+				$('#invitation_text').html('<h3>' + player_name + ' requests your opinion.</h3>');
 			});
 			
 			
 			// fixtures for the images (scans):
 			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
-			this.$('#slider_input').attr('style', 'width:' + (imageRefs.length * 40));
+			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 40));
 			
-			var tickTemplate = '<div class="tick"><span>|</span></div>';
-						
+			
+			var counter = 0;
 			imageRefs.forEach(function(img){
+				var distance = (counter * 40);
+				var tickTemplate = '<div class="tick" style="padding-left:' + distance + 'px;">|</div>';
 				this.$('#images').append('<img src="'+img+'" style="display: none;" />');
-				this.$('#slider').append(tickTemplate);
+				this.$('#tick_holder').append(tickTemplate);
+				counter++;
 			});
 
 			layers = this.$('#images').children();
@@ -387,7 +391,6 @@ components.drawing = function(){
 		teamTab: function (e){ // added to allow team tab clicking
 			e.preventDefault();
 			currentView = 0;
-			//friendbar.refreshFriends();
 			friendbar = new FriendBar();
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
@@ -395,7 +398,6 @@ components.drawing = function(){
 		onlineTab: function (e){ //added to allow online tab clicking
 			e.preventDefault();
 			currentView = 1;
-			//friendbar.refreshFriends();
 			friendbar = new FriendBar();
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
