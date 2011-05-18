@@ -32,10 +32,12 @@ components.drawing = function(){
 			"click #dont_invite":"dontInvite"
 		},
 		initialize: function() {
+			window.dThis=this;
 			_.bindAll(this, 'render');
 			this.render();
 			this.locked = false;
 			this.chatExpanded = false;
+			online_friends.bind('change', this.collectionChanged);
 		},
 		render: function() {
 			if (view.computer) {
@@ -164,7 +166,7 @@ components.drawing = function(){
 			delete this;
 			new CaseView;
 		},
-		colorPoint: function(points, color,context) {
+		colorPoint: function(points, color, context) {
 			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
 			var pix = imageData.data;
 			var redVal = (parseInt(color.substr(0,2),16));
@@ -285,6 +287,8 @@ components.drawing = function(){
 					this.oldY = yvar;
 					
 					remote.pointErased(me.get('current_case_id'), me.id, points);
+					this.erasePoint(points,this.ctxArr[me.id]);
+					
 				}else{
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
 					var yvar = event.clientY-this.canvas.offsetTop+29;
@@ -302,8 +306,9 @@ components.drawing = function(){
 					for(var c = 0; c < stepCount; c++){
 						var curX = Math.floor(this.oldX+(delX/stepCount)*(c+1));
 						var curY = Math.floor(this.oldY+(delY/stepCount)*(c+1));
+						var penWidth = 1;
 						if(isVertical){
-							for (var ySubset = curY-2; ySubset < curY+2; ySubset++)
+							for (var ySubset = curY-Math.floor(penWidth/2); ySubset < curY+penWidth-Math.floor(penWidth/2); ySubset++)
 								if(ySubset>0 && ySubset<this.canvas.height){
 									points[arrayPos] = {x: curX,
 										y: ySubset,
@@ -311,7 +316,7 @@ components.drawing = function(){
 									arrayPos++;
 								}
 						}else{
-							for (var xSubset = curX-2; xSubset < curX+2; xSubset++)
+							for (var xSubset = curX-Math.floor(penWidth/2); xSubset < curX+penWidth-Math.floor(penWidth/2); xSubset++)
 								if(xSubset>0 && xSubset<this.canvas.width){
 									points[arrayPos] = {x: xSubset,
 										y: curY,
@@ -323,8 +328,11 @@ components.drawing = function(){
 					this.oldX = xvar;
 					this.oldY = yvar;
 					
-
+					//this.drawLocally(points);
 					remote.pointColored(me.get('current_case_id'), me.id, points);
+					this.colorPoint(points, me.get('player_color'), this.ctxArr[me.id]);	
+				
+					
 				}
 			}
 		},
@@ -348,7 +356,7 @@ components.drawing = function(){
 			if($('.slider')[0].value != layer){
 				layer = $('.slider')[0].value;
 				for(ctxKey in this.ctxArr){
-					var imageData=this.ctxArr[ctxKey].getImageData(0, 0, this.canvas.width, this.canvas.height);
+					//var imageData=this.ctxArr[ctxKey].getImageData(0, 0, this.canvas.width, this.canvas.height);
 					this.ctxArr[ctxKey].clearRect(0, 0, this.canvas.width, this.canvas.height);
 				}
 				layers.each(function(n, el){

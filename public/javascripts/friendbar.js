@@ -42,9 +42,7 @@ components.friendbar = function(){
 			event.preventDefault();
 			if (this.model.get('current_case_id') == me.get('current_case_id')){
 				this.model.toggleVisibility();
-				var canvas = $('canvas')[0];
-				var ctx = canvas.getContext("2d");
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				if(window.dThis.ctxArr&&window.dThis.ctxArr[this.model.get('id')])	window.dThis.ctxArr[this.model.get('id')].clearRect(0, 0, window.dThis.canvas.width, window.dThis.canvas.height);
 				online_friends.each(function(friend){
 					if(friend.get('layer_enabled')){
 						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.id, layer, emit);
