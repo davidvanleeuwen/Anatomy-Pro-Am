@@ -24,6 +24,7 @@ components.drawing = function(){
 			'click #online_tab':'onlineTab',
 			'click #undoTool': 'undoTool',
 			'click #send_chat':'sendChat',
+			'click #zoomTool': 'zoomTool',
 			'keyup #type':'sendChat',
 			"click #done": "done",
 			"click #accept_invite":"pagerAcceptInvite",
@@ -199,6 +200,10 @@ components.drawing = function(){
 		cursorChangeOut: function(event) {
 			document.body.style.cursor='default';
 			
+		},
+		zoomTool: function() {
+			console.log("Ok you're here");
+			//for(var key in this.ctxArr) this.ctxArr[key].scale(2.0,2.0);
 		},
 		erasePoint: function(points,context) {
 			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
