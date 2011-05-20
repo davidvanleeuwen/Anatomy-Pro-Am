@@ -16,7 +16,8 @@ components.cases = function(){
 				invitation['player_id'] = player_id;
 				invitation['player_name'] = player_name;
 				invitation['player_avitar'] = player_avatar;
-				$('#invitation_text').text(player_name + ' has invited you to help with their case.  Would you like to join them?');
+				$('.pager_facebook_image').attr('style', 'background: url(\'' + player_avatar + '?type=normal\') no-repeat; ');
+				$('#invitation_text').html('<h3>' + player_name + ' requests your opinion.</h3>');
 				console.log ('received invitation');
 				self.showPager(true);
 			});
