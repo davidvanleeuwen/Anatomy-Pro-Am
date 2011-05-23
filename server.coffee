@@ -101,7 +101,4 @@ server.all '/friends/:activity_id?', (req, res) ->
 			})
 	res.send(JSON.stringify(output))
 
-
-
-
 server.listen config.server.port
