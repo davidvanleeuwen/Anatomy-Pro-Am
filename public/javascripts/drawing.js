@@ -30,7 +30,9 @@ components.drawing = function(){
 			"click #accept_invite":"pagerAcceptInvite",
 			"click #decline_invite":"pagerDeclineInvite",
 			"click #invite":"invite",
-			"click #dont_invite":"dontInvite"
+			"click #dont_invite":"dontInvite",
+			'click #cursorTool':'cursorTool',
+			'mousemove': 'cursorMovement'
 		},
 		initialize: function() {
 			window.dThis=this;
@@ -73,6 +75,15 @@ components.drawing = function(){
 			this.canvas = $('canvas')[10];
 			this.ctx = this.canvas.getContext("2d");
 			this.isErasing = false;
+			
+			/* Retreive chat messages */
+			remote.getChatHistoryForActivity(me.get('current_case_id'), emit);
+			
+			
+			/*********************************************
+			*               Event listeners              *
+			**********************************************/
+			
 			em.on('pointColored', function(player_id, points) {
 				if (online_friends.get(player_id).get('layer_enabled')){
 					this.colorPoint(points, online_friends.get(player_id).get('player_color'), this.ctxArr[player_id]);	
@@ -108,6 +119,11 @@ components.drawing = function(){
 				$('#invitation_text').html('<h3>' + player_name + ' requests your opinion.</h3>');
 			});
 			
+			// event listener for chat
+			em.on('setChatHistory', this.setChatHistory);
+			em.on('newChat', this.receiveChat);
+			
+			/*********************************************/
 			
 			// fixtures for the images (scans):
 			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
@@ -417,15 +433,28 @@ components.drawing = function(){
 		},
 		sendChat: function (e){
 			e.preventDefault();
-			if(e.type == "click" || e.keyCode == 13) {
-				this.$('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+me.get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+this.$('#type')[0].value+'</span></div>');
-				this.$('#type')[0].value = '';
-				
-				this.$('#chat_window')[0].scrollTop = this.$('#chat_window')[0].scrollHeight;
+			var inputEl = this.$('#type')[0];
+			var chatEl = this.$('#chat_window')[0];
+			var message = inputEl.value;
+			if(e.type == "click" || e.keyCode == 13 && message != '') {
+				$(chatEl).append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+me.get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+message+'</span></div>');
+				inputEl.value = '';
+				chatEl.scrollTop = chatEl.scrollHeight;
+				remote.sendChat(me.get('current_case_id'), me.id, message);
 			}
-			
-			//this.$('#chat_window').scrollTop = 
-			//remote.sendChat(me.get('current_case_id'), me.id);
+		},
+		receiveChat: function(player_id, message) {
+		    // should be fixed serverside - publish to other clients!
+		    if(player_id != me.get('id')) {
+		        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
+		        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+message+'</span></div>');
+		   }
+		},
+		setChatHistory: function(data) {
+	        _.each(data.payload, function(message) {
+	            var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player });
+	            $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
+	        });
 		},
 		showPager: function (b){
 			if(b){
@@ -493,6 +522,15 @@ components.drawing = function(){
 					}
 				});
 			}
+		},
+		cursorTool: function(e) {
+		    e.preventDefault();
+		},
+		cursorMovement: function(e) {
+		    _.throttle(this.sendCursorPosition, 50);
+		},
+		sendCursorPosition: function() {
+		    console.log('yay');
 		}
 	});
 };

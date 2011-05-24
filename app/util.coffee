@@ -106,14 +106,13 @@ class SessionManager
 	publish: () ->
 		args = arguments
 		Hash(@sessions_for_connection).forEach (player) ->
-			player.emit.apply player.emit, args
+			    player.emit.apply player.emit, args
 			
 	sendJoinRequest: () ->
 		args = arguments
 		Hash(@sessions_for_connection).forEach (player) ->
 			if player.facebook_id is args[2]
 				player.emit.apply player.emit, args
-
 	
 	playerForConnection: (conn) ->
 		@sessions_for_connection[conn.id].player
@@ -144,14 +143,18 @@ class ContouringActivity
 	addPlayer: (player) ->
 		@players[player.id] = player
 	getPlayers: (player) ->
-		return @players;
+		return @players
 	createPoint: (player_id, point) ->
-		@activityData.newPoint  player_id, point
+		@activityData.newPoint player_id, point
 	deletePoint: (player_id, point, callback) ->
 		return @activityData.removePoint player_id, point, callback
 	getPointsForPlayer: (layer, player_id, callback) ->
 		return @activityData.getPointsForPlayer layer, player_id, callback
-		
+	addChatMessage: (player_id, message) ->
+	    @activityData.newChat player_id, message    
+	getChatHistoryForActivity: (callback) ->
+	    return @activityData.getChatHistoryForActivity callback
+	
 
 ###
 #	CONTOURING ACTIVTY DATA
@@ -169,18 +172,26 @@ class ContouringActivityData
 				client.sadd 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, added) ->
 					if err then console.log 'SADD error: ', err
 	removePoint: (player_id, point) ->
-		thisID = @id
-		@redisClient.srem 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err) ->
+		@redisClient.srem 'activity:'+@id+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err) ->
 			if err then console.log 'SISMEMBER error: ', err
-	getPointsForPlayer: ( layer, player, callback) ->
+	getPointsForPlayer: (layer, player, callback) ->
 		@redisClient.smembers 'activity:'+@id+':layer:'+layer+':player:'+player+':points', (err, points) ->
 			if err then console.log 'SMEMBERS error: ', err
 			data = []
 			_.each points, (point) ->
 				data.push JSON.parse point
 			callback data
+	newChat: (player_id, message) ->
+	    @redisClient.sadd 'activity:'+@id+':chat', JSON.stringify({player: player_id, message: message, timestamp: new Date().getTime()}), (err, added) ->
+	        if err then console.log 'SADD error: ', err
+	getChatHistoryForActivity: (callback) ->
+        @redisClient.smembers 'activity:'+@id+':chat', (err, chats) ->
+            if err then console.log 'SMEMBERS error: ', err
+            data = []
+            _.each chats, (chat) ->
+                data.push JSON.parse chat
+            callback data
 
-	
 ###
 #	MEMORY STORE
 ###

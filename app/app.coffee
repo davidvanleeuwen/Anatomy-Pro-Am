@@ -53,12 +53,19 @@ exports.createServer = (app) ->
 			activityManager.current[activity_id].addPlayer(activity_id, player)
 			sessionManager.setActivity player, activity_id
 			sessionManager.publish 'PlayerStartedCase', player, activity_id
-		@sendChat = (activity_id, player, message) ->
-			#activityManager.current[activity_id].
+		@sendChat = (activity_id, player_id, message) ->
+			activityManager.current[activity_id].addChatMessage player_id, message
 			sessionManager.publish 'newChat', player_id, message
+		@getChatHistoryForActivity = (activity_id, emit) ->
+		    activityManager.current[activity_id].getChatHistoryForActivity (chats) ->
+		        emit.apply emit, ['setChatHistory', {payload: chats} ]
 		# dnode/coffeescript fix:
 		@version = config.version
-	.listen(app, {transports : 'websocket xhr-multipart xhr-polling htmlfile'.split(' ')})
+	.listen {
+        protocol : 'socket.io',
+        server : app,
+        transports : 'websocket flashsocket xhr-polling '.split(/\s+/),
+	}
 
 # creates a new session with the facebook_id and returns a token
 exports.setFbUserAndGetToken = (fbUser) ->
