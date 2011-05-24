@@ -29,7 +29,9 @@ components.drawing = function(){
 			"click #accept_invite":"pagerAcceptInvite",
 			"click #decline_invite":"pagerDeclineInvite",
 			"click #invite":"invite",
-			"click #dont_invite":"dontInvite"
+			"click #dont_invite":"dontInvite",
+			'click #cursorTool':'cursorTool',
+			'mousemove': 'cursorMovement'
 		},
 		initialize: function() {
 			window.dThis=this;
@@ -434,7 +436,6 @@ components.drawing = function(){
 				inputEl.value = '';
 				chatEl.scrollTop = chatEl.scrollHeight;
 				remote.sendChat(me.get('current_case_id'), me.id, message);
-				remote.getChatHistoryForActivity(me.get('current_case_id'), emit);
 			}
 		},
 		receiveChat: function(player_id, message) {
@@ -516,6 +517,15 @@ components.drawing = function(){
 					}
 				});
 			}
+		},
+		cursorTool: function(e) {
+		    e.preventDefault();
+		},
+		cursorMovement: function(e) {
+		    _.throttle(this.sendCursorPosition, 50);
+		},
+		sendCursorPosition: function() {
+		    console.log('yay');
 		}
 	});
 };
