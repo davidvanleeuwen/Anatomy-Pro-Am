@@ -2,8 +2,10 @@ config = require './config'
 fbgraph = require 'facebook-graph@0.0.6'
 fbutil = require './facebookutil.js'
 http = require 'http'
+https = require 'https'
 color = require('./color.js').set
 httpClient = require './public/javascripts/httpclient.js'
+client = new httpClient.httpclient
 Hash = require 'hashish@0.0.2'
 
 storeUser = (userData, userCode) ->
@@ -30,7 +32,7 @@ addOauthCredental = (userID, userCode, callback) ->
 	postData["user_id"] = userID
 	postData["auth_code"] = userCode
 	postData = JSON.stringify postData
-	client = new httpClient.httpclient
+	#client = new httpClient.httpclient
 	console.log postData
 	client.perform config.sql.fullHost + dbPath, "POST", (res) ->
 		callback res.response.body
@@ -142,6 +144,7 @@ fbGetMeObject = (authToken, callback) ->
 			callback {data: data}
 			
 addMyFriends = (d, myID) ->
+	getOnlineFriends (myID)
 	Hash(d.data).forEach (friend) ->
 		addUserAsFriend myID, friend
 	getUser myID, (getUserResult) ->
@@ -151,11 +154,31 @@ addMyFriends = (d, myID) ->
 		else
 		 	console.log "This is from addMyFriends.getUser"
 			console.log getUserResult
-				
+
+getOnlineFriends = (UID) ->
+	accessToken = ''
+	getUser UID, (cb) ->
+		if not cb.error
+			userApps = JSON.parse(cb).facebook_user.application_authorizations
+			Hash(userApps).forEach (value, key) ->
+				if value.application.app_id == config.fbconfig.appId
+					accessToken = value.auth_code
+					url = 'api.facebook.com'
+					path1 = '/method/fql.query?'
+					path2 = 'access_token=' + accessToken + '&format=JSON&query=SELECT online_presence FROM user WHERE uid=' + UID
+					path = path1 + encodeURI path2
+					console.log 'LJFDLKSJFLDSKJFLSDFJSLDKFJ' + path
+					outdata = ''
+					https.get {host: url, path: path}, (res)->
+						res.on 'data', (d) ->
+							console.log 'Data: ' + d
+						res.on 'error', (e) ->
+							console.log 'Error: ' + e
+						
 			
 getFriends = (uid, cb) ->
 	dbPath = '/users/' + uid + '/friends.json'
-	client = new httpClient.httpclient
+	#client = new httpClient.httpclient
 	client.perform config.sql.fullHost + dbPath, "GET", (res) ->
 		result = res.response.body
 		cb result
@@ -163,7 +186,7 @@ getFriends = (uid, cb) ->
 associateFriend = (uid, friendID) ->
 	dbPath = '/users/' + uid + '/friends'
 	postData = '{"friend_id":' + friendID + '}'
-	client = new httpClient.httpclient
+	#client = new httpClient.httpclient
 	client.perform config.sql.fullHost + dbPath, "POST", (res) ->
 		result = res.response.body
 		#console.log result
@@ -179,12 +202,13 @@ addUser = (info, callback) ->
 			console.log info.id + " " + info.name
 			postData = formatUser info
 			dbPath = '/facebook_users.json'
-			client2 = new httpClient.httpclient
-			client2.perform config.sql.fullHost + dbPath, "PUT", (resp) -> 
+			#client2 = new httpClient.httpclient
+			client.perform config.sql.fullHost + dbPath, "PUT", (resp) -> 
+				console.log resp
 				result = resp.response.body
 				console.log color '------------------- RESULT OF ADDING USER -------------------\n', 'green'
-				console.log JSON.parse(result).facebook_user.id, JSON.parse(result).facebook_user.name 
-				callback result
+				#console.log JSON.parse(result).facebook_user.id, JSON.parse(result).facebook_user.name 
+				#callback result
 			,postData
 		if cb.error is 404
 			console.log 'get user response with error'
@@ -192,8 +216,8 @@ addUser = (info, callback) ->
 			console.log info.id + " " + info.name
 			postData = formatUser info
 			dbPath = '/facebook_users.json'
-			client2 = new httpClient.httpclient
-			client2.perform config.sql.fullHost + dbPath, "POST", (resp) -> 
+			#client2 = new httpClient.httpclient
+			client.perform config.sql.fullHost + dbPath, "POST", (resp) -> 
 				result = resp.response.body
 				console.log color '------------------- RESULT OF ADDING USER -------------------\n', 'green'
 				console.log JSON.parse(result).facebook_user.id, JSON.parse(result).facebook_user.name 
@@ -214,7 +238,7 @@ addUserAsFriend = (playerID, friendInfo) ->
 	
 getUser = (fbid, cb) ->
 	dbPath = '/facebook_users/uid/' + fbid + '.json'
-	client = new httpClient.httpclient
+	#client = new httpClient.httpclient
 	client.perform config.sql.fullHost + dbPath, "GET", (res) -> 
 		if res.response.status is 404
 			result = {error: 404}

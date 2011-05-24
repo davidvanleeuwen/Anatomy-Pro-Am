@@ -1,4 +1,5 @@
 var http = require("http");
+var https = require('https');
 var url = require("url");
 var sys = require("sys");
 var events = require("events");
@@ -57,7 +58,7 @@ function httpclient() {
 			switch(curl.protocol) {
 				case "https:":
 					client = http.createClient(curl.port||443, curl.hostname);
-					client.setSecure();
+					//client.setSecure();
 //"x509_PEM");
 				break;
 				default:
