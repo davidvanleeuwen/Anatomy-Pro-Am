@@ -205,9 +205,9 @@ components.drawing = function(){
 			document.body.style.cursor='default';
 			
 		},
-		zoomTool: function() {
-			console.log("Ok you're here");
-			//for(var key in this.ctxArr) this.ctxArr[key].scale(2.0,2.0);
+		zoomTool: function(event) {
+			event.preventDefault();
+			for(var key in this.ctxArr) this.ctxArr[key].scale(2,2);
 		},
 		erasePoint: function(points,context) {
 			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
