@@ -37,14 +37,14 @@ addOauthCredental = (userID, userCode, callback) ->
 	client.perform config.sql.fullHost + dbPath, "POST", (res) ->
 		callback res.response.body
 	,postData
-	
+
 userDeauthed = (reqInfo, res) ->
 	#do something with deauthed user info
 	console.log(color "------------------- USER REMOVED APP! ----------------", 'red')
 	console.log (JSON.parse(base64decode(reqInfo.body.signed_request.split('.')[1])).user_id)
 	console.log(color "------------------- USER REMOVED APP! ----------------", 'red')
 	res.redirect ('http://www.wisc.edu')
-	
+
 userDeclinedAccess = (reqInfo,res) ->
 	#so something when a user declines using the app from the access window
 	console.log color "------------------- USER DENIED TERMS ----------------", 'red'
@@ -82,7 +82,7 @@ authresponse = (req, res) ->
 	if req.query.error_reason	
 		userDeclinedAccess(req, res)
 		res.end()
-		
+
 ###
 renderIndex :
 Renders gathers user info based on either a signed request or the users cookie, or ref's to auth page. 
@@ -144,9 +144,9 @@ fbGetMeObject = (authToken, callback) ->
 			callback {data: data}
 			
 addMyFriends = (d, myID) ->
-	getOnlineFriends (myID)
 	Hash(d.data).forEach (friend) ->
 		addUserAsFriend myID, friend
+		updateOnlineStatus myID, friend
 	getUser myID, (getUserResult) ->
 		if not getUserResult.error
 			getFriends JSON.parse(getUserResult).facebook_user.id, (friendsResult) ->
@@ -155,34 +155,39 @@ addMyFriends = (d, myID) ->
 		 	console.log "This is from addMyFriends.getUser"
 			console.log getUserResult
 
-getOnlineFriends = (UID) ->
+updateOnlineStatus = (UID, friend) ->
 	accessToken = ''
 	getUser UID, (cb) ->
-		if not cb.error
+		if cb.error == undefined
 			userApps = JSON.parse(cb).facebook_user.application_authorizations
 			Hash(userApps).forEach (value, key) ->
 				if value.application.app_id == config.fbconfig.appId
+					outObject = {}
 					accessToken = value.auth_code
 					url = 'api.facebook.com'
 					path1 = '/method/fql.query?'
-					path2 = 'access_token=' + accessToken + '&format=JSON&query=SELECT online_presence FROM user WHERE uid=' + UID
+					console.log friend
+					path2 = 'access_token=' + accessToken + '&format=JSON&query=SELECT online_presence FROM user WHERE uid=' + friend.id
 					path = path1 + encodeURI path2
 					console.log 'LJFDLKSJFLDSKJFLSDFJSLDKFJ' + path
 					outdata = ''
 					https.get {host: url, path: path}, (res)->
 						res.on 'data', (d) ->
-							console.log 'Data: ' + d
+							if JSON.parse(d).error_code == undefined
+								if JSON.parse(d)[0].online_presence == 'active'
+									outObject['last_online'] = Date.now
+									console.log color friend.name + " is online", 'green'
 						res.on 'error', (e) ->
 							console.log 'Error: ' + e
-						
-			
+
+
 getFriends = (uid, cb) ->
 	dbPath = '/users/' + uid + '/friends.json'
 	#client = new httpClient.httpclient
 	client.perform config.sql.fullHost + dbPath, "GET", (res) ->
 		result = res.response.body
 		cb result
-		
+
 associateFriend = (uid, friendID) ->
 	dbPath = '/users/' + uid + '/friends'
 	postData = '{"friend_id":' + friendID + '}'
@@ -232,10 +237,11 @@ addUser = (info, callback) ->
 addUserAsFriend = (playerID, friendInfo) ->
 	myID = ''
 	getUser playerID, (cb) ->
+		console.log cb
 		myID = JSON.parse(cb).facebook_user.id
 		addUser friendInfo, (cb) ->
 			associateFriend myID, JSON.parse(cb).facebook_user.id
-	
+
 getUser = (fbid, cb) ->
 	dbPath = '/facebook_users/uid/' + fbid + '.json'
 	#client = new httpClient.httpclient
@@ -250,7 +256,7 @@ getUser = (fbid, cb) ->
 		cb result
 		#console.log '\n-------------------\n\ngetUser Result: \n\n' + result + '\n\n----------------\n'
 
-	
+
 formatUser = (inbound) ->
 	outbound = {}
 	#console.log  '\n-------------------\n\nBefore formatUser: \n\n' + inbound  + '\n\n----------------\n'
@@ -281,7 +287,7 @@ formatUser = (inbound) ->
 	outbound = JSON.stringify f
 	#console.log  '\n-------------------\n\nAfter formatUser: \n\n' + outbound  + '\n\n----------------\n'
 	return outbound
-	
+
 cleanJSON = (input) ->
 	keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=:-_{}[]".,|'
 	output = ""
@@ -294,7 +300,7 @@ cleanJSON = (input) ->
 			if a is keyStr.charAt(j++)
 				o += a
 	return o
-	
+
 base64decode = (input) ->
 	keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
 	output = ""
@@ -307,14 +313,14 @@ base64decode = (input) ->
 		chr1 = (enc1 << 2) | (enc2 >> 4)
 		chr2 = ((enc2 & 15) << 4 | (enc3 >> 2))
 		chr3 = ((enc3 & 3) << 6 | enc4)
-		
+
 		output += String.fromCharCode chr1
 		if enc3 != 64
 			output += String.fromCharCode chr2
 		if enc4 != 64
 			output += String.fromCharCode chr3
 	return cleanJSON unescape output
-		
+
 exports.addUser = addUser
 exports.formatUser = formatUser
 exports.store_user = storeUser
