@@ -77,7 +77,7 @@ function httpclient() {
 			"Connection" : "close",
 			"Host" : curl.hostname
 		};
-		if(method == "POST") {
+		if(method == "POST" || method == "PUT") {
 			clients[key].headers["Content-Length"] = data.length;
 			clients[key].headers["Content-Type"] = "application/json";
 		}	
@@ -192,7 +192,7 @@ function httpclient() {
 				});
 			}
 		});
-		if(method == "POST") {
+		if(method == "POST" || method == "PUT") {
 			req.write(data);
 		}
 		req.end();
