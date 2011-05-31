@@ -58,7 +58,7 @@ exports.createServer = (app) ->
 			sessionManager.publish 'newChat', player_id, message
 		@getChatHistoryForActivity = (activity_id, emit) ->
 		    activityManager.current[activity_id].getChatHistoryForActivity (chats) ->
-		        emit.apply emit, ['setChatHistory', {payload: chats} ]
+		      emit.apply emit, ['setChatHistory', {payload: chats} ]
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen {
