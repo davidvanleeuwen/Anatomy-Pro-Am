@@ -47,11 +47,11 @@ components.cases = function(){
 		selectCase2: function(e) {
 				e.preventDefault();
 			
-				
-					$.get('isometric.html', function(t){
-						this.el.html(t);
-					}.bind(this));
-			
+
+						$.get('isometric.html', function(t){
+							this.el.html(t);
+						}.bind(this));
+
 			
 		},
 		pagerAcceptInvite: function (e){

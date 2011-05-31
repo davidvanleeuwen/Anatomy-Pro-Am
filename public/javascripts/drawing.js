@@ -40,7 +40,7 @@ components.drawing = function(){
 			this.render();
 			this.locked = false;
 			this.chatExpanded = false;
-			this.scale=1;
+			//this.scale=1;
 			online_friends.bind('change', this.collectionChanged);
 		},
 		render: function() {
@@ -224,7 +224,7 @@ components.drawing = function(){
 		},
 		zoomTool: function(event) {
 			event.preventDefault();
-			
+	/*		
 			
 			//Needs to be done manually *scale* doesn't work as intended
 			for(ctxKey in this.ctxArr){
@@ -242,7 +242,7 @@ components.drawing = function(){
 				
 			}
 			//Redraw it scaled
-			this.scale = 2;
+			this.scale = 2;*/
 			    
 		},
 		erasePoint: function(points,context) {
