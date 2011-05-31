@@ -4,6 +4,7 @@ components.cases = function(){
 		el: $('#game'),
 		events: {
 			'click .light_grey_gradient_text': 'selectCase',
+			'click .light_grey_gradient_text2': 'selectCase2',
 			"click #accept_invite":"pagerAcceptInvite",
 			"click #decline_invite":"pagerDeclineInvite"
 		},
@@ -36,11 +37,23 @@ components.cases = function(){
 			}
 		},
 		selectCase: function(e) {
-			e.preventDefault();
-			//Passing 283408 for the room number for now - indicates activity - this will be auto generated later on
-			remote.newCase(283408, me, emit);
-			new ComputerView();
+			
+				e.preventDefault();
+				//Passing 283408 for the room number for now - indicates activity - this will be auto generated later on
+				remote.newCase(283408, me, emit);
+				new ComputerView();
+			
 		},	
+		selectCase2: function(e) {
+				e.preventDefault();
+			
+				
+					$.get('isometric.html', function(t){
+						this.el.html(t);
+					}.bind(this));
+			
+			
+		},
 		pagerAcceptInvite: function (e){
 			e.preventDefault();
 			console.log ('received case id ' + invitation['case_id']);

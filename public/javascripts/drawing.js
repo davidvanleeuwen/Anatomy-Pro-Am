@@ -40,6 +40,7 @@ components.drawing = function(){
 			this.render();
 			this.locked = false;
 			this.chatExpanded = false;
+			this.scale=1;
 			online_friends.bind('change', this.collectionChanged);
 		},
 		render: function() {
@@ -223,7 +224,26 @@ components.drawing = function(){
 		},
 		zoomTool: function(event) {
 			event.preventDefault();
-			for(var key in this.ctxArr) this.ctxArr[key].scale(2,2);
+			
+			
+			//Needs to be done manually *scale* doesn't work as intended
+			for(ctxKey in this.ctxArr){
+				//var mousex = event.clientX - this.canvas.offsetLeft;
+				//var mousey = event.clientY - this.canvas.offsetTop;
+				
+				//var zoom = .5;
+
+				 //this.ctxArr[key].translate(0,0);
+				//var imageData=this.ctxArr[key].getImageData(0, 0, this.canvas.width, this.canvas.height);
+				this.ctxArr[ctxKey].scale(2.0,2.0);
+				
+				
+				//this.ctxArr[key].putImageData(imageData, 0, 0);
+				
+			}
+			//Redraw it scaled
+			this.scale = 2;
+			    
 		},
 		erasePoint: function(points,context) {
 			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
@@ -268,6 +288,7 @@ components.drawing = function(){
 		},
 		drawLine: function(event) {
 			event.preventDefault();
+			
 			if(this.isDrawing && !this.locked) {
 				if(this.isErasing){
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
@@ -416,6 +437,22 @@ components.drawing = function(){
 		},
 		resetDrawing: function (e){ //added to allow reset of entire drawing (clear all my points)
 			e.preventDefault();
+			
+				var points = new Array();
+				var arrayPos = 0;
+				for(var x = 0; x < this.canvas.width; x++)
+					for(var y = 0; y < this.canvas.height; y++){
+							points[arrayPos] = {x: x,
+									y: y,
+									layer: layer};
+									arrayPos++;
+						
+				}
+					this.erasePoint(points,this.ctxArr[me.id]);
+				//remote.pointErased(me.get('current_case_id'), me.id, points);
+			
+			
+			
 		},
 		teamTab: function (e){ // added to allow team tab clicking
 			e.preventDefault();
