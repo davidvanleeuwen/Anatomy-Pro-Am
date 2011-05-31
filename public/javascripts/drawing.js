@@ -439,17 +439,21 @@ components.drawing = function(){
 			}
 		},
 		receiveChat: function(player_id, message) {
-		    // should be fixed serverside - publish to other clients!
-		    if(player_id != me.get('id')) {
-		        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
-		        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
-		   }
+      // should be fixed serverside - publish to other clients!
+      var chatEl = $('#chat_window')[0];
+      if(player_id != me.get('id')) {
+        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
+        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
+        chatEl.scrollTop = chatEl.scrollHeight;
+      }
 		},
 		setChatHistory: function(data) {
-	        _.each(data.payload, function(message) {
-	            var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player });
-	            $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
-	        });
+		  var chatEl = $('#chat_window')[0];
+      _.each(data.payload, function(message) {
+        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === message.player });
+        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message.message+'</span></div>');
+        chatEl.scrollTop = chatEl.scrollHeight;
+      });
 		},
 		showPager: function (b){
 			if(b){
