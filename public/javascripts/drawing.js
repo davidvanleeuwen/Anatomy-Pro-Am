@@ -484,7 +484,7 @@ components.drawing = function(){
 		    // should be fixed serverside - publish to other clients!
 		    if(player_id != me.get('id')) {
 		        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
-		        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+message+'</span></div>');
+		        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
 		   }
 		},
 		setChatHistory: function(data) {
@@ -564,7 +564,11 @@ components.drawing = function(){
 		    e.preventDefault();
 		},
 		cursorMovement: function(e) {
-		    _.throttle(this.sendCursorPosition, 50);
+		  /*
+            _.throttle(function (e) {
+                console.log('yay');
+            }, 250));
+      */
 		},
 		sendCursorPosition: function() {
 		    console.log('yay');

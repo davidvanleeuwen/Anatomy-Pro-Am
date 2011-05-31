@@ -1,4 +1,5 @@
 var http = require("http");
+var https = require('https');
 var url = require("url");
 var sys = require("sys");
 var events = require("events");
@@ -57,7 +58,7 @@ function httpclient() {
 			switch(curl.protocol) {
 				case "https:":
 					client = http.createClient(curl.port||443, curl.hostname);
-					client.setSecure();
+					//client.setSecure();
 //"x509_PEM");
 				break;
 				default:
@@ -76,7 +77,7 @@ function httpclient() {
 			"Connection" : "close",
 			"Host" : curl.hostname
 		};
-		if(method == "POST") {
+		if(method == "POST" || method == "PUT") {
 			clients[key].headers["Content-Length"] = data.length;
 			clients[key].headers["Content-Type"] = "application/json";
 		}	
@@ -191,7 +192,7 @@ function httpclient() {
 				});
 			}
 		});
-		if(method == "POST") {
+		if(method == "POST" || method == "PUT") {
 			req.write(data);
 		}
 		req.end();

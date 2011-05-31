@@ -2,18 +2,19 @@ config = require './config'
 fbgraph = require 'facebook-graph@0.0.6'
 fbutil = require './facebookutil.js'
 http = require 'http'
+https = require 'https'
 color = require('./color.js').set
 httpClient = require './public/javascripts/httpclient.js'
+client = new httpClient.httpclient
 Hash = require 'hashish@0.0.2'
 
 storeUser = (userData, userCode) ->
 	##Will store user to DB.  
 	console.log 'store user'
 	addUser userData, (callback) ->
-		console.log callback
 		getUser userData.id, (cb) ->
 			if not cb.error
-				addOauthCredental JSON.parse(cb).facebook_user.id, userCode, (callback) ->
+				addOauthCredental cb.info.facebook_user.id, userCode, (callback) ->
 					console.log 'get user response back from adding oauth'
 					#console.log callback
 			else
@@ -30,19 +31,19 @@ addOauthCredental = (userID, userCode, callback) ->
 	postData["user_id"] = userID
 	postData["auth_code"] = userCode
 	postData = JSON.stringify postData
-	client = new httpClient.httpclient
-	console.log postData
+	#client = new httpClient.httpclient
 	client.perform config.sql.fullHost + dbPath, "POST", (res) ->
 		callback res.response.body
 	,postData
-	
+
 userDeauthed = (reqInfo, res) ->
 	#do something with deauthed user info
 	console.log(color "------------------- USER REMOVED APP! ----------------", 'red')
-	console.log (JSON.parse(base64decode(reqInfo.body.signed_request.split('.')[1])).user_id)
-	console.log(color "------------------- USER REMOVED APP! ----------------", 'red')
+	#removed the following line as it started erroring - if we decide to use it i'll fix it
+	#console.log (JSON.parse(base64decode(reqInfo.body.signed_request.split('.')[1])).user_id)
+	#console.log(color "------------------- USER REMOVED APP! ----------------", 'red')
 	res.redirect ('http://www.wisc.edu')
-	
+
 userDeclinedAccess = (reqInfo,res) ->
 	#so something when a user declines using the app from the access window
 	console.log color "------------------- USER DENIED TERMS ----------------", 'red'
@@ -80,7 +81,7 @@ authresponse = (req, res) ->
 	if req.query.error_reason	
 		userDeclinedAccess(req, res)
 		res.end()
-		
+
 ###
 renderIndex :
 Renders gathers user info based on either a signed request or the users cookie, or ref's to auth page. 
@@ -142,28 +143,108 @@ fbGetMeObject = (authToken, callback) ->
 			callback {data: data}
 			
 addMyFriends = (d, myID) ->
+	updateAllOnlineStatus myID, d.data
 	Hash(d.data).forEach (friend) ->
 		addUserAsFriend myID, friend
 	getUser myID, (getUserResult) ->
 		if not getUserResult.error
-			getFriends JSON.parse(getUserResult).facebook_user.id, (friendsResult) ->
+			getFriends getUserResult.info.facebook_user.id, (friendsResult) ->
 				#console.log friendsResult
 		else
 		 	console.log "This is from addMyFriends.getUser"
 			console.log getUserResult
-				
-			
+
+updateOnlineStatus = (UID, friend) ->
+	accessToken = ''
+	getUser UID, (cb) ->
+		if cb.error == 0 or 100
+			userApps = cb.info.facebook_user.application_authorizations
+			Hash(userApps).forEach (value, key) ->
+				if value.application.app_id == config.fbconfig.appId
+					outObject = {}
+					accessToken = value.auth_code
+					url = 'api.facebook.com'
+					path1 = '/method/fql.query?'
+					path2 = 'access_token=' + accessToken + '&format=JSON&query=SELECT online_presence FROM user WHERE uid=' + friend.id
+					path = path1 + encodeURI path2
+					outdata = ''
+					https.get {host: url, path: path}, (res)->
+						res.on 'data', (d) ->
+							if JSON.parse(d).error_code == undefined
+								if JSON.parse(d)[0].online_presence == 'active'
+									date = new Date
+									date = date.getTime()
+									outObject['last_online'] = date
+									console.log color friend.name + " is online", 'blue'
+									#setOnlineStatus outObject, friend
+						res.on 'error', (e) ->
+							console.log 'Error: ' + e
+							
+updateAllOnlineStatus = (UID, friends) ->
+	accessToken = ''
+	getUser UID, (cb) ->
+		if cb.error == 0 or 100
+			userApps = cb.info.facebook_user.application_authorizations
+			formattedFriends = ''
+			Hash(friends).forEach (friend) ->
+				formattedFriends += "uid=" + friend.id + " OR "
+			formattedFriends = formattedFriends.substring 0, formattedFriends.length - 3
+			Hash(userApps).forEach (value, key) ->
+				if value.application.app_id == config.fbconfig.appId
+					outObject = {}
+					outObject['facebook_user'] = {}
+					accessToken = value.auth_code
+					url = 'api.facebook.com'
+					path1 = '/method/fql.query?'
+					path2 = 'access_token=' + accessToken + '&format=JSON&query=SELECT online_presence FROM user WHERE ' + formattedFriends
+					path = path1 + encodeURI path2
+					outdata = ''
+					https.get {host: url, path: path}, (res)->
+						myBody = []
+						res.setEncoding('utf8')
+						if res.headers['content-encoding'] == 'gzip'
+							res.setEncoding("binary")
+						res.on 'data', (chunk) ->
+							myBody.push chunk
+						res.on 'end', () ->
+							body = myBody.join ("")
+							if res.headers["content-encoding"] == "gzip"
+								gunzip.init
+								body = gunzip.inflate body, 'binary'
+								gzip.end
+							index = 0
+							Hash(JSON.parse(body)).forEach (value) ->
+								friend = friends[index]
+								index++
+								if value.online_presence == 'active'
+									date = new Date
+									date = date.getTime()
+									outObject['facebook_user']['last_online'] = date
+									console.log color friend.name + " is online", 'blue'
+									setOnlineStatus outObject, friend
+						res.on 'error', (e) ->
+							console.log 'Error: ' + e
+							
+setOnlineStatus = (dateTime, friend) ->
+	getUser friend.id, (cb) ->
+		dbPath = '/users/' + cb.info.facebook_user.id + '/facebook_user.json'
+		client.perform config.sql.fullHost + dbPath, "PUT", (res) ->
+			if res.response.body != undefined
+				a = 1
+				#console.log JSON.parse res.response.body
+		,JSON.stringify dateTime
+		
 getFriends = (uid, cb) ->
 	dbPath = '/users/' + uid + '/friends.json'
-	client = new httpClient.httpclient
+	#client = new httpClient.httpclient
 	client.perform config.sql.fullHost + dbPath, "GET", (res) ->
-		result = res.response.body
+		result = JSON.parse(res.response.body)
 		cb result
-		
+
 associateFriend = (uid, friendID) ->
 	dbPath = '/users/' + uid + '/friends'
 	postData = '{"friend_id":' + friendID + '}'
-	client = new httpClient.httpclient
+	#client = new httpClient.httpclient
 	client.perform config.sql.fullHost + dbPath, "POST", (res) ->
 		result = res.response.body
 		#console.log result
@@ -171,20 +252,19 @@ associateFriend = (uid, friendID) ->
 
 addUser = (info, callback) ->
 	getUser info.id, (cb) ->
-		console.log 'info and callback info'
-		console.log cb, info
 		if cb.error is 100 and info.first_name is not null
 			#this is set when the user exists, but they have invalid info.  This will then overwrite the user.  console.log 'get user response with error'
 			console.log color '------------------- USER EXISTS AS FRIEND ADDITION - RECREATING -------------------\n', 'green'
 			console.log info.id + " " + info.name
 			postData = formatUser info
 			dbPath = '/facebook_users.json'
-			client2 = new httpClient.httpclient
-			client2.perform config.sql.fullHost + dbPath, "PUT", (resp) -> 
+			#client2 = new httpClient.httpclient
+			client.perform config.sql.fullHost + dbPath, "PUT", (resp) -> 
+				console.log resp
 				result = resp.response.body
 				console.log color '------------------- RESULT OF ADDING USER -------------------\n', 'green'
-				console.log JSON.parse(result).facebook_user.id, JSON.parse(result).facebook_user.name 
-				callback result
+				#console.log JSON.parse(result).facebook_user.id, JSON.parse(result).facebook_user.name 
+				#callback result
 			,postData
 		if cb.error is 404
 			console.log 'get user response with error'
@@ -192,41 +272,41 @@ addUser = (info, callback) ->
 			console.log info.id + " " + info.name
 			postData = formatUser info
 			dbPath = '/facebook_users.json'
-			client2 = new httpClient.httpclient
-			client2.perform config.sql.fullHost + dbPath, "POST", (resp) -> 
-				result = resp.response.body
+			#client2 = new httpClient.httpclient
+			client.perform config.sql.fullHost + dbPath, "POST", (resp) -> 
+				result = JSON.parse(resp.response.body)
 				console.log color '------------------- RESULT OF ADDING USER -------------------\n', 'green'
-				console.log JSON.parse(result).facebook_user.id, JSON.parse(result).facebook_user.name 
+				console.log result.facebook_user.id, result.facebook_user.name 
 				callback result
 			,postData
 		if not cb.error 
 			result = color '------------------- USER ALREADY EXISTS -------------------\n', 'green'
-			result += JSON.parse(cb).facebook_user.id + " - " + JSON.parse(cb).facebook_user.name
+			result += cb.info.facebook_user.id + " - " + cb.info.facebook_user.name
 			callback cb
 			#console.log result
 
 addUserAsFriend = (playerID, friendInfo) ->
 	myID = ''
 	getUser playerID, (cb) ->
-		myID = JSON.parse(cb).facebook_user.id
+		myID = cb.info.facebook_user.id
 		addUser friendInfo, (cb) ->
-			associateFriend myID, JSON.parse(cb).facebook_user.id
-	
+			associateFriend myID, cb.info.facebook_user.id
+
 getUser = (fbid, cb) ->
 	dbPath = '/facebook_users/uid/' + fbid + '.json'
-	client = new httpClient.httpclient
+	#client = new httpClient.httpclient
 	client.perform config.sql.fullHost + dbPath, "GET", (res) -> 
 		if res.response.status is 404
-			result = {error: 404}
+			result = {error: 404, info: null}
 		else 
 			if JSON.parse(res.response.body).facebook_user.first_name is null
-				result = {error: 100}
+				result = {error: 100, info: JSON.parse(res.response.body)}
 			else
-				result = res.response.body		
+				result = {error: 0, info: JSON.parse(res.response.body)}
 		cb result
 		#console.log '\n-------------------\n\ngetUser Result: \n\n' + result + '\n\n----------------\n'
 
-	
+
 formatUser = (inbound) ->
 	outbound = {}
 	#console.log  '\n-------------------\n\nBefore formatUser: \n\n' + inbound  + '\n\n----------------\n'
@@ -257,7 +337,7 @@ formatUser = (inbound) ->
 	outbound = JSON.stringify f
 	#console.log  '\n-------------------\n\nAfter formatUser: \n\n' + outbound  + '\n\n----------------\n'
 	return outbound
-	
+
 cleanJSON = (input) ->
 	keyStr = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=:-_{}[]".,|'
 	output = ""
@@ -270,7 +350,7 @@ cleanJSON = (input) ->
 			if a is keyStr.charAt(j++)
 				o += a
 	return o
-	
+
 base64decode = (input) ->
 	keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
 	output = ""
@@ -283,14 +363,14 @@ base64decode = (input) ->
 		chr1 = (enc1 << 2) | (enc2 >> 4)
 		chr2 = ((enc2 & 15) << 4 | (enc3 >> 2))
 		chr3 = ((enc3 & 3) << 6 | enc4)
-		
+
 		output += String.fromCharCode chr1
 		if enc3 != 64
 			output += String.fromCharCode chr2
 		if enc4 != 64
 			output += String.fromCharCode chr3
 	return cleanJSON unescape output
-		
+
 exports.addUser = addUser
 exports.formatUser = formatUser
 exports.store_user = storeUser
