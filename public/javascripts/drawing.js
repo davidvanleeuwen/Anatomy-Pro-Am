@@ -145,6 +145,14 @@ components.drawing = function(){
 			window.layer = 0;
 			remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, me.id, layer, emit);
 		},
+		removeAllListeners: function() {
+		  em.removeAllListeners('pointColored');
+		  em.removeAllListeners('pointErased');
+		  em.removeAllListeners('setColoredPointsForThisLayer');
+		  em.removeAllListeners('JoinRequest');
+		  em.removeAllListeners('setChatHistory');
+		  em.removeAllListeners('newChat');
+		},
 		canvasMerge: function() {
 			/*Function is presently not necessary
 			
@@ -484,6 +492,7 @@ components.drawing = function(){
 					console.log ('changed friend case id');
 				}
 			});
+			this.removeAllListeners();
 			new ComputerView;
 		},
 		pagerDeclineInvite: function (e){
