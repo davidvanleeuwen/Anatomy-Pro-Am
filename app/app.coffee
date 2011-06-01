@@ -1,11 +1,11 @@
 config = require '../config'
+fbhelper = require '../fbhelper'
 
 ## dependencies
 DNode = require 'dnode@0.6.10'
 _ = require('underscore@1.1.5')._
 Backbone = require 'backbone@0.3.3'
 resources  = require '../models/resources'
-fbgraph = require 'facebook-graph@0.0.6'
 
 util = require './util'
 
@@ -59,6 +59,11 @@ exports.createServer = (app) ->
 		@getChatHistoryForActivity = (activity_id, emit) ->
 		    activityManager.current[activity_id].getChatHistoryForActivity (chats) ->
 		        emit.apply emit, ['setChatHistory', {payload: chats} ]
+		@getOnlineFriends = (uid, emit) ->
+			fbhelper.getOnlineFriends uid, (cb) ->
+				emit.apply emit, ['setAllFriends', {payload:cb}]
+		@appRequest = (myid, yourid) ->
+			fbhelper.appRequest myid, yourid
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen {

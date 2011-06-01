@@ -11,10 +11,10 @@ redis = require 'redis@0.6.0'
 colors = [ 
 	{ hex: 'FFCC00', user: undefined },
 	{ hex: 'FF004E', user: undefined },
-	{ hex: '20E500', user: undefined },
 	{ hex: '009CFF', user: undefined },
 	{ hex: 'FF6C00', user: undefined },
 	{ hex: 'A900A3', user: undefined },
+	{ hex: '20E500', user: undefined },
 	{ hex: 'FFFF00', user: undefined },
 	{ hex: 'FF00FF', user: undefined },
 	{ hex: '00FF00', user: undefined },
