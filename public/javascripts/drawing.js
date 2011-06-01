@@ -22,6 +22,7 @@ components.drawing = function(){
 			"click #erasingTool": "eraseTool",
 			'click #team_tab':'teamTab',
 			'click #online_tab':'onlineTab',
+			'click #friends_tab':'friendsTab',
 			'click #undoTool': 'undoTool',
 			'click #send_chat':'sendChat',
 			'keyup #type':'sendChat',
@@ -418,6 +419,7 @@ components.drawing = function(){
 			friendbar = new FriendBar();
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
+			this.$('#friends_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 		},
 		onlineTab: function (e){ //added to allow online tab clicking
 			e.preventDefault();
@@ -425,6 +427,15 @@ components.drawing = function(){
 			friendbar = new FriendBar();
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
+			this.$('#friends_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
+		},
+		friendsTab: function (e){
+			e.preventDefault();
+			currentView = 2;
+			friendBar = new FriendBar();
+			this.$('#friends_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
+			this.$('#online_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
+			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 		},
 		sendChat: function (e){
 			e.preventDefault();
