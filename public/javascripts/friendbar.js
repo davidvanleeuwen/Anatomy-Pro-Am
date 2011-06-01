@@ -2,10 +2,12 @@ components.friendbar = function(){
 	console.log('loading friendbar');
 	window.invited = [];
 	window.online_friends = new resources.collections.Friends;
+	window.all_online_friends = new resources.collections.Friends;
 	/*
 	Current View Values - changes depending on tabs pressed, which views the user wants to see
 	0 = teammates
-	1 = all online friends
+	1 = Other Players Online
+	2 = All Friends Online
 	*/
 	window.currentView = 0;
 	window.FriendView = Backbone.View.extend({
@@ -30,7 +32,7 @@ components.friendbar = function(){
 			this.$('.fb_player').attr('id', this.model.get('id'));
 			this.$('.fb_player_img').attr('style', 'background: url(\'' + this.model.get('avatar')  + '\');');
 			this.$('.fb_player_name').text(this.model.get('name'));
-			if(this.model.get('id') == me.id || currentView == 1) {
+			if(this.model.get('id') == me.id || currentView == 1 || currentView == 2) {
 				this.model.set({layer_enabled: true},{silent: true});
 				this.$('a').removeClass('invisible');
 			}
@@ -49,7 +51,13 @@ components.friendbar = function(){
 					}
 				});
 			}else{
-				this.invitePlayer(this.model);
+				if (currentView == 1){
+					this.invitePlayer(this.model);
+				}
+				if (currentView == 2){
+					//remote.appRequest(me.get('id'), this.model.get('id'));
+					FB.ui({method: 'apprequests', to: this.model.get('id'), message: me.get('name') + " needs your help with a tough case!", title: "Help!"});
+				}
 			}
 		},
 		invitePlayer: function (model){
@@ -59,7 +67,25 @@ components.friendbar = function(){
 			invited['player_id'] = model.get('id');
 		}
 	});
-	
+	em.on('setAllFriends', function (friendList){
+		console.log (friendList.payload);
+		all_online_friends = new resources.collections.Friends;
+		_.each(friendList.payload, function (friend){
+			console.log ("From Friends Receive");
+			console.log (friend);
+			n = friend.name.split(" ");
+			all_online_friends.add({
+				id: friend.uid,
+				facebook_id: friend.uid,
+				name: n[0], 
+				player_color: "333333",
+				avatar: "http://graph.facebook.com/" + friend.uid + "/picture",
+				layer_enabled: true
+			});
+		});
+		
+		$('#friends_tab').html('<a href=""><span>FRIENDS (' + all_online_friends.length +')</span></a>');
+	});
 	em.on('FriendCameOnline', function(n) {
 		var okToAdd = true;
 		online_friends.each(function(friend){
@@ -74,6 +100,7 @@ components.friendbar = function(){
 				name: n.first_name, 
 				player_color: n.player_color,
 				avatar: "http://graph.facebook.com/" + n.id + "/picture",
+				
 			});
 		}
 		
@@ -99,8 +126,11 @@ components.friendbar = function(){
 		initialize: function() {
 			this.bar_template = _.template($('#friend-bar-template').html());
 			$('#friends_container').html(this.bar_template());
+			remote.getOnlineFriends(me.get('id'), emit);
 			online_friends.unbind();
 			_.bindAll(this, 'addFriend', 'removeFriend', 'refreshFriends', 'render');
+			all_online_friends.bind('add', this.refreshFriends);
+			all_online_friends.bind('change', this.refreshFriends);
 			online_friends.bind('add', this.refreshFriends);
 			online_friends.bind('remove', this.removeFriend);
 			online_friends.bind('refresh', this.refreshFriends);
@@ -117,11 +147,25 @@ components.friendbar = function(){
 		},
 		removeFriend: function(friend) {
 			friend.clear();
+			$('#team_tab').html('<a href=""><span>TEAM (' + onteam +'/6)</span></a>');
+			
+			$('#online_tab').html('<a href=""><span>ONLINE (' + online +')</span></a>');
+			
+			$('#friends_tab').html('<a href=""><span>FRIENDS (' + all_online_friends.length +')</span></a>');
 		},
 		refreshFriends: function() {
 			$('#friends_container').html(this.bar_template());
 			var online = 0;
 			var onteam = 0;
+			var onlineFriends = 0;
+			if (currentView == 2){
+				
+				all_online_friends.each (function (friend){
+					window.friendbar.addFriend (friend);
+					console.log ("From Friend Loading");
+					console.log (friend);
+				});
+			}
 			online_friends.each(function (friend){
 				
 				if (friend.get('current_case_id') == me.get('current_case_id')){
@@ -137,9 +181,11 @@ components.friendbar = function(){
 					}
 				}
 			});
-			$('#team_tab').html('<a href=""><span>TEAM (' + onteam +'/5)</span></a>');
+			$('#team_tab').html('<a href=""><span>TEAM (' + onteam +'/6)</span></a>');
 			
 			$('#online_tab').html('<a href=""><span>ONLINE (' + online +')</span></a>');
+			
+			$('#friends_tab').html('<a href=""><span>FRIENDS (' + all_online_friends.length +')</span></a>');
 		}
  	});
 };

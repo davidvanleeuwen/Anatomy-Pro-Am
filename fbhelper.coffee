@@ -7,6 +7,7 @@ color = require('./color.js').set
 httpClient = require './public/javascripts/httpclient.js'
 client = new httpClient.httpclient
 Hash = require 'hashish@0.0.2'
+rfc3339 = require './rfc3339.js'
 
 storeUser = (userData, userCode) ->
 	##Will store user to DB.  
@@ -153,33 +154,15 @@ addMyFriends = (d, myID) ->
 		else
 		 	console.log "This is from addMyFriends.getUser"
 			console.log getUserResult
-
-updateOnlineStatus = (UID, friend) ->
-	accessToken = ''
-	getUser UID, (cb) ->
+			
+getMyAuthCode = (uid, authResponse) ->
+	getUser uid, (cb) ->
 		if cb.error == 0 or 100
 			userApps = cb.info.facebook_user.application_authorizations
 			Hash(userApps).forEach (value, key) ->
 				if value.application.app_id == config.fbconfig.appId
-					outObject = {}
-					accessToken = value.auth_code
-					url = 'api.facebook.com'
-					path1 = '/method/fql.query?'
-					path2 = 'access_token=' + accessToken + '&format=JSON&query=SELECT online_presence FROM user WHERE uid=' + friend.id
-					path = path1 + encodeURI path2
-					outdata = ''
-					https.get {host: url, path: path}, (res)->
-						res.on 'data', (d) ->
-							if JSON.parse(d).error_code == undefined
-								if JSON.parse(d)[0].online_presence == 'active'
-									date = new Date
-									date = date.getTime()
-									outObject['last_online'] = date
-									console.log color friend.name + " is online", 'blue'
-									#setOnlineStatus outObject, friend
-						res.on 'error', (e) ->
-							console.log 'Error: ' + e
-							
+					authResponse value.auth_code
+					
 updateAllOnlineStatus = (UID, friends) ->
 	accessToken = ''
 	getUser UID, (cb) ->
@@ -217,8 +200,8 @@ updateAllOnlineStatus = (UID, friends) ->
 								friend = friends[index]
 								index++
 								if value.online_presence == 'active'
-									date = new Date
-									date = date.getTime()
+									date = new Date()
+									date = date.toRFC3339UTCString()
 									outObject['facebook_user']['last_online'] = date
 									console.log color friend.name + " is online", 'blue'
 									setOnlineStatus outObject, friend
@@ -230,16 +213,58 @@ setOnlineStatus = (dateTime, friend) ->
 		dbPath = '/users/' + cb.info.facebook_user.id + '/facebook_user.json'
 		client.perform config.sql.fullHost + dbPath, "PUT", (res) ->
 			if res.response.body != undefined
-				a = 1
+				a = 1 # this just satisfies the statement - 
 				#console.log JSON.parse res.response.body
-		,JSON.stringify dateTime
+		,JSON.stringify dateTime	
 		
 getFriends = (uid, cb) ->
-	dbPath = '/users/' + uid + '/friends.json'
-	#client = new httpClient.httpclient
-	client.perform config.sql.fullHost + dbPath, "GET", (res) ->
-		result = JSON.parse(res.response.body)
-		cb result
+	getUser uid, (back) ->
+		if back.error == 0
+			dbPath = '/users/' + back.info.facebook_user.id + '/friends.json'
+			client.perform config.sql.fullHost + dbPath, "GET", (res) ->
+				result = JSON.parse(res.response.body)
+				cb result
+
+exports.getOnlineFriends = (uid, cb) ->
+	getFriends uid, (callback) ->
+		toReturn = {}
+		date = new Date()
+		date = date.toRFC3339UTCString()
+		Hash(callback.users).forEach (value) ->
+			if value.facebook_user != null && value.facebook_user != undefined
+				if value.facebook_user.last_online != undefined && value.facebook_user.last_online != null
+					console.log Date.parse(date).getTime() - Date.parse(value.facebook_user.last_online).getTime() 
+					if Date.parse(date).getTime() - Date.parse(value.facebook_user.last_online).getTime()  < 300000 #5 minute timeout @ 300,000 ms
+						toReturn[value.id] = value.facebook_user
+		console.log JSON.stringify toReturn
+		cb toReturn
+
+exports.appRequest = (myid, yourid) ->
+	console.log myid, yourid
+	inviter = {}
+	invitee = {}
+	method = 'apprequests'
+	title = 'We need your help!'
+	message = ""
+	getUser myid, (myInfo) ->
+		console.log myInfo
+		getUser yourid, (yourInfo) ->
+			console.log yourInfo
+			getMyAuthCode myid, (cb) ->
+				if cb.error == null || cb.error == undefined
+					console.log cb
+					message = myInfo.info.facebook_user.first_name + " needs your help to save a patients life!  "
+					sentData = {message: message, title: title}
+					console.log sentData
+					graph = new fbgraph.GraphAPI cb
+					graph.putObject yourid, method, sentData , (error, data) ->
+						if error
+							console.log color 'sendAppRequest error: ', 'red'
+							console.log {error: error}
+						else
+							console.log color 'sendAppRequest Successful: ', 'green'
+							console.log {data: data}
+			
 
 associateFriend = (uid, friendID) ->
 	dbPath = '/users/' + uid + '/friends'
@@ -260,9 +285,10 @@ addUser = (info, callback) ->
 			dbPath = '/facebook_users.json'
 			#client2 = new httpClient.httpclient
 			client.perform config.sql.fullHost + dbPath, "PUT", (resp) -> 
-				console.log resp
-				result = resp.response.body
+				result = {}
+				result = {error: 0, info: JSON.parse(resp.response.body)}
 				console.log color '------------------- RESULT OF ADDING USER -------------------\n', 'green'
+				console.log resp
 				#console.log JSON.parse(result).facebook_user.id, JSON.parse(result).facebook_user.name 
 				#callback result
 			,postData
@@ -274,9 +300,10 @@ addUser = (info, callback) ->
 			dbPath = '/facebook_users.json'
 			#client2 = new httpClient.httpclient
 			client.perform config.sql.fullHost + dbPath, "POST", (resp) -> 
-				result = JSON.parse(resp.response.body)
+				result = {}
+				result = {error: 0, info: JSON.parse(resp.response.body)}
 				console.log color '------------------- RESULT OF ADDING USER -------------------\n', 'green'
-				console.log result.facebook_user.id, result.facebook_user.name 
+				console.log result.info.facebook_user.id, result.info.facebook_user.name 
 				callback result
 			,postData
 		if not cb.error 
@@ -290,7 +317,9 @@ addUserAsFriend = (playerID, friendInfo) ->
 	getUser playerID, (cb) ->
 		myID = cb.info.facebook_user.id
 		addUser friendInfo, (cb) ->
-			associateFriend myID, cb.info.facebook_user.id
+			console.log cb
+			if cb.info != undefined
+				associateFriend myID, cb.info.facebook_user.id
 
 getUser = (fbid, cb) ->
 	dbPath = '/facebook_users/uid/' + fbid + '.json'

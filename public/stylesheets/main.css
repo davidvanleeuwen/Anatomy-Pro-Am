@@ -741,7 +741,7 @@ height:30px; width:30px;}
 
 #tabs{
    height:32px;
-   width:300px;
+   width:350px;
    float:left;
 }
 
@@ -994,4 +994,34 @@ height:30px; width:30px;}
     width:175px;
     display:block;
 }
+
+
+/* @group cursors */
+
+.cursors {
+    position: absolute;
+    z-index: 99;
+}
+
+.cursor_blob {
+    /*min-width: 18px;
+    min-height: 14px;*/
+    padding: 2px 6px;
+    max-width: 140px;
+    font: 11px Verdana;
+    border-radius: 5px;
+    margin: 0 0 -2px 0;
+}
+
+.cursor_arrow {
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid transparent;
+    width: 0;
+    height: 0;
+    margin: 0 auto;
+}
+
+
+/* @end cursors */
 
