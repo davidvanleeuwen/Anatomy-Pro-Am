@@ -24,7 +24,6 @@ components.drawing = function(){
 			'click #online_tab':'onlineTab',
 			'click #undoTool': 'undoTool',
 			'click #send_chat':'sendChat',
-			'click #zoomTool': 'zoomTool',
 			'keyup #type':'sendChat',
 			"click #done": "done",
 			"click #accept_invite":"pagerAcceptInvite",
@@ -32,15 +31,17 @@ components.drawing = function(){
 			"click #invite":"invite",
 			"click #dont_invite":"dontInvite",
 			'click #cursorTool':'cursorTool',
+			'click #zoomInTool':'zoomIn',
+			'click #zoomOutTool':'zoomOut',
 			'mousemove': 'cursorMovement'
 		},
 		initialize: function() {
 			window.dThis=this;
 			_.bindAll(this, 'render');
 			this.render();
+			this.zoom = 1;
 			this.locked = false;
 			this.chatExpanded = false;
-			//this.scale=1;
 			online_friends.bind('change', this.collectionChanged);
 		},
 		render: function() {
@@ -53,6 +54,7 @@ components.drawing = function(){
 					this.el.html('');
 					view.computer = t;
 					this.el.html(view.computer);
+			
 					this.setupView();
 				}.bind(this));
 			}
@@ -185,7 +187,7 @@ components.drawing = function(){
 			new CaseView;
 		},
 		colorPoint: function(points, color, context) {
-			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+			var imageData=context.getImageData(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
 			var pix = imageData.data;
 			var redVal = (parseInt(color.substr(0,2),16));
 			var greenVal = (parseInt(color.substr(2,2),16));
@@ -197,17 +199,57 @@ components.drawing = function(){
 				var slide = point.layer;
 				if(layer == slide) {
 					if(x>0&&y>0){
-						pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
-						pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
-						pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
-						pix[((y*(imageData.width*4)) + (x*4)) + 3]=255;
-						
+						if(this.zoom == 1){
+							pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
+							pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
+							pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
+							pix[((y*(imageData.width*4)) + (x*4)) + 3]=255;
+						}else if(this.zoom == 2){
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+0)*4)) + 0]=redVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+0)*4)) + 1]=greenVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+0)*4)) + 2]=blueVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+0)*4)) + 3]=255;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+1)*4)) + 0]=redVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+1)*4)) + 1]=greenVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+1)*4)) + 2]=blueVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+1)*4)) + 3]=255;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+0)*4)) + 0]=redVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+0)*4)) + 1]=greenVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+0)*4)) + 2]=blueVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+0)*4)) + 3]=255;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 0]=redVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 1]=greenVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 2]=blueVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 3]=255;
+							
+							
+							
+							
+						}
 						
 					}
 				}
 			}
 			context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			context.putImageData(imageData, 0, 0);
+		},
+		zoomIn: function(event){
+			event.preventDefault();
+			this.zoomInReady = true;
+		},
+		zoomOut: function(event){
+			event.preventDefault();
+			if(this.zoom == 2){
+				for(arrKey in this.ctxArr){
+					this.ctxArr[arrKey].scale(.5,.5);
+					this.ctxArr[arrKey].clearRect(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
+				}
+				this.zoom = 1;
+				
+			}
+			
+			document.getElementById("scan_container").style.overflow="hidden";
+			this.getColorPointsForLayerAndPlayer(false);
 		},
 		cursorChangeIn: function(event) {
 			
@@ -222,29 +264,6 @@ components.drawing = function(){
 			document.body.style.cursor='default';
 			
 		},
-		zoomTool: function(event) {
-			event.preventDefault();
-	/*		
-			
-			//Needs to be done manually *scale* doesn't work as intended
-			for(ctxKey in this.ctxArr){
-				//var mousex = event.clientX - this.canvas.offsetLeft;
-				//var mousey = event.clientY - this.canvas.offsetTop;
-				
-				//var zoom = .5;
-
-				 //this.ctxArr[key].translate(0,0);
-				//var imageData=this.ctxArr[key].getImageData(0, 0, this.canvas.width, this.canvas.height);
-				this.ctxArr[ctxKey].scale(2.0,2.0);
-				
-				
-				//this.ctxArr[key].putImageData(imageData, 0, 0);
-				
-			}
-			//Redraw it scaled
-			this.scale = 2;*/
-			    
-		},
 		erasePoint: function(points,context) {
 			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
 			var pix = imageData.data;
@@ -256,6 +275,7 @@ components.drawing = function(){
 				if(layer == slide) {
 					
 					if(x>0&&y>0){
+						
 						pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
 					}
 					// Draw the ImageData at the given (x,y) coordinates.
@@ -272,9 +292,28 @@ components.drawing = function(){
 		},
 		startLine: function(event) {
 			event.preventDefault();
-			this.isDrawing = true;
-			this.oldX = event.clientX-this.canvas.offsetLeft+3;
-			this.oldY = event.clientY-this.canvas.offsetTop+29;
+			if(this.zoomInReady){
+				if(this.zoom == 1){
+					this.zoom = 2;
+					for(arrKey in this.ctxArr){
+						this.ctxArr[arrKey].scale(2.0,2.0);
+						this.ctxArr[arrKey].clearRect(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
+					}
+				
+				
+				this.zoomXOffset = event.clientX-this.canvas.offsetLeft+3;
+				this.zoomYOffset = event.clientY-this.canvas.offsetTop+29;
+				this.getColorPointsForLayerAndPlayer(false);
+				document.getElementById("scan_container").style.overflow="scroll";
+				}
+				this.zoomInReady = false;
+			}else{
+				
+				this.isDrawing = true;
+				this.oldX = event.clientX-this.canvas.offsetLeft+3;
+				this.oldY = event.clientY-this.canvas.offsetTop+29;
+			}
+			
 		},
 		removeDuplicateElement: function(arrayName){
 		        var newArray=new Array();
@@ -288,7 +327,6 @@ components.drawing = function(){
 		},
 		drawLine: function(event) {
 			event.preventDefault();
-			
 			if(this.isDrawing && !this.locked) {
 				if(this.isErasing){
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
@@ -310,16 +348,16 @@ components.drawing = function(){
 						if(isVertical){
 							for (var ySubset = curY-2; ySubset < curY+2; ySubset++)
 								if(ySubset>0 && ySubset<this.canvas.height){
-									points[arrayPos] = {x: curX,
-										y: ySubset,
+									points[arrayPos] = {x: Math.floor(curX/this.zoom),
+										y:  Math.floor(ySubset/this.zoom),
 										layer: layer};
 									arrayPos++;
 								}
 						}else{
 							for (var xSubset = curX-2; xSubset < curX+2; xSubset++)
 								if(xSubset>0 && xSubset<this.canvas.width){
-									points[arrayPos] = {x: xSubset,
-										y: curY,
+									points[arrayPos] = {x:  Math.floor(xSubset/this.zoom),
+										y:  Math.floor(curY/this.zoom),
 										layer: layer};
 									arrayPos++;
 								}
@@ -352,16 +390,16 @@ components.drawing = function(){
 						if(isVertical){
 							for (var ySubset = curY-Math.floor(penWidth/2); ySubset < curY+penWidth-Math.floor(penWidth/2); ySubset++)
 								if(ySubset>0 && ySubset<this.canvas.height){
-									points[arrayPos] = {x: curX,
-										y: ySubset,
+									points[arrayPos] = {x:  Math.floor(curX/this.zoom),
+										y:  Math.floor(ySubset/this.zoom),
 										layer: layer};
 									arrayPos++;
 								}
 						}else{
 							for (var xSubset = curX-Math.floor(penWidth/2); xSubset < curX+penWidth-Math.floor(penWidth/2); xSubset++)
 								if(xSubset>0 && xSubset<this.canvas.width){
-									points[arrayPos] = {x: xSubset,
-										y: curY,
+									points[arrayPos] = {x:  Math.floor(xSubset/this.zoom),
+										y:  Math.floor(curY/this.zoom),
 										layer: layer};
 									arrayPos++;
 								}
@@ -437,22 +475,6 @@ components.drawing = function(){
 		},
 		resetDrawing: function (e){ //added to allow reset of entire drawing (clear all my points)
 			e.preventDefault();
-			
-				var points = new Array();
-				var arrayPos = 0;
-				for(var x = 0; x < this.canvas.width; x++)
-					for(var y = 0; y < this.canvas.height; y++){
-							points[arrayPos] = {x: x,
-									y: y,
-									layer: layer};
-									arrayPos++;
-						
-				}
-					this.erasePoint(points,this.ctxArr[me.id]);
-				//remote.pointErased(me.get('current_case_id'), me.id, points);
-			
-			
-			
 		},
 		teamTab: function (e){ // added to allow team tab clicking
 			e.preventDefault();
