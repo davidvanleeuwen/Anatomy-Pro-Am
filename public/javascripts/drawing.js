@@ -441,6 +441,7 @@ components.drawing = function(){
 		},
 		onlineTab: function (e){ //added to allow online tab clicking
 			e.preventDefault();
+			this.saveListState();
 			currentView = 1;
 			friendbar = new FriendBar();
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
@@ -449,11 +450,18 @@ components.drawing = function(){
 		},
 		friendsTab: function (e){
 			e.preventDefault();
+			this.saveListState();
 			currentView = 2;
 			friendBar = new FriendBar();
 			this.$('#friends_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
+		},
+		saveListState: function (e) {
+			listState = {}
+			online_friends.each (function (f){
+				listState[f.get ('id')] = {layer_enabled: f.get('layer_enabled')};
+			});
 		},
 		sendChat: function (e){
 			e.preventDefault();
