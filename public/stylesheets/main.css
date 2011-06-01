@@ -1007,6 +1007,7 @@ height:30px; width:30px;}
     /*min-width: 18px;
     min-height: 14px;*/
     padding: 2px 6px;
+    max-width: 140px;
     font: 11px Verdana;
     border-radius: 5px;
     margin: 0 0 -2px 0;
