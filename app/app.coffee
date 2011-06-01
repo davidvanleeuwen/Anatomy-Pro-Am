@@ -64,6 +64,8 @@ exports.createServer = (app) ->
 				emit.apply emit, ['setAllFriends', {payload:cb}]
 		@appRequest = (myid, yourid) ->
 			fbhelper.appRequest myid, yourid
+		@cursorPosition = (activity_id, player, layer, position) ->
+		  sessionManager.publish 'newCursorPosition', player, layer, position
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen {

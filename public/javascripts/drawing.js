@@ -32,15 +32,17 @@ components.drawing = function(){
 			"click #invite":"invite",
 			"click #dont_invite":"dontInvite",
 			'click #cursorTool':'cursorTool',
-			'mousemove': 'cursorMovement'
+			'mousemove #scan_container': 'cursorMovement'
 		},
 		initialize: function() {
 			window.dThis=this;
-			_.bindAll(this, 'render');
+			_.bindAll(this, 'render', 'newCursorPosition');
 			this.render();
 			this.locked = false;
 			this.chatExpanded = false;
+			this.cursorToolEnabled = false;
 			online_friends.bind('change', this.collectionChanged);
+			
 		},
 		render: function() {
 			if (view.computer) {
@@ -123,6 +125,8 @@ components.drawing = function(){
 			em.on('setChatHistory', this.setChatHistory);
 			em.on('newChat', this.receiveChat);
 			
+			em.on('newCursorPosition', this.newCursorPosition);
+			
 			/*********************************************/
 			
 			// fixtures for the images (scans):
@@ -152,6 +156,7 @@ components.drawing = function(){
 		  em.removeAllListeners('JoinRequest');
 		  em.removeAllListeners('setChatHistory');
 		  em.removeAllListeners('newChat');
+		  em.removeAllListeners('newCursorPosition');
 		},
 		canvasMerge: function() {
 			/*Function is presently not necessary
@@ -379,6 +384,11 @@ components.drawing = function(){
 		},
 		changeLayer: function(event) {
 			if($('.slider')[0].value != layer){
+			  // remove all cursors
+			  $('.cursors').each(function(i, el) {
+			    $(el).remove();
+			  });
+			  
 				layer = $('.slider')[0].value;
 				for(ctxKey in this.ctxArr){
 					//var imageData=this.ctxArr[ctxKey].getImageData(0, 0, this.canvas.width, this.canvas.height);
@@ -462,6 +472,7 @@ components.drawing = function(){
       var chatEl = $('#chat_window')[0];
       if(player_id != me.get('id')) {
         var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
+        $('#cursor_'+player_id+' .cursor_blob').html(message);
         $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
         chatEl.scrollTop = chatEl.scrollHeight;
       }
@@ -544,16 +555,43 @@ components.drawing = function(){
 		},
 		cursorTool: function(e) {
 		    e.preventDefault();
+		    this.cursorToolEnabled = !this.cursorToolEnabled;
+		    if(!this.cursorToolEnabled) {
+		      $('.cursors').each(function(i, el) {
+  			    $(el).remove();
+  			  });
+		    }
 		},
-		cursorMovement: function(e) {
-		  /*
-            _.throttle(function (e) {
-                console.log('yay');
-            }, 250));
-      */
-		},
-		sendCursorPosition: function() {
-		    console.log('yay');
+		cursorMovement: _.throttle(function(e) {
+		  remote.cursorPosition(me.get('current_case_id'), me.id, layer, {x: e.pageX, y: e.pageY});
+		}, 50),
+		newCursorPosition: function(player, current_layer, position) {
+		  if(player != me.id && current_layer == layer && this.cursorToolEnabled) {
+		    var offset = $('#scan_container').offset();
+		    if(position.x-6 >= offset.left && position.x-6 <= (offset.left+offset.width) && position.y+3 >= offset.top && position.y+3 <= (offset.top+offset.height)) {
+		      if($('#cursor_'+player).size() == 0) {
+		        $('#cursor_'+player).show();
+    		    $('#scan_container #images').after('<div class="cursors" id="cursor_'+player+'"><div class="cursor_blob">...</div><div class="cursor_arrow"></div></div>');
+    		    var color = online_friends.get(player).get('player_color');
+    		    $('#cursor_'+player).css({
+    		      top: (position.y+3)+'px',
+    		      left: (position.x-6)+'px'
+    		    }); 
+    		    $('#cursor_'+player+' .cursor_blob').css('background-color', '#'+color);
+    		    $('#cursor_'+player+' .cursor_arrow').css('border-top-color', '#'+color);
+    		  } else {
+    		    $('#cursor_'+player).show();
+    		    $('#cursor_'+player).css({
+    		      top: (position.y+3)+'px',
+    		      left: (position.x-6)+'px'
+    		    });
+    		  }
+		    } else {
+		      $('#cursor_'+player).hide();
+		    }
+		  } else {
+		    $('#cursor_'+player).hide();
+		  }
 		}
 	});
 };
