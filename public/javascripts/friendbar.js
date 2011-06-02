@@ -168,7 +168,6 @@ components.friendbar = function(){
 			$('#friends_tab').html('<a href=""><span>FRIENDS (' + all_online_friends.length +')</span></a>');
 		},
 		refreshFriends: function() {
-			console.log (online_friends)
 			$('#friends_container').html(this.bar_template());
 			var online = 0;
 			var onteam = 0;

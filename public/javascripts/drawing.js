@@ -91,6 +91,14 @@ components.drawing = function(){
 					this.colorPoint(points, online_friends.get(player_id).get('player_color'), this.ctxArr[player_id]);	
 				}
 			}.bind(this));
+			em.on('canvasCleared', function (player_id, player_layer) {
+				//this.ctxArr[ctxKey].clearRect(0, 0, this.canvas.width, this.canvas.height);
+				if (layer == player_layer){
+					if (this.ctxArr[player_id] != null && this.ctxArr[player_id] != undefined){
+						this.ctxArr[player_id].clearRect(0, 0, this.canvas.width, this.canvas.height);	
+					}
+				}
+			}.bind(this));
 			em.on('pointErased', function(player_id, points) {
 				this.erasePoint(points,this.ctxArr[player_id]);
 			}.bind(this));
@@ -430,6 +438,7 @@ components.drawing = function(){
 		},
 		resetDrawing: function (e){ //added to allow reset of entire drawing (clear all my points)
 			e.preventDefault();
+			remote.clearCanvas (me.get('current_case_id'), me.get('id'), layer);
 		},
 		teamTab: function (e){ // added to allow team tab clicking
 			e.preventDefault();

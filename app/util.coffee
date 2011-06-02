@@ -148,6 +148,8 @@ class ContouringActivity
 		@activityData.newPoint player_id, point
 	deletePoint: (player_id, point, callback) ->
 		return @activityData.removePoint player_id, point, callback
+	clearCanvas: (player_id, layer, callback) ->
+		return @activityData.clearCanvas player_id, layer, callback
 	getPointsForPlayer: (layer, player_id, callback) ->
 		return @activityData.getPointsForPlayer layer, player_id, callback
 	addChatMessage: (player_id, message) ->
@@ -174,6 +176,9 @@ class ContouringActivityData
 	removePoint: (player_id, point) ->
 		@redisClient.srem 'activity:'+@id+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err) ->
 			if err then console.log 'SISMEMBER error: ', err
+	clearCanvas: (player_id, layer, callback) ->
+		@redisClient.del 'activity:'+@id+':layer:'+layer+':player:'+player_id+':points', (err, data) ->
+			if err then console.log 'DEL error: ', err
 	getPointsForPlayer: (layer, player, callback) ->
 		@redisClient.smembers 'activity:'+@id+':layer:'+layer+':player:'+player+':points', (err, points) ->
 			if err then console.log 'SMEMBERS error: ', err
