@@ -44,6 +44,9 @@ exports.createServer = (app) ->
 			for point in points
 				activityManager.current[activity_id].deletePoint player_id, point
 			sessionManager.publish 'pointErased', player_id, points
+		@clearCanvas = (activity_id, player_id, layer) ->
+			activityManager.current[activity_id].clearCanvas player_id, layer
+			sessionManager.publish 'canvasCleared', player_id, layer
 		@getColoredPointsForThisLayerAndPlayer = (activity_id, requester_id, player, layer, emit) ->
 			activityManager.current[activity_id].getPointsForPlayer layer, player, (points) ->
 				emit.apply emit, ['setColoredPointsForThisLayer', {player: player, payload: points} ]

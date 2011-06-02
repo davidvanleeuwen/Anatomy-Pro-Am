@@ -1,6 +1,7 @@
 components.friendbar = function(){
 	console.log('loading friendbar');
 	window.invited = [];
+	window.listState = new resources.collections.Friends;
 	window.online_friends = new resources.collections.Friends;
 	window.all_online_friends = new resources.collections.Friends;
 	/*
@@ -32,9 +33,20 @@ components.friendbar = function(){
 			this.$('.fb_player').attr('id', this.model.get('id'));
 			this.$('.fb_player_img').attr('style', 'background: url(\'' + this.model.get('avatar')  + '\');');
 			this.$('.fb_player_name').text(this.model.get('name'));
-			if(this.model.get('id') == me.id || currentView == 1 || currentView == 2) {
+			var setVisible = false;
+			if(this.model.get('id') == me.id  || currentView == 1 || currentView == 2) {
+				setVisible = true;
+			}
+			if (listState != undefined && listState != null){	
+				if (listState[this.model.get('id')] != undefined && listState[this.model.get('id')] != null){
+					if (listState[this.model.get('id')].layer_enabled){
+						setVisible = true;
+					}
+				}
+			}
+			if (setVisible){
 				this.model.set({layer_enabled: true},{silent: true});
-				this.$('a').removeClass('invisible');
+				this.$('a').removeClass('invisible');	
 			}
 		},
 		remove: function() {
@@ -47,6 +59,7 @@ components.friendbar = function(){
 				if(window.dThis.ctxArr&&window.dThis.ctxArr[this.model.get('id')])	window.dThis.ctxArr[this.model.get('id')].clearRect(0, 0, window.dThis.canvas.width, window.dThis.canvas.height);
 				online_friends.each(function(friend){
 					if(friend.get('layer_enabled')){
+						online_friends.get(friend.get('id')).set({'layer_enabled': true},{silent: true});
 						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.id, layer, emit);
 					}
 				});
@@ -68,11 +81,8 @@ components.friendbar = function(){
 		}
 	});
 	em.on('setAllFriends', function (friendList){
-		console.log (friendList.payload);
 		all_online_friends = new resources.collections.Friends;
 		_.each(friendList.payload, function (friend){
-			console.log ("From Friends Receive");
-			console.log (friend);
 			n = friend.name.split(" ");
 			all_online_friends.add({
 				id: friend.uid,
@@ -147,23 +157,23 @@ components.friendbar = function(){
 		},
 		removeFriend: function(friend) {
 			friend.clear();
+			var online = 0;
+			var onteam = 0;
+			online_friends.each(function (friend){
+				if (friend.get('current_case_id') == me.get('current_case_id')){onteam++;}
+				if (friend.get('current_case_id') != me.get('current_case_id')){online++;}
+			});
 			$('#team_tab').html('<a href=""><span>TEAM (' + onteam +'/6)</span></a>');
-			
 			$('#online_tab').html('<a href=""><span>ONLINE (' + online +')</span></a>');
-			
 			$('#friends_tab').html('<a href=""><span>FRIENDS (' + all_online_friends.length +')</span></a>');
 		},
 		refreshFriends: function() {
 			$('#friends_container').html(this.bar_template());
 			var online = 0;
 			var onteam = 0;
-			var onlineFriends = 0;
 			if (currentView == 2){
-				
 				all_online_friends.each (function (friend){
 					window.friendbar.addFriend (friend);
-					console.log ("From Friend Loading");
-					console.log (friend);
 				});
 			}
 			online_friends.each(function (friend){
@@ -182,10 +192,9 @@ components.friendbar = function(){
 				}
 			});
 			$('#team_tab').html('<a href=""><span>TEAM (' + onteam +'/6)</span></a>');
-			
 			$('#online_tab').html('<a href=""><span>ONLINE (' + online +')</span></a>');
-			
 			$('#friends_tab').html('<a href=""><span>FRIENDS (' + all_online_friends.length +')</span></a>');
+			
 		}
  	});
 };

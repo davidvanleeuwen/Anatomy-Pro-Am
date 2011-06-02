@@ -95,6 +95,14 @@ components.drawing = function(){
 					this.colorPoint(points, online_friends.get(player_id).get('player_color'), this.ctxArr[player_id]);	
 				}
 			}.bind(this));
+			em.on('canvasCleared', function (player_id, player_layer) {
+				//this.ctxArr[ctxKey].clearRect(0, 0, this.canvas.width, this.canvas.height);
+				if (layer == player_layer){
+					if (this.ctxArr[player_id] != null && this.ctxArr[player_id] != undefined){
+						this.ctxArr[player_id].clearRect(0, 0, this.canvas.width, this.canvas.height);	
+					}
+				}
+			}.bind(this));
 			em.on('pointErased', function(player_id, points) {
 				this.erasePoint(points,this.ctxArr[player_id]);
 			}.bind(this));
@@ -513,9 +521,12 @@ components.drawing = function(){
 		},
 		resetDrawing: function (e){ //added to allow reset of entire drawing (clear all my points)
 			e.preventDefault();
+			remote.clearCanvas (me.get('current_case_id'), me.get('id'), layer);
 		},
 		teamTab: function (e){ // added to allow team tab clicking
-			e.preventDefault();
+			if (e != null && e != undefined){
+				e.preventDefault();
+			}
 			currentView = 0;
 			friendbar = new FriendBar();
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
@@ -524,6 +535,7 @@ components.drawing = function(){
 		},
 		onlineTab: function (e){ //added to allow online tab clicking
 			e.preventDefault();
+			this.saveListState();
 			currentView = 1;
 			friendbar = new FriendBar();
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
@@ -532,11 +544,18 @@ components.drawing = function(){
 		},
 		friendsTab: function (e){
 			e.preventDefault();
+			this.saveListState();
 			currentView = 2;
 			friendBar = new FriendBar();
 			this.$('#friends_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
+		},
+		saveListState: function (e) {
+			listState = {}
+			online_friends.each (function (f){
+				listState[f.get ('id')] = {layer_enabled: f.get('layer_enabled')};
+			});
 		},
 		sendChat: function (e){
 			e.preventDefault();

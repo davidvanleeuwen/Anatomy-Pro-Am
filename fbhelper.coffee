@@ -211,11 +211,12 @@ updateAllOnlineStatus = (UID, friends) ->
 setOnlineStatus = (dateTime, friend) ->
 	getUser friend.id, (cb) ->
 		dbPath = '/users/' + cb.info.facebook_user.id + '/facebook_user.json'
-		client.perform config.sql.fullHost + dbPath, "PUT", (res) ->
-			if res.response.body != undefined
-				a = 1 # this just satisfies the statement - 
-				#console.log JSON.parse res.response.body
-		,JSON.stringify dateTime	
+		if cb.error == 0
+			client.perform config.sql.fullHost + dbPath, "PUT", (res) ->
+				if res.response.body != undefined
+					a = 1 # this just satisfies the statement - 
+					#console.log JSON.parse res.response.body
+			,JSON.stringify dateTime	
 		
 getFriends = (uid, cb) ->
 	getUser uid, (back) ->
@@ -240,6 +241,9 @@ exports.getOnlineFriends = (uid, cb) ->
 		cb toReturn
 
 exports.appRequest = (myid, yourid) ->
+	#This function is not used right now.  App requests have to be sent from the webpage using the javascript api.
+	#This is unavoidable.
+	#However, this same format can be used to send wall posts with just a little modification.  So, i'll leave it.  
 	console.log myid, yourid
 	inviter = {}
 	invitee = {}
