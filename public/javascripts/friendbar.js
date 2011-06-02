@@ -3,6 +3,7 @@ components.friendbar = function(){
 	window.invited = [];
 	window.listState = new resources.collections.Friends;
 	window.online_friends = new resources.collections.Friends;
+	window.online_friends_page = 0;
 	window.all_online_friends = new resources.collections.Friends;
 	/*
 	Current View Values - changes depending on tabs pressed, which views the user wants to see
@@ -184,9 +185,13 @@ components.friendbar = function(){
 			$('#friends_container').html(this.bar_template());
 			var online = 0;
 			var onteam = 0;
+			var allfriends = 0;
 			if (currentView == 2){
 				all_online_friends.each (function (friend){
-					window.friendbar.addFriend (friend);
+					allfriends++;
+					if (allfriends <= 6){
+						window.friendbar.addFriend (friend);
+					}
 				});
 			}
 			online_friends.each(function (friend){
@@ -194,13 +199,17 @@ components.friendbar = function(){
 				if (friend.get('current_case_id') == me.get('current_case_id')){
 					onteam++;
 					if (currentView == 0){
-						window.friendbar.addFriend (friend);
+						if (onteam <= 6){
+							window.friendbar.addFriend (friend);
+						}
 					}
 				}
 				if (friend.get('current_case_id') != me.get('current_case_id')){
 					online++;
 					if (currentView == 1){
-						window.friendbar.addFriend (friend);
+						if (online <= 6){
+							window.friendbar.addFriend (friend);
+						}
 					}
 				}
 			});

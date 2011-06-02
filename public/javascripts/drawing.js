@@ -476,10 +476,12 @@ components.drawing = function(){
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 		},
 		saveListState: function (e) {
-			listState = {}
-			online_friends.each (function (f){
-				listState[f.get ('id')] = {layer_enabled: f.get('layer_enabled')};
-			});
+			if (currentView == 0){
+				listState = {}
+				online_friends.each (function (f){
+					listState[f.get ('id')] = {layer_enabled: f.get('layer_enabled')};
+				});
+			}
 		},
 		sendChat: function (e){
 			e.preventDefault();
