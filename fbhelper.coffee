@@ -211,13 +211,14 @@ updateAllOnlineStatus = (UID, friends) ->
 setOnlineStatus = (dateTime, friend) ->
 	getUser friend.id, (cb) ->
 		dbPath = '/users/' + cb.info.facebook_user.id + '/facebook_user.json'
-		if cb.error == 0
+		if cb.error == 0 or cb.error == 100
 			client.perform config.sql.fullHost + dbPath, "PUT", (res) ->
 				if res.response.body != undefined
-					a = 1 # this just satisfies the statement - 
-					#console.log JSON.parse res.response.body
+					console.log JSON.parse res.response.body
 			,JSON.stringify dateTime	
-		
+		else
+			console.log cb.error
+			
 getFriends = (uid, cb) ->
 	getUser uid, (back) ->
 		if back.error == 0

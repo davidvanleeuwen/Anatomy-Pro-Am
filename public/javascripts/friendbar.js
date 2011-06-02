@@ -42,6 +42,9 @@ components.friendbar = function(){
 					if (listState[this.model.get('id')].layer_enabled){
 						setVisible = true;
 					}
+					if (listState[this.model.get('id')].layer_enabled == false && this.model.get('id') == me.id){
+						setVisible = false;
+					}
 				}
 			}
 			if (setVisible){
