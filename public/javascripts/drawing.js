@@ -441,7 +441,9 @@ components.drawing = function(){
 			remote.clearCanvas (me.get('current_case_id'), me.get('id'), layer);
 		},
 		teamTab: function (e){ // added to allow team tab clicking
-			e.preventDefault();
+			if (e != null && e != undefined){
+				e.preventDefault();
+			}
 			currentView = 0;
 			friendbar = new FriendBar();
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');

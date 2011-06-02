@@ -40,7 +40,6 @@ exports.createServer = (app) ->
 			for point in points
 				activityManager.current[activity_id].createPoint player_id, point
 			sessionManager.publish 'pointColored', player_id, points
-			console.log points
 		@pointErased = (activity_id, player_id, points) ->
 			for point in points
 				activityManager.current[activity_id].deletePoint player_id, point

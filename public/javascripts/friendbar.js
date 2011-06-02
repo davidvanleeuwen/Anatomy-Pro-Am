@@ -194,6 +194,7 @@ components.friendbar = function(){
 			$('#team_tab').html('<a href=""><span>TEAM (' + onteam +'/6)</span></a>');
 			$('#online_tab').html('<a href=""><span>ONLINE (' + online +')</span></a>');
 			$('#friends_tab').html('<a href=""><span>FRIENDS (' + all_online_friends.length +')</span></a>');
+			
 		}
  	});
 };
