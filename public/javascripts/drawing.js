@@ -249,7 +249,35 @@ components.drawing = function(){
 		},
 		zoomIn: function(event){
 			event.preventDefault();
-			this.zoomInReady = true;
+			if(this.zoom == 1){
+				this.zoom = 2;
+				for(arrKey in this.ctxArr){
+					this.ctxArr[arrKey].scale(2.0,2.0);
+					this.ctxArr[arrKey].clearRect(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
+				}				
+				this.zoomXOffset = event.clientX-this.canvas.offsetLeft+3;
+				this.zoomYOffset = event.clientY-this.canvas.offsetTop+29;
+				this.getColorPointsForLayerAndPlayer(false);
+				
+				
+				//this.$('#scan_container').css('overflow', "scroll");
+				
+				
+				
+				//var halfHeight = Math.floor(this.$('#scan_container').attr('scrollHeight')/4);
+				//var halfWidth = Math.floor(this.$('#scan_container').attr('scrollWidth')/4);
+				
+				
+				
+				//this.$('#scan_container')[0].scrollTop = halfHeight;
+				//this.$('#scan_container')[0].scrollLeft = halfWidth;
+				
+				//this.$('#scan_container')[0].scrollTop = halfHeight;
+				//this.$('#scan_container')[0].scrollLeft = halfWidth;
+				
+				
+				}
+			
 		},
 		zoomOut: function(event){
 			event.preventDefault();
@@ -262,7 +290,9 @@ components.drawing = function(){
 				
 			}
 			
-			document.getElementById("scan_container").style.overflow="hidden";
+			//this.$('#scan_container')[0].scrollTop = 0;
+			//this.$('#scan_container')[0].scrollLeft = 0;
+			//this.$('#scan_container').css('overflow', "hidden");
 			this.getColorPointsForLayerAndPlayer(false);
 		},
 		cursorChangeIn: function(event) {
@@ -306,27 +336,12 @@ components.drawing = function(){
 		},
 		startLine: function(event) {
 			event.preventDefault();
-			if(this.zoomInReady){
-				if(this.zoom == 1){
-					this.zoom = 2;
-					for(arrKey in this.ctxArr){
-						this.ctxArr[arrKey].scale(2.0,2.0);
-						this.ctxArr[arrKey].clearRect(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
-					}
-				
-				
-				this.zoomXOffset = event.clientX-this.canvas.offsetLeft+3;
-				this.zoomYOffset = event.clientY-this.canvas.offsetTop+29;
-				this.getColorPointsForLayerAndPlayer(false);
-				document.getElementById("scan_container").style.overflow="scroll";
-				}
-				this.zoomInReady = false;
-			}else{
+			
 				
 				this.isDrawing = true;
 				this.oldX = event.clientX-this.canvas.offsetLeft+3;
 				this.oldY = event.clientY-this.canvas.offsetTop+29;
-			}
+			
 			
 		},
 		removeDuplicateElement: function(arrayName){
@@ -342,6 +357,10 @@ components.drawing = function(){
 		drawLine: function(event) {
 			event.preventDefault();
 			if(this.isDrawing && !this.locked) {
+				//var leftOffset = this.$('#scan_container')[0].scrollLeft/2;
+				//var topOffset = this.$('#scan_container')[0].scrollTop/2;
+				var leftOffset = 0;
+				var topOffset = 0;
 				if(this.isErasing){
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
 					var yvar = event.clientY-this.canvas.offsetTop+29;
@@ -362,16 +381,16 @@ components.drawing = function(){
 						if(isVertical){
 							for (var ySubset = curY-2; ySubset < curY+2; ySubset++)
 								if(ySubset>0 && ySubset<this.canvas.height){
-									points[arrayPos] = {x: Math.floor(curX/this.zoom),
-										y:  Math.floor(ySubset/this.zoom),
+									points[arrayPos] = {x: (Math.floor(curX/this.zoom)+leftOffset),
+										y:  (Math.floor(ySubset/this.zoom)+topOffset),
 										layer: layer};
 									arrayPos++;
 								}
 						}else{
 							for (var xSubset = curX-2; xSubset < curX+2; xSubset++)
 								if(xSubset>0 && xSubset<this.canvas.width){
-									points[arrayPos] = {x:  Math.floor(xSubset/this.zoom),
-										y:  Math.floor(curY/this.zoom),
+									points[arrayPos] = {x:  (Math.floor(xSubset/this.zoom)+leftOffset),
+										y: (Math.floor(curY/this.zoom)+topOffset),
 										layer: layer};
 									arrayPos++;
 								}
@@ -404,16 +423,16 @@ components.drawing = function(){
 						if(isVertical){
 							for (var ySubset = curY-Math.floor(penWidth/2); ySubset < curY+penWidth-Math.floor(penWidth/2); ySubset++)
 								if(ySubset>0 && ySubset<this.canvas.height){
-									points[arrayPos] = {x:  Math.floor(curX/this.zoom),
-										y:  Math.floor(ySubset/this.zoom),
+									points[arrayPos] = {x:  (Math.floor(curX/this.zoom)+leftOffset),
+										y:  (Math.floor(ySubset/this.zoom)+topOffset),
 										layer: layer};
 									arrayPos++;
 								}
 						}else{
 							for (var xSubset = curX-Math.floor(penWidth/2); xSubset < curX+penWidth-Math.floor(penWidth/2); xSubset++)
 								if(xSubset>0 && xSubset<this.canvas.width){
-									points[arrayPos] = {x:  Math.floor(xSubset/this.zoom),
-										y:  Math.floor(curY/this.zoom),
+									points[arrayPos] = {x:  (Math.floor(xSubset/this.zoom)+leftOffset),
+										y:  (Math.floor(curY/this.zoom)+topOffset),
 										layer: layer};
 									arrayPos++;
 								}
