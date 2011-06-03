@@ -1,6 +1,7 @@
 components.drawing = function(){
 	console.log('loaded drawing');
 	window.invitation = {};
+	window.pendingMessages = 0;
 	window.ComputerView = Backbone.View.extend({
 		el: $('#game'),
 		events: {
@@ -26,7 +27,7 @@ components.drawing = function(){
 			'click #undoTool': 'undoTool',
 			'click #send_chat':'sendChat',
 			'keyup #type':'sendChat',
-			"click #done": "done",
+			"click #done_button": "done",
 			"click #accept_invite":"pagerAcceptInvite",
 			"click #decline_invite":"pagerDeclineInvite",
 			"click #invite":"invite",
@@ -145,7 +146,7 @@ components.drawing = function(){
 			var counter = 0;
 			imageRefs.forEach(function(img){
 				var distance = (counter * 40);
-				var tickTemplate = '<div class="tick" style="padding-left:' + distance + 'px;">|</div>';
+				var tickTemplate = '<div class="tick" style="padding-left:' + distance + 'px;">' + (counter + 1) + '</div>';
 				this.$('#images').append('<img src="'+img+'" style="display: none;" />');
 				this.$('#tick_holder').append(tickTemplate);
 				counter++;
@@ -432,9 +433,16 @@ components.drawing = function(){
 		},
 		inviteFriends: function (e){ // added to allow invitation of friends
 			e.preventDefault();
+			FB.ui({method: 'apprequests',  message: me.get('name') + " needs your help with a tough case!", title: "Help!"});
 		},
 		hideDrawing: function (e){ //added to allow hiding of all drawings 
 			e.preventDefault();
+			online_friends.each(function(friend){
+				if (friend.get('layer_enabled')){
+					window.dThis.ctxArr[friend.get('id')].clearRect(0, 0, window.dThis.canvas.width, window.dThis.canvas.height);
+					friend.toggleVisibility();
+				}
+			});
 		},
 		resetDrawing: function (e){ //added to allow reset of entire drawing (clear all my points)
 			e.preventDefault();
@@ -469,10 +477,12 @@ components.drawing = function(){
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 		},
 		saveListState: function (e) {
-			listState = {}
-			online_friends.each (function (f){
-				listState[f.get ('id')] = {layer_enabled: f.get('layer_enabled')};
-			});
+			if (currentView == 0){
+				listState = {}
+				online_friends.each (function (f){
+					listState[f.get ('id')] = {layer_enabled: f.get('layer_enabled')};
+				});
+			}
 		},
 		sendChat: function (e){
 			e.preventDefault();
@@ -487,14 +497,28 @@ components.drawing = function(){
 			}
 		},
 		receiveChat: function(player_id, message) {
-      // should be fixed serverside - publish to other clients!
-      var chatEl = $('#chat_window')[0];
-      if(player_id != me.get('id')) {
-        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
-        $('#cursor_'+player_id+' .cursor_blob').html(message);
-        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
-        chatEl.scrollTop = chatEl.scrollHeight;
-      }
+     	 	// should be fixed serverside - publish to other clients!
+     	 	// 
+			var chatEl = $('#chat_window')[0];
+			console.log (dThis.chatExpanded);
+			if (!dThis.chatExpanded){
+				pendingMessages++;
+				console.log ('chat not expanded');
+				if ($('#chat_container').find('#chat_notification').size() == 0) {
+					console.log ('no chat window found');
+					this.chat_notification_template = _.template($('#chat_notification_template').html());
+					$('#chat_container').append(this.chat_notification_template());
+					$('#chat_notification').html('<p>' + pendingMessages + '</p>');
+				}else{
+					$('#chat_notification').html('<p>' + pendingMessages + '</p>');
+				}
+			}
+	      	if(player_id != me.get('id')) {
+		        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
+		        $('#cursor_'+player_id+' .cursor_blob').html(message);
+		        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
+		        chatEl.scrollTop = chatEl.scrollHeight;
+		      }
 		},
 		setChatHistory: function(data) {
 		  var chatEl = $('#chat_window')[0];
@@ -510,7 +534,7 @@ components.drawing = function(){
 			}else{	
 				this.$(".pager").hide();
 			}
-		}	,	
+		},	
 		pagerAcceptInvite: function (e){
 			e.preventDefault();
 			console.log ('received case id ' + invitation['case_id']);
@@ -523,6 +547,7 @@ components.drawing = function(){
 				}
 			});
 			this.removeAllListeners();
+			currentView = 0;
 			new ComputerView;
 		},
 		pagerDeclineInvite: function (e){
@@ -531,9 +556,12 @@ components.drawing = function(){
 		},
 		chatExpandRetract: function (e){
 			e.preventDefault();
+			console.log (this.chatExpanded);
 			this.chatExpanded = !this.chatExpanded;
 			if(this.chatExpanded){
 				this.$('#chat_container').attr('style', 'margin: 100px 0px 0px 0px');
+				pendingMessages = 0;
+				$('#chat_notification').remove();
 			}else{
 				this.$('#chat_container').attr('style', 'margin:100px 0px 0px -193px;');
 			}

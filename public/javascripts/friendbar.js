@@ -3,6 +3,7 @@ components.friendbar = function(){
 	window.invited = [];
 	window.listState = new resources.collections.Friends;
 	window.online_friends = new resources.collections.Friends;
+	window.online_friends_page = 0;
 	window.all_online_friends = new resources.collections.Friends;
 	/*
 	Current View Values - changes depending on tabs pressed, which views the user wants to see
@@ -29,7 +30,14 @@ components.friendbar = function(){
 		},
 		setContent: function() {
 			//console.log(this.$('fb_player_img').attr('style'));
-			this.$('.fb_player').attr('style', 'background-color: #' + this.model.get('player_color'));
+			// 
+			var onteam = 0;
+			online_friends.each(function(friend){if (friend.get('current_case_id') == me.get('current_case_id')){onteam++;}});
+			if (currentView == 1 && onteam > 5){
+				this.$('.fb_player').attr('style', 'background-color: #220000');
+			}else{
+					this.$('.fb_player').attr('style', 'background-color: #' + this.model.get('player_color'));
+			}
 			this.$('.fb_player').attr('id', this.model.get('id'));
 			this.$('.fb_player_img').attr('style', 'background: url(\'' + this.model.get('avatar')  + '\');');
 			this.$('.fb_player_name').text(this.model.get('name'));
@@ -41,6 +49,9 @@ components.friendbar = function(){
 				if (listState[this.model.get('id')] != undefined && listState[this.model.get('id')] != null){
 					if (listState[this.model.get('id')].layer_enabled){
 						setVisible = true;
+					}
+					if (listState[this.model.get('id')].layer_enabled == false && this.model.get('id') == me.id){
+						setVisible = false;
 					}
 				}
 			}
@@ -63,12 +74,18 @@ components.friendbar = function(){
 						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.id, layer, emit);
 					}
 				});
+				online_friends.each (function (f){
+					listState[f.get ('id')] = {layer_enabled: f.get('layer_enabled')};
+				});
 			}else{
 				if (currentView == 1){
-					this.invitePlayer(this.model);
+					var onteam = 0;
+					online_friends.each(function(friend){if (friend.get('current_case_id') == me.get('current_case_id')){onteam++;}});
+					if (onteam < 6){
+						this.invitePlayer(this.model);
+					}
 				}
 				if (currentView == 2){
-					//remote.appRequest(me.get('id'), this.model.get('id'));
 					FB.ui({method: 'apprequests', to: this.model.get('id'), message: me.get('name') + " needs your help with a tough case!", title: "Help!"});
 				}
 			}
@@ -163,7 +180,7 @@ components.friendbar = function(){
 				if (friend.get('current_case_id') == me.get('current_case_id')){onteam++;}
 				if (friend.get('current_case_id') != me.get('current_case_id')){online++;}
 			});
-			$('#team_tab').html('<a href=""><span>TEAM (' + onteam +'/6)</span></a>');
+			$('#team_tab').html('<a href=""><span>TEAM (' + onteam +')</span></a>');
 			$('#online_tab').html('<a href=""><span>ONLINE (' + online +')</span></a>');
 			$('#friends_tab').html('<a href=""><span>FRIENDS (' + all_online_friends.length +')</span></a>');
 		},
@@ -171,9 +188,13 @@ components.friendbar = function(){
 			$('#friends_container').html(this.bar_template());
 			var online = 0;
 			var onteam = 0;
+			var allfriends = 0;
 			if (currentView == 2){
 				all_online_friends.each (function (friend){
-					window.friendbar.addFriend (friend);
+					allfriends++;
+					if (allfriends <= 6){
+						window.friendbar.addFriend (friend);
+					}
 				});
 			}
 			online_friends.each(function (friend){
@@ -181,17 +202,21 @@ components.friendbar = function(){
 				if (friend.get('current_case_id') == me.get('current_case_id')){
 					onteam++;
 					if (currentView == 0){
-						window.friendbar.addFriend (friend);
+						if (onteam <= 6){
+							window.friendbar.addFriend (friend);
+						}
 					}
 				}
 				if (friend.get('current_case_id') != me.get('current_case_id')){
 					online++;
 					if (currentView == 1){
-						window.friendbar.addFriend (friend);
+						if (online <= 6){
+							window.friendbar.addFriend (friend);
+						}
 					}
 				}
 			});
-			$('#team_tab').html('<a href=""><span>TEAM (' + onteam +'/6)</span></a>');
+			$('#team_tab').html('<a href=""><span>TEAM (' + onteam +')</span></a>');
 			$('#online_tab').html('<a href=""><span>ONLINE (' + online +')</span></a>');
 			$('#friends_tab').html('<a href=""><span>FRIENDS (' + all_online_friends.length +')</span></a>');
 			
