@@ -8,7 +8,8 @@ $(function(){
 	window.AppView = Backbone.View.extend({
 		el: $('#game'),
 		events: {
-			'click .light_grey_gradient_text': 'startGame'
+			'click .light_grey_gradient_text': 'startGame',
+			'keyup #pass':'startGame',
 		},
 		initialize: function() {
 			_.bindAll(this, 'render');
@@ -22,8 +23,11 @@ $(function(){
 		startGame: function(e) {
 			e.preventDefault();
 			// change this to something global to destroy it
-			new CaseView;
-			//remote.login(document.myform.pword.value, emit);
+			
+			if(e.type == "click" || e.keyCode == 13) {
+				//new CaseView;
+				remote.login($('#pass').val(), emit);
+			}
 		}
 	});
 	if(AUTH_TOKEN != '') {

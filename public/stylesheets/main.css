@@ -799,6 +799,9 @@ height:30px; width:30px;}
 
 .tick {
 	position: absolute;
+    font-family:SteelfishRegular;
+    color:#000000;
+    font-size:15px;
 }
 
 #done_button{
@@ -809,6 +812,18 @@ height:30px; width:30px;}
 #slider_input{
 	float: left;
 	margin-right: 10px;
+}
+#layer_holder{
+	display:inline;
+	float: left;
+}
+#layer{
+	position: absolute;
+	right: 250px;
+	top: 440px;
+	font-family:SteelfishRegular;
+    color:#000000;
+    font-size:21px;
 }
                                                                                 /*footer container--*/
 

@@ -146,7 +146,7 @@ components.drawing = function(){
 			var counter = 0;
 			imageRefs.forEach(function(img){
 				var distance = (counter * 40);
-				var tickTemplate = '<div class="tick" style="padding-left:' + distance + 'px;">|</div>';
+				var tickTemplate = '<div class="tick" style="padding-left:' + distance + 'px;">' + (counter + 1) + '</div>';
 				this.$('#images').append('<img src="'+img+'" style="display: none;" />');
 				this.$('#tick_holder').append(tickTemplate);
 				counter++;
@@ -439,6 +439,7 @@ components.drawing = function(){
 			e.preventDefault();
 			online_friends.each(function(friend){
 				if (friend.get('layer_enabled')){
+					window.dThis.ctxArr[friend.get('id')].clearRect(0, 0, window.dThis.canvas.width, window.dThis.canvas.height);
 					friend.toggleVisibility();
 				}
 			});
