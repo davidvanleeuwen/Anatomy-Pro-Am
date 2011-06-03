@@ -212,9 +212,10 @@ setOnlineStatus = (dateTime, friend) ->
 	getUser friend.id, (cb) ->
 		dbPath = '/users/' + cb.info.facebook_user.id + '/facebook_user.json'
 		if cb.error == 0 or cb.error == 100
+			console.log cb
 			client.perform config.sql.fullHost + dbPath, "PUT", (res) ->
 				if res.response.body != undefined
-					console.log JSON.parse res.response.body
+					console.log res.response.body
 			,JSON.stringify dateTime	
 		else
 			console.log cb.error

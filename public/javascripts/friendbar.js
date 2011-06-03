@@ -33,7 +33,7 @@ components.friendbar = function(){
 			// 
 			var onteam = 0;
 			online_friends.each(function(friend){if (friend.get('current_case_id') == me.get('current_case_id')){onteam++;}});
-			if (currentView == 1 && onteam < 6){
+			if (currentView == 1 && onteam > 5){
 				this.$('.fb_player').attr('style', 'background-color: #220000');
 			}else{
 					this.$('.fb_player').attr('style', 'background-color: #' + this.model.get('player_color'));
@@ -69,13 +69,13 @@ components.friendbar = function(){
 				this.model.toggleVisibility();
 				if(window.dThis.ctxArr&&window.dThis.ctxArr[this.model.get('id')])	window.dThis.ctxArr[this.model.get('id')].clearRect(0, 0, window.dThis.canvas.width, window.dThis.canvas.height);
 				online_friends.each(function(friend){
+					if(friend.get('layer_enabled')){
 						online_friends.get(friend.get('id')).set({'layer_enabled': true},{silent: true});
-						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.id, layer, emit);if(friend.get('layer_enabled')){
-						listState = {}
-						online_friends.each (function (f){
-							listState[f.get ('id')] = {layer_enabled: f.get('layer_enabled')};
-						});
+						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.id, layer, emit);
 					}
+				});
+				online_friends.each (function (f){
+					listState[f.get ('id')] = {layer_enabled: f.get('layer_enabled')};
 				});
 			}else{
 				if (currentView == 1){
