@@ -69,9 +69,12 @@ components.friendbar = function(){
 				this.model.toggleVisibility();
 				if(window.dThis.ctxArr&&window.dThis.ctxArr[this.model.get('id')])	window.dThis.ctxArr[this.model.get('id')].clearRect(0, 0, window.dThis.canvas.width, window.dThis.canvas.height);
 				online_friends.each(function(friend){
-					if(friend.get('layer_enabled')){
 						online_friends.get(friend.get('id')).set({'layer_enabled': true},{silent: true});
-						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.id, layer, emit);
+						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.id, layer, emit);if(friend.get('layer_enabled')){
+						listState = {}
+						online_friends.each (function (f){
+							listState[f.get ('id')] = {layer_enabled: f.get('layer_enabled')};
+						});
 					}
 				});
 			}else{
