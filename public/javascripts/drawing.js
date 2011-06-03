@@ -514,11 +514,13 @@ components.drawing = function(){
 				}
 			}
 	      	if(player_id != me.get('id')) {
-		        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
-		        $('#cursor_'+player_id+' .cursor_blob').html(message);
-		        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
-		        chatEl.scrollTop = chatEl.scrollHeight;
-		      }
+				if (online_friends.get(player_id).get('current_case_id') == me.get('current_case_id')){
+			        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
+			        $('#cursor_'+player_id+' .cursor_blob').html(message);
+			        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
+			        chatEl.scrollTop = chatEl.scrollHeight;
+			      }
+			}
 		},
 		setChatHistory: function(data) {
 		  var chatEl = $('#chat_window')[0];
@@ -613,7 +615,7 @@ components.drawing = function(){
 		  remote.cursorPosition(me.get('current_case_id'), me.id, layer, {x: e.pageX, y: e.pageY});
 		}, 50),
 		newCursorPosition: function(player, current_layer, position) {
-		  if(player != me.id && current_layer == layer && this.cursorToolEnabled) {
+		  if(player != me.id && current_layer == layer && this.cursorToolEnabled && online_friends.get(player).get('current_case_id') == me.get('current_case_id')) {
 		    var offset = $('#scan_container').offset();
 		    if(position.x-6 >= offset.left && position.x-6 <= (offset.left+offset.width) && position.y+3 >= offset.top && position.y+3 <= (offset.top+offset.height)) {
 		      if($('#cursor_'+player).size() == 0) {

@@ -121,7 +121,8 @@ gatherInitLogin = (authToken, userID, getToken, cb) ->
 			cb {error: callback.error}
 	fbGetFriendsObject authToken, (callback) ->
 		if callback.data
-			addMyFriends callback.data, userID
+			addMyFriends callback.data, userID, (cb) ->
+				a = 1
 	
 fbGetFriendsObject = (authToken, callback) ->
 	graph = new fbgraph.GraphAPI authToken
@@ -143,7 +144,7 @@ fbGetMeObject = (authToken, callback) ->
 		else
 			callback {data: data}
 			
-addMyFriends = (d, myID) ->
+addMyFriends = (d, myID, cb) ->
 	updateAllOnlineStatus myID, d.data
 	Hash(d.data).forEach (friend) ->
 		addUserAsFriend myID, friend
@@ -229,6 +230,7 @@ getFriends = (uid, cb) ->
 				cb result
 
 exports.getOnlineFriends = (uid, cb) ->
+
 	getFriends uid, (callback) ->
 		toReturn = {}
 		date = new Date()
