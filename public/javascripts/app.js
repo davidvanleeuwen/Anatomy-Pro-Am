@@ -25,8 +25,8 @@ $(function(){
 			// change this to something global to destroy it
 			
 			if(e.type == "click" || e.keyCode == 13) {
-				//new CaseView;
-				remote.login($('#pass').val(), emit);
+				new CaseView;
+				//remote.login($('#pass').val(), emit);
 			}
 		}
 	});

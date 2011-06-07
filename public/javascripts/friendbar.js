@@ -199,6 +199,7 @@ components.friendbar = function(){
 			}
 			online_friends.each(function (friend){
 				
+					friend.set({layer_enabled: false},{silent: true});
 				if (friend.get('current_case_id') == me.get('current_case_id')){
 					onteam++;
 					if (currentView == 0){

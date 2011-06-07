@@ -41,7 +41,7 @@ components.drawing = function(){
 			this.render();
 			this.locked = false;
 			this.chatExpanded = false;
-			this.cursorToolEnabled = false;
+			this.cursorToolEnabled = true;
 			online_friends.bind('change', this.collectionChanged);
 			
 		},
@@ -414,11 +414,122 @@ components.drawing = function(){
 				this.getColorPointsForLayerAndPlayer(false);
 			}
 		},
-		done: function(event) {
-			event.preventDefault();
-			remote.done(me.id);
-			this.getColorPointsForLayerAndPlayer(true);
-		},
+		arrayMin: function(array) {
+					var curMin = array[0];
+					for(var c = 1; c < array.length; c++)
+						if(curMin > array[c])curMin = array[c];
+					return curMin;
+				},
+				bwcc: function(imageData){
+
+					//Bwconncomp old version
+					//Takes matrtix as input
+					//Returns label matrix with uniquely labeled regions 
+					var width = imageData.width;
+					var height = imageData.height;
+					var nextLabel = 0;
+					var pix = imageData.data;
+
+					var linked = new Array();
+					var typeMatrix = new Array();
+
+					for(var y = 0; y < height; y++){
+						//console.log("y and height is");
+						//console.log(y);
+						console.log(height);
+						for(var x = 0; x < width; x++){
+
+							 if((x>0 && y>0)
+							 && (pix[((y*(width*4)) + ((x-1)*4)) + 3]==pix[((y*(width*4)) + (x*4)) + 3])
+							 && (pix[(((y-1)*(width*4)) + (x*4)) + 3]==pix[((y*(width*4)) + (x*4)) + 3])
+							 && (typeMatrix[y*(width) + x-1] != typeMatrix[(y-1)*(width) + x])){
+								//console.log("here before crash1");
+								var mergeLinked = this.removeDuplicateElement(linked[typeMatrix[y*(width) + x-1]].concat(linked[typeMatrix[(y-1)*(width) + x]]));
+								linked[typeMatrix[y*(width) + (x-1)]]=mergeLinked;
+					            linked[typeMatrix[(y-1)*(width) + x]]=mergeLinked;
+					            typeMatrix[y*(width) + x] = Math.min(typeMatrix[y*(width) + (x-1)],typeMatrix[(y-1)*(width) + x]);
+					         }else if((x>0)
+					 		 && (pix[((y*(width*4)) + ((x-1)*4)) + 3]==pix[((y*(width*4)) + (x*4)) + 3])){
+								//console.log("here before crash2");
+								typeMatrix[y*(width) + x] = typeMatrix[y*(width) + (x-1)];
+					         }else if((y>0)
+					 		 && (pix[(((y-1)*(width*4)) + (x*4)) + 3]==pix[((y*(width*4)) + (x*4)) + 3])){
+								//console.log("here before crash3");
+								typeMatrix[y*(width) + x] = typeMatrix[(y-1)*(width) + x];
+					         }else{
+								//console.log("here before crash4");
+								linked[nextLabel] = [nextLabel];  
+								//if(nextLabel < 5) console.log(linked);
+					            typeMatrix[y*(width) + x]  = nextLabel;
+					            nextLabel = nextLabel + 1;
+					         }
+						}
+					}
+					//console.log("mad it here1");
+					//console.log(linked);
+					for(var y = 0; y < height; y++){
+						for(var x = 0; x < width; x++){
+							var temp = linked[typeMatrix[y*(width) + x]];
+							//console.log(typeMatrix[y*(width) + x]);
+							typeMatrix[y*(width) + x] = this.arrayMin(temp);
+
+							//console.log(linked[typeMatrix[y*(width) + x]].length );
+						}
+					}	
+					//console.log("now here");
+					//console.log(typeMatrix);
+					//console.log("even here");
+					return typeMatrix;
+				},
+				done: function(event) {
+					event.preventDefault();
+					remote.done(me.id);
+					this.getColorPointsForLayerAndPlayer(true);
+					if (this.locked == true){
+						var color = me.get('player_color');
+						var context = this.ctxArr[me.id];
+						var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+						var pix = imageData.data;
+						var redVal = (parseInt(color.substr(0,2),16));
+						var greenVal = (parseInt(color.substr(2,2),16));
+						var blueVal = (parseInt(color.substr(4,2),16));
+						var typeMatrix = this.bwcc(imageData);
+
+						//Replace former with latter
+
+						for(var y = 0; y < imageData.height; y++){
+							for(var x = 0; x < imageData.width; x++){
+								if(typeMatrix[y*(imageData.width) + x] == 0){
+									pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
+								}else{	
+										pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
+										pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
+										pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
+										pix[((y*(imageData.width*4)) + (x*4)) + 3]=100;
+								}
+							}
+						}
+						context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+						context.putImageData(imageData, 0, 0);
+
+						var scoreHit = 0;
+						//var goalArray;
+						var scoreMissed = 0;
+
+						for(var y = 0; y < imageData.height; y++){
+							for(var x = 0; x < imageData.width; x++){
+								if((x > (imageData.width/6) && x < (2*imageData.width/6))
+									&& (y > (imageData.height/6) && y < (2*imageData.height/6))){
+										if(pix[((y*(imageData.width*4)) + (x*4)) + 3]== 100){ scoreHit++;
+										}else{scoreMissed++;}
+								}
+							}
+						}
+
+						//alert("Your score " + scoreHit + " out of: " + (scoreHit+scoreMissed) + " or " + (100*scoreHit/(scoreHit+scoreMissed) + "%"));
+
+					}	
+				},
 		expandInfo: function (e) { //added to allow current case info roll down
 			e.preventDefault();
 			this.$('#current_info_container').show();
@@ -499,27 +610,27 @@ components.drawing = function(){
 		receiveChat: function(player_id, message) {
      	 	// should be fixed serverside - publish to other clients!
      	 	// 
-			var chatEl = $('#chat_window')[0];
-			console.log (dThis.chatExpanded);
-			if (!dThis.chatExpanded){
-				pendingMessages++;
-				console.log ('chat not expanded');
-				if ($('#chat_container').find('#chat_notification').size() == 0) {
-					console.log ('no chat window found');
-					this.chat_notification_template = _.template($('#chat_notification_template').html());
-					$('#chat_container').append(this.chat_notification_template());
-					$('#chat_notification').html('<p>' + pendingMessages + '</p>');
-				}else{
-					$('#chat_notification').html('<p>' + pendingMessages + '</p>');
+			if (online_friends.get(player_id).get('current_case_id') == me.get('current_case_id')){
+				var chatEl = $('#chat_window')[0];
+				console.log (dThis.chatExpanded);
+				if (!dThis.chatExpanded){
+					pendingMessages++;
+					console.log ('chat not expanded');
+					if ($('#chat_container').find('#chat_notification').size() == 0) {
+						console.log ('no chat window found');
+						this.chat_notification_template = _.template($('#chat_notification_template').html());
+						$('#chat_container').append(this.chat_notification_template());
+						$('#chat_notification').html('<p>' + pendingMessages + '</p>');
+					}else{
+						$('#chat_notification').html('<p>' + pendingMessages + '</p>');
+					}
 				}
-			}
-	      	if(player_id != me.get('id')) {
-				if (online_friends.get(player_id).get('current_case_id') == me.get('current_case_id')){
+		      	if(player_id != me.get('id')) {
 			        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
 			        $('#cursor_'+player_id+' .cursor_blob').html(message);
 			        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
 			        chatEl.scrollTop = chatEl.scrollHeight;
-			      }
+				}
 			}
 		},
 		setChatHistory: function(data) {
@@ -586,7 +697,7 @@ components.drawing = function(){
 				if(this.locked) {
 					$('#done_text').text('UNLOCK');
 					online_friends.each(function(friend){
-						if (!friend.get('layer_enabled')){
+						if (!friend.get('layer_enabled') && friend.get('current_case_id') == me.get('current_case_id')){
 							friend.toggleVisibility();
 							remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, friend.get('id'), layer, emit);
 						}
@@ -615,7 +726,7 @@ components.drawing = function(){
 		  remote.cursorPosition(me.get('current_case_id'), me.id, layer, {x: e.pageX, y: e.pageY});
 		}, 50),
 		newCursorPosition: function(player, current_layer, position) {
-		  if(player != me.id && current_layer == layer && this.cursorToolEnabled && online_friends.get(player).get('current_case_id') == me.get('current_case_id')) {
+		  if(player != me.id && current_layer == layer && online_friends.get(player).get('layer_enabled') && online_friends.get(player).get('current_case_id') == me.get('current_case_id')) {
 		    var offset = $('#scan_container').offset();
 		    if(position.x-6 >= offset.left && position.x-6 <= (offset.left+offset.width) && position.y+3 >= offset.top && position.y+3 <= (offset.top+offset.height)) {
 		      if($('#cursor_'+player).size() == 0) {

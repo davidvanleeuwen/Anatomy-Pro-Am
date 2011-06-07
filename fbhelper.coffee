@@ -13,6 +13,8 @@ storeUser = (userData, userCode) ->
 	##Will store user to DB.  
 	console.log 'store user'
 	addUser userData, (callback) ->
+		if userData.id == 1
+			console.log "storeuseasdfasdfr"
 		getUser userData.id, (cb) ->
 			if not cb.error
 				addOauthCredental cb.info.facebook_user.id, userCode, (callback) ->
@@ -148,15 +150,19 @@ addMyFriends = (d, myID, cb) ->
 	updateAllOnlineStatus myID, d.data
 	Hash(d.data).forEach (friend) ->
 		addUserAsFriend myID, friend
+	if myID == 1
+		console.log 'addmyfriends'
 	getUser myID, (getUserResult) ->
 		if not getUserResult.error
-			getFriends getUserResult.info.facebook_user.id, (friendsResult) ->
+			getFriends getUserResult.info.facebook_user.uid, (friendsResult) ->
 				#console.log friendsResult
 		else
 		 	console.log "This is from addMyFriends.getUser"
 			console.log getUserResult
 			
 getMyAuthCode = (uid, authResponse) ->
+	if uid == 1
+		console.log 'getmyauthcode'
 	getUser uid, (cb) ->
 		if cb.error == 0 or 100
 			userApps = cb.info.facebook_user.application_authorizations
@@ -166,6 +172,8 @@ getMyAuthCode = (uid, authResponse) ->
 					
 updateAllOnlineStatus = (UID, friends) ->
 	accessToken = ''
+	if UID == 1
+		console.log 'updateallonlineUID'
 	getUser UID, (cb) ->
 		if cb.error == 0 or 100
 			userApps = cb.info.facebook_user.application_authorizations
@@ -197,6 +205,7 @@ updateAllOnlineStatus = (UID, friends) ->
 								body = gunzip.inflate body, 'binary'
 								gzip.end
 							index = 0
+							console.log body
 							Hash(JSON.parse(body)).forEach (value) ->
 								friend = friends[index]
 								index++
@@ -208,8 +217,11 @@ updateAllOnlineStatus = (UID, friends) ->
 									setOnlineStatus outObject, friend
 						res.on 'error', (e) ->
 							console.log 'Error: ' + e
+						
 							
 setOnlineStatus = (dateTime, friend) ->
+	if friend.id == 1
+		console.log friend
 	getUser friend.id, (cb) ->
 		dbPath = '/users/' + cb.info.facebook_user.id + '/facebook_user.json'
 		if cb.error == 0 or cb.error == 100
@@ -222,10 +234,13 @@ setOnlineStatus = (dateTime, friend) ->
 			console.log cb.error
 			
 getFriends = (uid, cb) ->
+	if uid == 1
+		console.log 'getFriends'
 	getUser uid, (back) ->
 		if back.error == 0
 			dbPath = '/users/' + back.info.facebook_user.id + '/friends.json'
 			client.perform config.sql.fullHost + dbPath, "GET", (res) ->
+				console.log res
 				result = JSON.parse(res.response.body)
 				cb result
 
@@ -254,6 +269,7 @@ exports.appRequest = (myid, yourid) ->
 	method = 'apprequests'
 	title = 'We need your help!'
 	message = ""
+
 	getUser myid, (myInfo) ->
 		console.log myInfo
 		getUser yourid, (yourInfo) ->
@@ -284,6 +300,10 @@ associateFriend = (uid, friendID) ->
 	,postData
 
 addUser = (info, callback) ->
+	if info.id == 1
+		console.log 'add user'
+		console.log info
+		
 	getUser info.id, (cb) ->
 		if cb.error is 100 and info.first_name is not null
 			#this is set when the user exists, but they have invalid info.  This will then overwrite the user.  console.log 'get user response with error'
@@ -306,6 +326,7 @@ addUser = (info, callback) ->
 			console.log info.id + " " + info.name
 			postData = formatUser info
 			dbPath = '/facebook_users.json'
+			console.log postData
 			#client2 = new httpClient.httpclient
 			client.perform config.sql.fullHost + dbPath, "POST", (resp) -> 
 				result = {}
@@ -322,6 +343,8 @@ addUser = (info, callback) ->
 
 addUserAsFriend = (playerID, friendInfo) ->
 	myID = ''
+	if playerID == 1
+		console.log 'add user as friend'
 	getUser playerID, (cb) ->
 		myID = cb.info.facebook_user.id
 		addUser friendInfo, (cb) ->
@@ -330,6 +353,7 @@ addUserAsFriend = (playerID, friendInfo) ->
 				associateFriend myID, cb.info.facebook_user.id
 
 getUser = (fbid, cb) ->
+		
 	dbPath = '/facebook_users/uid/' + fbid + '.json'
 	#client = new httpClient.httpclient
 	client.perform config.sql.fullHost + dbPath, "GET", (res) -> 
