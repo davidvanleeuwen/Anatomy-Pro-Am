@@ -147,6 +147,7 @@ components.drawing = function(){
 			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 40));
 			
 			
+			
 			var counter = 0;
 			imageRefs.forEach(function(img){
 				var distance = (counter * 40);
@@ -269,20 +270,33 @@ components.drawing = function(){
 				this.getColorPointsForLayerAndPlayer(false);
 				
 				
-				//this.$('#scan_container').css('overflow', "scroll");
+				this.$('#scan_container').css('overflow', "scroll");
 				
 				
 				
-				//var halfHeight = Math.floor(this.$('#scan_container').attr('scrollHeight')/4);
-				//var halfWidth = Math.floor(this.$('#scan_container').attr('scrollWidth')/4);
+				var halfHeight = Math.floor(this.$('#scan_container').attr('scrollHeight')/4);
+				var halfWidth = Math.floor(this.$('#scan_container').attr('scrollWidth')/4);
+				
+				
+				//console.log("test time");
+				//console.log(layers);
+				//console.log("lets go!");
 				
 				
 				
-				//this.$('#scan_container')[0].scrollTop = halfHeight;
-				//this.$('#scan_container')[0].scrollLeft = halfWidth;
+				for(arrKey in layers){
+					layers[arrKey].height *= 2;
+					
+					//layers[arrKey].width *= 2;
+					
+				}
+				//console.log(this.$('#images')[0]);
+				this.$('#images')[0].style.left=80;
+				this.$('#scan_container')[0].scrollTop = halfHeight;
+				this.$('#scan_container')[0].scrollLeft = halfWidth;
 				
-				//this.$('#scan_container')[0].scrollTop = halfHeight;
-				//this.$('#scan_container')[0].scrollLeft = halfWidth;
+				this.$('#scan_container')[0].scrollTop = halfHeight;
+				this.$('#scan_container')[0].scrollLeft = halfWidth;
 				
 				
 				}
@@ -296,12 +310,21 @@ components.drawing = function(){
 					this.ctxArr[arrKey].clearRect(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
 				}
 				this.zoom = 1;
+			
+				for(arrKey in layers){
+					layers[arrKey].height /= 2;
+					
+				}
+				
+				this.$('#images')[0].style.left=0;
+				
 				
 			}
 			
-			//this.$('#scan_container')[0].scrollTop = 0;
-			//this.$('#scan_container')[0].scrollLeft = 0;
-			//this.$('#scan_container').css('overflow', "hidden");
+			this.$('#images')[0].style.left=40;
+			this.$('#scan_container')[0].scrollTop = 0;
+			this.$('#scan_container')[0].scrollLeft = 0;
+			this.$('#scan_container').css('overflow', "hidden");
 			this.getColorPointsForLayerAndPlayer(false);
 		},
 		cursorChangeIn: function(event) {
@@ -366,10 +389,10 @@ components.drawing = function(){
 		drawLine: function(event) {
 			event.preventDefault();
 			if(this.isDrawing && !this.locked) {
-				//var leftOffset = this.$('#scan_container')[0].scrollLeft/2;
-				//var topOffset = this.$('#scan_container')[0].scrollTop/2;
-				var leftOffset = 0;
-				var topOffset = 0;
+				var leftOffset = Math.floor(this.$('#scan_container')[0].scrollLeft/2);
+				var topOffset = Math.floor(this.$('#scan_container')[0].scrollTop/2);
+				//var leftOffset = 0;
+				//var topOffset = 0;
 				if(this.isErasing){
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
 					var yvar = event.clientY-this.canvas.offsetTop+29;
@@ -483,7 +506,6 @@ components.drawing = function(){
 			  
 				layer = $('.slider')[0].value;
 				for(ctxKey in this.ctxArr){
-					//var imageData=this.ctxArr[ctxKey].getImageData(0, 0, this.canvas.width, this.canvas.height);
 					this.ctxArr[ctxKey].clearRect(0, 0, this.canvas.width, this.canvas.height);
 				}
 				layers.each(function(n, el){
