@@ -82,12 +82,22 @@ components.drawing = function(){
 			/* Retreive chat messages */
 			remote.getChatHistoryForActivity(me.get('current_case_id'), emit);
 			
+			/* Retrieve my color */
+			remote.getColor(me.get('current_case_id'), me.get('id'), emit);
 			
 			/*********************************************
 			*               Event listeners              *
 			**********************************************/
 			
-			em.on('pointColored', function(player_id, points) {
+			em.on('setColor', function (color){
+				console.log (color);
+				me.set({player_color:color.payload},{silent: true});
+				online_friends.get(me.get('id')).set({player_color:color.payload},{silent: true});
+				console.log (me);
+				console.log (online_friends.get(me.get('id')));
+				online_friends.fetch();
+			});
+			em.on('pointColored', function (player_id, points) {
 				if (online_friends.get(player_id).get('layer_enabled')){
 					this.colorPoint(points, online_friends.get(player_id).get('player_color'), this.ctxArr[player_id]);	
 				}
