@@ -33,12 +33,15 @@ components.drawing = function(){
 			"click #invite":"invite",
 			"click #dont_invite":"dontInvite",
 			'click #cursorTool':'cursorTool',
+			'click #zoomInTool':'zoomIn',
+			'click #zoomOutTool':'zoomOut',
 			'mousemove #scan_container': 'cursorMovement'
 		},
 		initialize: function() {
 			window.dThis=this;
 			_.bindAll(this, 'render', 'newCursorPosition');
 			this.render();
+			this.zoom = 1;
 			this.locked = false;
 			this.chatExpanded = false;
 			this.cursorToolEnabled = false;
@@ -55,6 +58,7 @@ components.drawing = function(){
 					this.el.html('');
 					view.computer = t;
 					this.el.html(view.computer);
+			
 					this.setupView();
 				}.bind(this));
 			}
@@ -143,6 +147,7 @@ components.drawing = function(){
 			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 40));
 			
 			
+			
 			var counter = 0;
 			imageRefs.forEach(function(img){
 				var distance = (counter * 40);
@@ -206,7 +211,7 @@ components.drawing = function(){
 			new CaseView;
 		},
 		colorPoint: function(points, color, context) {
-			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+			var imageData=context.getImageData(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
 			var pix = imageData.data;
 			var redVal = (parseInt(color.substr(0,2),16));
 			var greenVal = (parseInt(color.substr(2,2),16));
@@ -218,17 +223,109 @@ components.drawing = function(){
 				var slide = point.layer;
 				if(layer == slide) {
 					if(x>0&&y>0){
-						pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
-						pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
-						pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
-						pix[((y*(imageData.width*4)) + (x*4)) + 3]=255;
-						
+						if(this.zoom == 1){
+							pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
+							pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
+							pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
+							pix[((y*(imageData.width*4)) + (x*4)) + 3]=255;
+						}else if(this.zoom == 2){
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+0)*4)) + 0]=redVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+0)*4)) + 1]=greenVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+0)*4)) + 2]=blueVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+0)*4)) + 3]=255;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+1)*4)) + 0]=redVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+1)*4)) + 1]=greenVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+1)*4)) + 2]=blueVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+1)*4)) + 3]=255;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+0)*4)) + 0]=redVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+0)*4)) + 1]=greenVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+0)*4)) + 2]=blueVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+0)*4)) + 3]=255;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 0]=redVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 1]=greenVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 2]=blueVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 3]=255;
+							
+							
+							
+							
+						}
 						
 					}
 				}
 			}
 			context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			context.putImageData(imageData, 0, 0);
+		},
+		zoomIn: function(event){
+			event.preventDefault();
+			if(this.zoom == 1){
+				this.zoom = 2;
+				for(arrKey in this.ctxArr){
+					this.ctxArr[arrKey].scale(2.0,2.0);
+					this.ctxArr[arrKey].clearRect(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
+				}				
+				this.zoomXOffset = event.clientX-this.canvas.offsetLeft+3;
+				this.zoomYOffset = event.clientY-this.canvas.offsetTop+29;
+				this.getColorPointsForLayerAndPlayer(false);
+				
+				
+				this.$('#scan_container').css('overflow', "scroll");
+				
+				
+				
+				var halfHeight = Math.floor(this.$('#scan_container').attr('scrollHeight')/4);
+				var halfWidth = Math.floor(this.$('#scan_container').attr('scrollWidth')/4);
+				
+				
+				//console.log("test time");
+				//console.log(layers);
+				//console.log("lets go!");
+				
+				
+				
+				for(arrKey in layers){
+					layers[arrKey].height *= 2;
+					
+					//layers[arrKey].width *= 2;
+					
+				}
+				//console.log(this.$('#images')[0]);
+				this.$('#images')[0].style.left=80;
+				this.$('#scan_container')[0].scrollTop = halfHeight;
+				this.$('#scan_container')[0].scrollLeft = halfWidth;
+				
+				this.$('#scan_container')[0].scrollTop = halfHeight;
+				this.$('#scan_container')[0].scrollLeft = halfWidth;
+				
+				
+				}
+			
+		},
+		zoomOut: function(event){
+			event.preventDefault();
+			if(this.zoom == 2){
+				for(arrKey in this.ctxArr){
+					this.ctxArr[arrKey].scale(.5,.5);
+					this.ctxArr[arrKey].clearRect(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
+				}
+				this.zoom = 1;
+			
+				for(arrKey in layers){
+					layers[arrKey].height /= 2;
+					
+				}
+				
+				this.$('#images')[0].style.left=0;
+				
+				
+			}
+			
+			this.$('#images')[0].style.left=40;
+			this.$('#scan_container')[0].scrollTop = 0;
+			this.$('#scan_container')[0].scrollLeft = 0;
+			this.$('#scan_container').css('overflow', "hidden");
+			this.getColorPointsForLayerAndPlayer(false);
 		},
 		cursorChangeIn: function(event) {
 			
@@ -254,6 +351,7 @@ components.drawing = function(){
 				if(layer == slide) {
 					
 					if(x>0&&y>0){
+						
 						pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
 					}
 					// Draw the ImageData at the given (x,y) coordinates.
@@ -270,9 +368,13 @@ components.drawing = function(){
 		},
 		startLine: function(event) {
 			event.preventDefault();
-			this.isDrawing = true;
-			this.oldX = event.clientX-this.canvas.offsetLeft+3;
-			this.oldY = event.clientY-this.canvas.offsetTop+29;
+			
+				
+				this.isDrawing = true;
+				this.oldX = event.clientX-this.canvas.offsetLeft+3;
+				this.oldY = event.clientY-this.canvas.offsetTop+29;
+			
+			
 		},
 		removeDuplicateElement: function(arrayName){
 		        var newArray=new Array();
@@ -287,6 +389,10 @@ components.drawing = function(){
 		drawLine: function(event) {
 			event.preventDefault();
 			if(this.isDrawing && !this.locked) {
+				var leftOffset = Math.floor(this.$('#scan_container')[0].scrollLeft/2);
+				var topOffset = Math.floor(this.$('#scan_container')[0].scrollTop/2);
+				//var leftOffset = 0;
+				//var topOffset = 0;
 				if(this.isErasing){
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
 					var yvar = event.clientY-this.canvas.offsetTop+29;
@@ -307,16 +413,16 @@ components.drawing = function(){
 						if(isVertical){
 							for (var ySubset = curY-2; ySubset < curY+2; ySubset++)
 								if(ySubset>0 && ySubset<this.canvas.height){
-									points[arrayPos] = {x: curX,
-										y: ySubset,
+									points[arrayPos] = {x: (Math.floor(curX/this.zoom)+leftOffset),
+										y:  (Math.floor(ySubset/this.zoom)+topOffset),
 										layer: layer};
 									arrayPos++;
 								}
 						}else{
 							for (var xSubset = curX-2; xSubset < curX+2; xSubset++)
 								if(xSubset>0 && xSubset<this.canvas.width){
-									points[arrayPos] = {x: xSubset,
-										y: curY,
+									points[arrayPos] = {x:  (Math.floor(xSubset/this.zoom)+leftOffset),
+										y: (Math.floor(curY/this.zoom)+topOffset),
 										layer: layer};
 									arrayPos++;
 								}
@@ -349,16 +455,16 @@ components.drawing = function(){
 						if(isVertical){
 							for (var ySubset = curY-Math.floor(penWidth/2); ySubset < curY+penWidth-Math.floor(penWidth/2); ySubset++)
 								if(ySubset>0 && ySubset<this.canvas.height){
-									points[arrayPos] = {x: curX,
-										y: ySubset,
+									points[arrayPos] = {x:  (Math.floor(curX/this.zoom)+leftOffset),
+										y:  (Math.floor(ySubset/this.zoom)+topOffset),
 										layer: layer};
 									arrayPos++;
 								}
 						}else{
 							for (var xSubset = curX-Math.floor(penWidth/2); xSubset < curX+penWidth-Math.floor(penWidth/2); xSubset++)
 								if(xSubset>0 && xSubset<this.canvas.width){
-									points[arrayPos] = {x: xSubset,
-										y: curY,
+									points[arrayPos] = {x:  (Math.floor(xSubset/this.zoom)+leftOffset),
+										y:  (Math.floor(curY/this.zoom)+topOffset),
 										layer: layer};
 									arrayPos++;
 								}
@@ -400,7 +506,6 @@ components.drawing = function(){
 			  
 				layer = $('.slider')[0].value;
 				for(ctxKey in this.ctxArr){
-					//var imageData=this.ctxArr[ctxKey].getImageData(0, 0, this.canvas.width, this.canvas.height);
 					this.ctxArr[ctxKey].clearRect(0, 0, this.canvas.width, this.canvas.height);
 				}
 				layers.each(function(n, el){
@@ -414,10 +519,120 @@ components.drawing = function(){
 				this.getColorPointsForLayerAndPlayer(false);
 			}
 		},
+		arrayMin: function(array) {
+			var curMin = array[0];
+			for(var c = 1; c < array.length; c++)
+				if(curMin > array[c])curMin = array[c];
+			return curMin;
+		},
+		bwcc: function(imageData){
+			
+			//Bwconncomp old version
+			//Takes matrtix as input
+			//Returns label matrix with uniquely labeled regions 
+			var width = imageData.width;
+			var height = imageData.height;
+			var nextLabel = 0;
+			var pix = imageData.data;
+			
+			var linked = new Array();
+			var typeMatrix = new Array();
+			
+			for(var y = 0; y < height; y++){
+				//console.log("y and height is");
+				//console.log(y);
+				console.log(height);
+				for(var x = 0; x < width; x++){
+					
+					 if((x>0 && y>0)
+					 && (pix[((y*(width*4)) + ((x-1)*4)) + 3]==pix[((y*(width*4)) + (x*4)) + 3])
+					 && (pix[(((y-1)*(width*4)) + (x*4)) + 3]==pix[((y*(width*4)) + (x*4)) + 3])
+					 && (typeMatrix[y*(width) + x-1] != typeMatrix[(y-1)*(width) + x])){
+						//console.log("here before crash1");
+						var mergeLinked = this.removeDuplicateElement(linked[typeMatrix[y*(width) + x-1]].concat(linked[typeMatrix[(y-1)*(width) + x]]));
+						linked[typeMatrix[y*(width) + (x-1)]]=mergeLinked;
+			            linked[typeMatrix[(y-1)*(width) + x]]=mergeLinked;
+			            typeMatrix[y*(width) + x] = Math.min(typeMatrix[y*(width) + (x-1)],typeMatrix[(y-1)*(width) + x]);
+			         }else if((x>0)
+			 		 && (pix[((y*(width*4)) + ((x-1)*4)) + 3]==pix[((y*(width*4)) + (x*4)) + 3])){
+						//console.log("here before crash2");
+						typeMatrix[y*(width) + x] = typeMatrix[y*(width) + (x-1)];
+			         }else if((y>0)
+			 		 && (pix[(((y-1)*(width*4)) + (x*4)) + 3]==pix[((y*(width*4)) + (x*4)) + 3])){
+						//console.log("here before crash3");
+						typeMatrix[y*(width) + x] = typeMatrix[(y-1)*(width) + x];
+			         }else{
+						//console.log("here before crash4");
+						linked[nextLabel] = [nextLabel];  
+						//if(nextLabel < 5) console.log(linked);
+			            typeMatrix[y*(width) + x]  = nextLabel;
+			            nextLabel = nextLabel + 1;
+			         }
+				}
+			}
+			//console.log("mad it here1");
+			//console.log(linked);
+			for(var y = 0; y < height; y++){
+				for(var x = 0; x < width; x++){
+					var temp = linked[typeMatrix[y*(width) + x]];
+					//console.log(typeMatrix[y*(width) + x]);
+					typeMatrix[y*(width) + x] = this.arrayMin(temp);
+					
+					//console.log(linked[typeMatrix[y*(width) + x]].length );
+				}
+			}	
+			//console.log("now here");
+			//console.log(typeMatrix);
+			//console.log("even here");
+			return typeMatrix;
+		},
 		done: function(event) {
 			event.preventDefault();
-			remote.done(me.id);
-			this.getColorPointsForLayerAndPlayer(true);
+			//alert("ok here");
+			//remote.done(me.id);
+			var color = me.get('player_color');
+			var context = this.ctxArr[me.id];
+			var imageData=context.getImageData(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
+			var pix = imageData.data;
+			var redVal = (parseInt(color.substr(0,2),16));
+			var greenVal = (parseInt(color.substr(2,2),16));
+			var blueVal = (parseInt(color.substr(4,2),16));
+			var typeMatrix = this.bwcc(imageData);
+			
+			//Replace former with latter
+			
+			for(var y = 0; y < imageData.height; y++){
+				for(var x = 0; x < imageData.width; x++){
+					if(typeMatrix[y*(imageData.width) + x] == 0){
+						pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
+					}else{	
+							pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
+							pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
+							pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
+							pix[((y*(imageData.width*4)) + (x*4)) + 3]=100;
+					}
+				}
+			}
+			context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+			context.putImageData(imageData, 0, 0);
+			
+			var scoreHit = 0;
+			//var goalArray;
+			var scoreMissed = 0;
+			
+			for(var y = 0; y < imageData.height; y++){
+				for(var x = 0; x < imageData.width; x++){
+					if((x > (imageData.width/6) && x < (2*imageData.width/6))
+						&& (y > (imageData.height/6) && y < (2*imageData.height/6))){
+							if(pix[((y*(imageData.width*4)) + (x*4)) + 3]== 100){ scoreHit++;
+							}else{scoreMissed++;}
+					}
+				}
+			}
+			
+			alert("Your score " + scoreHit + " out of: " + (scoreHit+scoreMissed) + " or " + (100*scoreHit/(scoreHit+scoreMissed) + "%"));
+			
+			//this.getColorPointsForLayerAndPlayer(true);
 		},
 		expandInfo: function (e) { //added to allow current case info roll down
 			e.preventDefault();
