@@ -109,6 +109,13 @@ color:#d20000;}
     
 
 /* ---------------------------------------------------------------------------------------------------------------------------------CASES */
+#coming_soon {
+	position:absolute;
+	z-index: 100;
+	margin: 150px 150px 150px 300px;
+	display:none;
+}
+
 #case_container{width:550px; float:left; margin:40px 0 0 40px; padding:5px;
                     }
 .case:hover{background:#e8e8e8;}
@@ -1085,11 +1092,6 @@ s
     100%{left:5px;}
 
 }
-
-
-
-
-
 
 
 
