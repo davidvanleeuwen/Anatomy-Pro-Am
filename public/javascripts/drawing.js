@@ -89,6 +89,10 @@ components.drawing = function(){
 			*               Event listeners              *
 			**********************************************/
 			
+			em.on('playerLeft', function (player_id){
+				online_friends.fetch();
+			});
+			
 			em.on('setColor', function (color){
 				console.log (color);
 				me.set({player_color:color.payload},{silent: true});
@@ -212,6 +216,8 @@ components.drawing = function(){
 		},
 		goBack: function(e) {
 			e.preventDefault();
+			remote.leftActivity (me.get('current_case_id'), me);
+			me.set({current_case_id:0},{silent:true});
 			delete this;
 			new CaseView;
 		},

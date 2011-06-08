@@ -144,6 +144,8 @@ class ContouringActivity
 		@caseID = case_id
 	addPlayer: (player) ->
 		@players[player.id] = player
+	removePlayer: (player) ->
+		@players[player] = null
 	getPlayers: (player) ->
 		return @players
 	createPoint: (player_id, point) ->

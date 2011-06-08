@@ -53,7 +53,7 @@ exports.createServer = (app) ->
 		@done = (player_id) -> 
 		    #yes, this is empty for now - it is connected to the done button in the computer view and will be used eventually
 		@joinActivity = (activity_id, player) ->
-			activityManager.current[activity_id].addPlayer(activity_id, player)
+			activityManager.current[activity_id].addPlayer(player)
 			sessionManager.setActivity player, activity_id
 			sessionManager.publish 'PlayerStartedCase', player, activity_id
 		@sendChat = (activity_id, player_id, message) ->
@@ -74,6 +74,11 @@ exports.createServer = (app) ->
 				console.log color
 				sessionManager.sessions_for_facebook_id[player_id].fbUser.player_color = color
 				emit.apply emit, ['setColor', {payload:color}]
+		@leftActivity = (activity_id, player) ->
+			activityManager.current[activity_id].removePlayer(player.id);
+			sessionManager.setActivity player, 0
+			sessionManager.publish 'playerLeft', player
+			
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen {
