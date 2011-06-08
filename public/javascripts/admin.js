@@ -1,5 +1,8 @@
+
 components.adminView = function(){
 	console.log('loading adminView');
+	window.allUsers = new resources.collections.Friends;
+	window.rooms = {};
 	window.AdminView = Backbone.View.extend({
 		el: $('#game'),
 		events: {
@@ -59,8 +62,29 @@ components.adminView = function(){
 			console.log (fbUser);
 			$('#adminWindow').append ('<p>Player Left Case</p>');
 			$('#adminWindow').append (JSON.stringify(fbUser));
+		}
+	});
+	window.RoomView = Backbone.View.extend({
+		el: '#adminWindow',
+		initialize: function(){
+			this.room_left_template = _.template($('#left_column_template').html());
+			this.room_right_template = _.template($('#right_column_template').html());
+			this.player_info_template = _.template($('#player_info_template').html());
+			this.select_template = _.template($('#select_template').html());
+			_.bindAll(this, 'refresh', 'render');
+			allUsers.bind('add', this.refresh);
+			allUsers.bind('remove', this.refresh);
+			allUsers.bind('refresh', this.refresh);
+			allUsers.bind('change', this.refresh);
+			allUsers.fetch();
+		},
+		render: function(){
+			if (window.rooms.length % 2 == 0){
+				
+			}
+		},
+		refresh: function(){
 			
 		}
-		
 	});
 };

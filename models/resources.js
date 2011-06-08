@@ -37,6 +37,7 @@ resources.models.Player = Backbone.Model.extend({
 });
 
 
+
 resources.models.Person = Backbone.Model.extend({
 	defaults: {
 		id: 0,
