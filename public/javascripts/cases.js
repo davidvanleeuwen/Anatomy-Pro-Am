@@ -3,9 +3,12 @@ components.cases = function(){
 	window.CaseView = Backbone.View.extend({
 		el: $('#game'),
 		events: {
-			'click .light_grey_gradient_text': 'selectCase',
+			'click #case1': 'selectCase',
+			'click #case2': 'selectCase',
+			'click #coming_soon_button': 'closeComingSoon',
 			"click #accept_invite":"pagerAcceptInvite",
-			"click #decline_invite":"pagerDeclineInvite"
+			"click #decline_invite":"pagerDeclineInvite",
+			"click .coming_soon_trigger":"openComingSoon"
 		},
 		initialize: function() {
 			_.bindAll(this, 'render');
@@ -34,6 +37,15 @@ components.cases = function(){
 					this.el.html(view.cases);
 				}.bind(this));
 			}
+		},
+		closeComingSoon: function(e){
+			e.preventDefault();
+			$('#coming_soon').hide();
+		},
+		openComingSoon: function(e){
+			e.preventDefault();
+			$('#coming_soon').show();
+			console.log ('ComingSoon');
 		},
 		selectCase: function(e) {
 			e.preventDefault();

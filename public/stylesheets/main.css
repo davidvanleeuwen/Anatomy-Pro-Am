@@ -109,6 +109,13 @@ color:#d20000;}
     
 
 /* ---------------------------------------------------------------------------------------------------------------------------------CASES */
+#coming_soon {
+	position:absolute;
+	z-index: 100;
+	margin: 150px 150px 150px 300px;
+	display:none;
+}
+
 #case_container{width:550px; float:left; margin:40px 0 0 40px; padding:5px;
                     }
 .case:hover{background:#e8e8e8;}
@@ -577,7 +584,7 @@ height:30px; width:30px;}
 	font-family: verdana;
 	font-size: 10px;
 	overflow-y: scroll;
-    
+    opacity:.8;
     -moz-border-radius:5px 5px 0 0;
     -webkit-border-radius:5px 5px 0 0;
     border-radius:5px 5px 0 0;
@@ -593,6 +600,7 @@ height:30px; width:30px;}
    background: url(../images/text_entry_bg.png) repeat-x;
     border-left: 1px solid #151515;
     border-bottom: 1px solid #505050;
+    opacity:.8;
     
     -moz-border-radius:0 0 5px 5px;
     -webkit-border-radius:0 0 5px 5px;
@@ -625,6 +633,7 @@ height:30px; width:30px;}
     float:right;
     margin:50px 0 0 0;
     background: url(../images/expand_bg.png);
+    opacity:.9;
 }
 
 
@@ -635,7 +644,7 @@ height:30px; width:30px;}
     margin:50px 0 0 0;
     background: url(../images/expand_bg_hover.png);
 }
-
+s
 #chat_link{
     height:118px;
     width:34px;
@@ -1021,7 +1030,7 @@ height:30px; width:30px;}
 .cursor_blob {
     /*min-width: 18px;
     min-height: 14px;*/
-    padding: 2px 6px;
+    padding: 6px 6px 6px 6px;
     max-width: 140px;
     font: 11px Verdana;
     border-radius: 5px;
@@ -1047,7 +1056,7 @@ height:30px; width:30px;}
 
 .play p{
     background:white;
-    padding:8px;
+    padding:5px;
     border:3px solid red;
     float:left;
     display:block;
@@ -1066,7 +1075,7 @@ height:30px; width:30px;}
     -webkit-animation: fromleft 1s ease;
     -webkit-animation-iteration-count: 3;
     font-family:georgia;
-    font-size:18px; color:red;
+    font-size:13px; color:red;
     font-style:italic;
     font-weight:bold;
 }
@@ -1083,11 +1092,6 @@ height:30px; width:30px;}
     100%{left:5px;}
 
 }
-
-
-
-
-
 
 
 

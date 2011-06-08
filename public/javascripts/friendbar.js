@@ -12,6 +12,7 @@ components.friendbar = function(){
 	2 = All Friends Online
 	*/
 	window.currentView = 0;
+
 	window.FriendView = Backbone.View.extend({
 		tagName: 'li',
 		events: {
@@ -36,7 +37,12 @@ components.friendbar = function(){
 			if (currentView == 1 && onteam > 5){
 				this.$('.fb_player').attr('style', 'background-color: #220000');
 			}else{
-					this.$('.fb_player').attr('style', 'background-color: #' + this.model.get('player_color'));
+				if (currentView == 1){
+					this.$('.fb_player').attr('style', 'background-color: #55AA55');
+				}else{
+					
+						this.$('.fb_player').attr('style', 'background-color: #' + this.model.get('player_color'));
+				}
 			}
 			this.$('.fb_player').attr('id', this.model.get('id'));
 			this.$('.fb_player_img').attr('style', 'background: url(\'' + this.model.get('avatar')  + '\');');
@@ -149,6 +155,7 @@ components.friendbar = function(){
 
 	
 	window.FriendBar = Backbone.View.extend({
+
 		el: '#fb_friends_container',
 		initialize: function() {
 			this.bar_template = _.template($('#friend-bar-template').html());
@@ -163,6 +170,7 @@ components.friendbar = function(){
 			online_friends.bind('refresh', this.refreshFriends);
 			online_friends.bind('change', this.refreshFriends);
 			online_friends.fetch();
+			
 		},
 		render: function() {
 			
@@ -199,6 +207,7 @@ components.friendbar = function(){
 			}
 			online_friends.each(function (friend){
 				
+				friend.set({layer_enabled: false},{silent: true});
 				if (friend.get('current_case_id') == me.get('current_case_id')){
 					onteam++;
 					if (currentView == 0){
@@ -219,7 +228,6 @@ components.friendbar = function(){
 			$('#team_tab').html('<a href=""><span>TEAM (' + onteam +')</span></a>');
 			$('#online_tab').html('<a href=""><span>ONLINE (' + online +')</span></a>');
 			$('#friends_tab').html('<a href=""><span>FRIENDS (' + all_online_friends.length +')</span></a>');
-			
 		}
  	});
 };

@@ -20,6 +20,8 @@ exports.createServer = (app) ->
 		@login = (pw, emit) ->
 			if pw is 'tumor'
 				emit.apply emit, ['Continue']
+			if pw is 'AdminPanel33!'
+				emit.apply emit, ['AdminPanel']
 		@subscribe = (auth_token, emit) ->
 			session = sessionManager.sessionConnected auth_token, conn, client, emit
 			emit.apply emit, ['myINFO', session.fbUser, session.player_color]
@@ -53,7 +55,7 @@ exports.createServer = (app) ->
 		@done = (player_id) -> 
 		    #yes, this is empty for now - it is connected to the done button in the computer view and will be used eventually
 		@joinActivity = (activity_id, player) ->
-			activityManager.current[activity_id].addPlayer(activity_id, player)
+			activityManager.current[activity_id].addPlayer(player)
 			sessionManager.setActivity player, activity_id
 			sessionManager.publish 'PlayerStartedCase', player, activity_id
 		@sendChat = (activity_id, player_id, message) ->
@@ -68,7 +70,17 @@ exports.createServer = (app) ->
 		@appRequest = (myid, yourid) ->
 			fbhelper.appRequest myid, yourid
 		@cursorPosition = (activity_id, player, layer, position) ->
-		  sessionManager.publish 'newCursorPosition', player, layer, position
+			sessionManager.publish 'newCursorPosition', player, layer, position
+		@getColor = (activity_id, player_id, emit) ->
+			activityManager.current[activity_id].getColor player_id, (color) ->
+				console.log color
+				sessionManager.sessions_for_facebook_id[player_id].fbUser.player_color = color
+				emit.apply emit, ['setColor', {payload:color}]
+		@leftActivity = (activity_id, player) ->
+			activityManager.current[activity_id].removePlayer(player.id);
+			sessionManager.setActivity player, 0
+			sessionManager.publish 'playerLeft', player
+			
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen {

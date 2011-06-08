@@ -8,39 +8,7 @@ redis = require 'redis@0.6.0'
 #	SESSION MANAGER
 ###
 
-colors = [ 
-	{ hex: 'FFCC00', user: undefined },
-	{ hex: 'FF004E', user: undefined },
-	{ hex: '009CFF', user: undefined },
-	{ hex: 'FF6C00', user: undefined },
-	{ hex: 'A900A3', user: undefined },
-	{ hex: '20E500', user: undefined },
-	{ hex: 'FFFF00', user: undefined },
-	{ hex: 'FF00FF', user: undefined },
-	{ hex: '00FF00', user: undefined },
-	{ hex: '00FFFF', user: undefined },
-	{ hex: '0000FF', user: undefined } 
-]
 
-
-
-GetColor = (userID) ->
-	returnedcolor = 'asdf'
-	assigned = false
-	_.each colors, (color) ->
-		if assigned is false
-			if color.user is undefined 
-				returnedcolor = color.hex
-				color.user = userID
-				assigned = true
-			else
-				returnedcolor = 'no avaialble'
-	return returnedcolor
-	
-UnsetColor = (userID) ->
-	_.each colors, (color) ->
-		if color.user is userID[0]
-			color.user = undefined
 		
 GenerateRandomKey = () ->
 	#generate random key for this session
@@ -71,7 +39,7 @@ class SessionManager
 		session = new Session(player.id, player)
 		session_key = session.random_key
 		@sessions_for_facebook_id[player.id] = session
-		player.player_color = GetColor(player.id)
+		player.player_color = '55AA55'
 		@sessions_for_random_key[session_key] = session	
 		@currentActivity = 0	
 		return session_key
@@ -94,7 +62,8 @@ class SessionManager
 		@sessions_for_facebook_id[playerInfo.id].currentActivity = activityID
 		
 	sessionDisconnected: (conn) ->
-		UnsetColor([@sessions_for_connection[conn.id].facebook_id])
+		console.log conn
+		#ActivityManager.current[@sessions_for_connection[conn.id].facebook_id].UnsetColor(@sessions_for_connection[conn.id].facebook_id)
 		
 		session_conn = @sessions_for_connection[conn.id]
 		
@@ -132,16 +101,51 @@ class ActivityManager
 
 		
 class ContouringActivity
+	getColor : (userID, cb) ->
+		console.log 'get color in util'
+		returnedcolor = 'asdf'
+		assigned = false
+		_.each @colors, (color) ->
+			console.log 'colors'
+			console.log color
+			if assigned is false
+				if color.user is undefined 
+					returnedcolor = color.hex
+					color.user = userID
+					assigned = true
+				else
+					returnedcolor = 'FFFFFF'
+		cb returnedcolor
+	unsetColor : (userID) ->
+		_.each @colors, (color) ->
+			if color.user is userID[0]
+				color.user = undefined
+				
 	constructor: () ->
 		@id = GenerateRandomKey()
 		@activityData = new ContouringActivityData(@id)
 		@players = {}
+		@colors = [ 
+			{ hex: 'FFCC00', user: undefined },
+			{ hex: 'FF004E', user: undefined },
+			{ hex: '009CFF', user: undefined },
+			{ hex: 'FF6C00', user: undefined },
+			{ hex: 'A900A3', user: undefined },
+			{ hex: '20E500', user: undefined },
+			{ hex: 'FFFF00', user: undefined },
+			{ hex: 'FF00FF', user: undefined },
+			{ hex: '00FF00', user: undefined },
+			{ hex: '00FFFF', user: undefined },
+			{ hex: '0000FF', user: undefined } 
+		]
 	getID: () ->
 		return @id
 	setCaseID: (case_id) ->
 		@caseID = case_id
 	addPlayer: (player) ->
 		@players[player.id] = player
+	removePlayer: (player) ->
+		@players[player] = null
 	getPlayers: (player) ->
 		return @players
 	createPoint: (player_id, point) ->
