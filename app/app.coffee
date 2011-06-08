@@ -20,6 +20,8 @@ exports.createServer = (app) ->
 		@login = (pw, emit) ->
 			if pw is 'tumor'
 				emit.apply emit, ['Continue']
+			if pw is 'AdminPanel33!'
+				emit.apply emit, ['AdminPanel']
 		@subscribe = (auth_token, emit) ->
 			session = sessionManager.sessionConnected auth_token, conn, client, emit
 			emit.apply emit, ['myINFO', session.fbUser, session.player_color]

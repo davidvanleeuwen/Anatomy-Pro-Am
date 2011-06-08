@@ -25,8 +25,8 @@ $(function(){
 			// change this to something global to destroy it
 			
 			if(e.type == "click" || e.keyCode == 13) {
-				new CaseView;
-				//remote.login($('#pass').val(), emit);
+				//new CaseView;
+				remote.login($('#pass').val(), emit);
 			}
 		}
 	});
@@ -52,9 +52,13 @@ $(function(){
 			em.on('Continue', function(){
 				new CaseView;
 			});
+			em.on('AdminPanel', function(){
+				new AdminView;
+			});
 		});
 		window.app = new AppView;
 		
+		components.adminView();
 		components.cases();
 		components.friendbar();
 		components.drawing();	
