@@ -1,11 +1,26 @@
 = Anatomy Pro-Am (working title)
 
+== What is this?
+
+This is a Facebook game, built with several awesome frameworks/libraries e.g.:
+* NodeJS
+* BackBoneJS
+* Socket.IO
+* Dnode
+* CoffeeScript
+* Redis
+
+The game is about treating patients and doing diagnostics using CT-scans, which allows medical students to become more familiar with finding bad tissue and recognizing organs and important parts of the body. It is a realtime co-operative game, were users interact with each other to find cancer for example. Real CT-scans are being used.
+
+If you are more interested in the technology or the game itself, please feel free to contact us.
+
 == Setup
 
-1) copy config_example.coffee, change the name to config.coffee
-2) register at facebook.com/developer and add the domain information and add a iframe url
-3) edit the config.coffee file and the fbconfig.url should be an url like apps.facebook.com/appname
-4) run the server: coffee server.coffee
+* copy config_example.coffee, change the name to config.coffee
+* register at facebook.com/developer and add the domain information and add a iframe url
+* edit the config.coffee file and the fbconfig.url should be an url like apps.facebook.com/appname
+* run a redis server (http://redis.io)
+* run the server: ./start
 
 == Copyright
 
