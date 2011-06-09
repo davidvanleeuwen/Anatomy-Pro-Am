@@ -205,7 +205,7 @@ color:#d20000;}
                     border-radius:5px;
                     -khtml-border-radius:5px;
                     }
-.case_info_container{height:100px; width:244px; float:left; margin:0 0 0 10px; text-align:justify;}
+.case_info_container{ height:100px; width:244px; float:left; margin:0 0 0 10px; text-align:justify;}
 .case_name{float:left;}
 .case_description{float:left;}
 
@@ -717,6 +717,7 @@ s
 }
 
 #current_info_container{
+	display:none;
     position:absolute;
     z-index:12;
     margin:30px 0 0 525px;

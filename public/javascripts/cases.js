@@ -57,14 +57,14 @@ components.cases = function(){
 			e.preventDefault();
 			console.log ('received case id ' + invitation['case_id']);
 			remote.joinActivity(invitation['case_id'], me);
-			me.set({current_case_id: invitation['case_id']});
+			me.set({current_case_id: invitation['case_id']}, {silent:true});
 			online_friends.each(function (friend){
 				if (friend.get('id') == me.get('id')){
-					friend.set({current_case_id: invitation['case_id']});
+					friend.set({current_case_id: invitation['case_id']}, {silent:true});
 					console.log ('changed friend case id');
 				}
 			});
-			new ComputerView;
+			new ComputerView();
 		},
 		pagerDeclineInvite: function (e){
 			e.preventDefault();

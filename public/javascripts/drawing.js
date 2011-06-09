@@ -62,9 +62,7 @@ components.drawing = function(){
 		},
 		setupView: function() {
 			window.friendbar = new FriendBar;
-
-			this.$('#current_info_container').hide();
-			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
+			//this.$('#drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
 			this.canvasArr = {};
 			this.ctxArr = {};
 			this.index = 0;
@@ -88,7 +86,7 @@ components.drawing = function(){
 			
 			/*********************************************
 			*               Event listeners              *
-			**********************************************/
+			*********************************************/
 			
 			em.on('playerLeft', function (player_id){
 				online_friends.fetch();
@@ -141,9 +139,11 @@ components.drawing = function(){
 				invitation['player_id'] = player_id;
 				invitation['player_name'] = player_name;
 				invitation['player_avitar'] = player_avatar;
-				$('.pager_facebook_image').attr('style', 'background: url(\'' + player_avatar + '?type=normal\') no-repeat;');
+				$('.pager_facebook_image').attr('style', 'background: url(\'' + player_avatar + '?type=normal\') no-repeat; ');
 				$('#invitation_text').html('<h3>' + player_name + ' requests your opinion.</h3>');
-			});
+				console.log ('received invitation');
+				this.showPager(true);
+			}.bind(this));
 			
 			// event listener for chat
 			em.on('setChatHistory', this.setChatHistory);
@@ -175,6 +175,8 @@ components.drawing = function(){
 		},
 		removeAllListeners: function() {
 		  em.removeAllListeners('pointColored');
+		  em.removeAllListeners('playerLeft');
+		  em.removeAllListeners('canvasCleared');
 		  em.removeAllListeners('pointErased');
 		  em.removeAllListeners('setColoredPointsForThisLayer');
 		  em.removeAllListeners('JoinRequest');
@@ -220,7 +222,7 @@ components.drawing = function(){
 			remote.leftActivity (me.get('current_case_id'), me);
 			me.set({current_case_id:0},{silent:true});
 			delete this;
-			new CaseView;
+			new CaseView();
 		},
 		colorPoint: function(points, color, context) {
 			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
@@ -395,14 +397,14 @@ components.drawing = function(){
 		drawTool: function(event) {
 			event.preventDefault();
 			this.isErasing = false;
-			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
-			this.$('.erasingTool').attr('style', 'background: #FFFFFF');
+			//this.$('#drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
+			//this.$('#erasingTool').attr('style', 'background: #FFFFFF');
 		},
 		eraseTool: function(event) {
 			event.preventDefault();
 			this.isErasing = true;
-			this.$('.erasingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
-			this.$('.drawingTool').attr('style', 'background: #FFFFFF');
+			//this.$('#erasingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
+			//this.$('#drawingTool').attr('style', 'background: #FFFFFF');
 		},
 		endLine: function(event) {
 			event.preventDefault();
@@ -674,16 +676,17 @@ components.drawing = function(){
 			e.preventDefault();
 			console.log ('received case id ' + invitation['case_id']);
 			remote.joinActivity(invitation['case_id'], me);
-			me.set({current_case_id: invitation['case_id']});
+			me.set({current_case_id: invitation['case_id']}, {silent:true});
 			online_friends.each(function (friend){
 				if (friend.get('id') == me.get('id')){
-					friend.set({current_case_id: invitation['case_id']});
+					friend.set({current_case_id: invitation['case_id']}, {silent:true});
 					console.log ('changed friend case id');
 				}
 			});
 			this.removeAllListeners();
 			currentView = 0;
-			new ComputerView;
+			invitation = {};
+			new ComputerView();
 		},
 		pagerDeclineInvite: function (e){
 			e.preventDefault();
