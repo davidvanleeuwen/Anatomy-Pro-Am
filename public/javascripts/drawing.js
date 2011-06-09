@@ -717,8 +717,9 @@ components.drawing = function(){
 			var inputEl = this.$('#type')[0];
 			var chatEl = this.$('#chat_window')[0];
 			var message = inputEl.value;
+			
 			if(e.type == "click" || e.keyCode == 13 && message != '') {
-				$(chatEl).append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+me.get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+message+'</span></div>');
+				$(chatEl).append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+me.get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+message.replace(/&/g, "&amp;").replace(/</g,"&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;")+'</span></div>');
 				inputEl.value = '';
 				chatEl.scrollTop = chatEl.scrollHeight;
 				remote.sendChat(me.get('current_case_id'), me.get('id'), message);
@@ -729,12 +730,12 @@ components.drawing = function(){
      	 	// 
 			if (online_friends.get(player_id).get('current_case_id') == me.get('current_case_id')){
 				var chatEl = $('#chat_window')[0];
-				console.log (dThis.chatExpanded);
+				//console.log (dThis.chatExpanded);
 				if (!dThis.chatExpanded){
 					pendingMessages++;
 					console.log ('chat not expanded');
 					if ($('#chat_container').find('#chat_notification').size() == 0) {
-						console.log ('no chat window found');
+						//console.log ('no chat window found');
 						this.chat_notification_template = _.template($('#chat_notification_template').html());
 						$('#chat_container').append(this.chat_notification_template());
 						$('#chat_notification').html('<p>' + pendingMessages + '</p>');
