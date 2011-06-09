@@ -10,7 +10,7 @@ This is a Facebook game, built with several awesome frameworks/libraries e.g.:
 * CoffeeScript
 * Redis
 
-The game is about treating patients and doing diagnostics using CT-scans, which allows medical students to become more familiar with finding bad tissue and recognizing organs and important parts of the body. It is a realtime co-operative game, were users interact with each other to find cancer for example. Real CT-scans are being used.
+The game is about treating patients and doing diagnostics using CT-scans, which allows medical students to become more familiar with finding bad tissue and recognizing organs and important parts of the body. It is a realtime co-operative game, where users interact with each other to find cancer for example. Real CT-scans are being used.
 
 http://f.cl.ly/items/3C120p3f1z1i0K2w2C3o/Screen%20shot%202011-06-09%20at%2013.44.35%20.png
 http://f.cl.ly/items/2C2R152l1c3A1G1M2W1m/Screen%20shot%202011-06-09%20at%2013.43.38%20.png
