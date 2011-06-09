@@ -41,6 +41,7 @@ components.drawing = function(){
 			this.render();
 			this.locked = false;
 			this.chatExpanded = false;
+			this.infoExpanded = false;
 			this.cursorToolEnabled = true;
 			online_friends.bind('change', this.collectionChanged);
 			
@@ -548,11 +549,16 @@ components.drawing = function(){
 				},
 		expandInfo: function (e) { //added to allow current case info roll down
 			e.preventDefault();
-			this.$('#current_info_container').show();
+			this.infoExpanded = !this.infoExpanded;
+			if (this.infoExpanded){
+				this.$('#current_info_container').show();
+			}else{
+				this.$('#current_info_container').hide();	
+			}
 		},
 		retractInfo: function (e) { //added to allow current case info roll up
 			e.preventDefault();
-			this.$('#current_info_container').hide();
+			this.expandInfo(e);
 		},
 		undoTool: function (e) { //added to allow undo functions
 			e.preventDefault();
@@ -723,7 +729,7 @@ components.drawing = function(){
 				}
 			} else {
 				online_friends.each(function(friend){
-					if (friend.get('layer_enabled')){
+					if (friend.get('layer_enabled') || listState[friend.get ('id')].layer_enabled){
 						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, friend.get('id'), layer, emit);
 					}
 				});

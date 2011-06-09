@@ -42,26 +42,27 @@ components.adminView = function(){
 		},
 		playerCameOnline: function(fbUser){
 			console.log (fbUser);
-			$('#adminWindow').append ('<p>Player Came Online</p>');
-			$('#adminWindow').append (JSON.stringify(fbUser));
+			new RoomView();
+			//$('#adminWindow').append ('<p>Player Came Online</p>');
+			//$('#adminWindow').append (JSON.stringify(fbUser));
 			
 		},
 		playerWentOffline: function(fbUser){
 			console.log (fbUser);
-			$('#adminWindow').append ('<p>Player Went Offline</p>');
-			$('#adminWindow').append (JSON.stringify(fbUser));
+			//$('#adminWindow').append ('<p>Player Went Offline</p>');
+			//$('#adminWindow').append (JSON.stringify(fbUser));
 				
 		},
 		playerStartedCase: function(fbUser, activity_id){
 			console.log (fbUser);
-			$('#adminWindow').append ('<p>Player Started Case</p>');
-			$('#adminWindow').append (JSON.stringify(fbUser));
+			//$('#adminWindow').append ('<p>Player Started Case</p>');
+			//$('#adminWindow').append (JSON.stringify(fbUser));
 			
 		},
 		playerLeftCase: function(fbUser){
 			console.log (fbUser);
-			$('#adminWindow').append ('<p>Player Left Case</p>');
-			$('#adminWindow').append (JSON.stringify(fbUser));
+			//$('#adminWindow').append ('<p>Player Left Case</p>');
+			//$('#adminWindow').append (JSON.stringify(fbUser));
 		}
 	});
 	window.RoomView = Backbone.View.extend({
@@ -79,12 +80,19 @@ components.adminView = function(){
 			allUsers.fetch();
 		},
 		render: function(){
-			if (window.rooms.length % 2 == 0){
-				
-			}
+
 		},
 		refresh: function(){
+
+			if (window.rooms.length % 2 == 0){
+				$('#adminWindow').append(this.room_right_template());
+			}else{
+				$('#adminWindow').append(this.room_left_template());
+			}
 			
+			$('#new_column').append(this.player_info_template());
+			$('#new_select').append(this.select_template());
+			$('#new_name').html('Greg');
 		}
 	});
 };
