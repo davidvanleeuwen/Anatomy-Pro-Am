@@ -73,7 +73,7 @@ exports.createServer = (app) ->
 			sessionManager.publish 'newCursorPosition', player, layer, position
 		@getColor = (activity_id, player_id, emit) ->
 			activityManager.current[activity_id].getColor player_id, (color) ->
-				console.log color
+				#console.log color
 				sessionManager.sessions_for_facebook_id[player_id].fbUser.player_color = color
 				emit.apply emit, ['setColor', {payload:color}]
 		@leftActivity = (activity_id, player) ->

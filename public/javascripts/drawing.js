@@ -45,8 +45,7 @@ components.drawing = function(){
 			this.locked = false;
 			this.chatExpanded = false;
 			this.cursorToolEnabled = true;
-			online_friends.bind('change', this.collectionChanged);
-			
+			//online_friends.bind('change', this.collectionChanged);
 		},
 		render: function() {
 			if (view.computer) {
@@ -65,9 +64,8 @@ components.drawing = function(){
 		},
 		setupView: function() {
 			window.friendbar = new FriendBar;
-
 			this.$('#current_info_container').hide();
-			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
+			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.get('id')).get('player_color'));
 			this.canvasArr = {};
 			this.ctxArr = {};
 			this.index = 0;
@@ -160,8 +158,6 @@ components.drawing = function(){
 			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 40));
 			
-			
-			
 			var counter = 0;
 			imageRefs.forEach(function(img){
 				var distance = (counter * 40);
@@ -175,7 +171,7 @@ components.drawing = function(){
 			$(layers[0]).show();
 			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
 			window.layer = 0;
-			remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, me.id, layer, emit);
+			remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), me.get('id'), layer, emit);
 		},
 		removeAllListeners: function() {
 		  em.removeAllListeners('pointColored');
@@ -447,8 +443,8 @@ components.drawing = function(){
 					this.oldX = xvar;
 					this.oldY = yvar;
 					
-					remote.pointErased(me.get('current_case_id'), me.id, points);
-					this.erasePoint(points,this.ctxArr[me.id]);
+					remote.pointErased(me.get('current_case_id'), me.get('id'), points);
+					this.erasePoint(points,this.ctxArr[me.get('id')]);
 					
 				}else{
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
@@ -490,8 +486,8 @@ components.drawing = function(){
 					this.oldY = yvar;
 					
 					//this.drawLocally(points);
-					remote.pointColored(me.get('current_case_id'), me.id, points);
-					this.colorPoint(points, me.get('player_color'), this.ctxArr[me.id]);	
+					remote.pointColored(me.get('current_case_id'), me.get('id'), points);
+					this.colorPoint(points, me.get('player_color'), this.ctxArr[me.get('id')]);	
 				
 					
 				}
@@ -500,13 +496,13 @@ components.drawing = function(){
 		drawTool: function(event) {
 			event.preventDefault();
 			this.isErasing = false;
-			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
+			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.get('id')).get('player_color'));
 			this.$('.erasingTool').attr('style', 'background: #FFFFFF');
 		},
 		eraseTool: function(event) {
 			event.preventDefault();
 			this.isErasing = true;
-			this.$('.erasingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
+			this.$('.erasingTool').attr('style', 'background:' + online_friends.get(me.get('id')).get('player_color'));
 			this.$('.drawingTool').attr('style', 'background: #FFFFFF');
 		},
 		endLine: function(event) {
@@ -604,11 +600,11 @@ components.drawing = function(){
 		},
 		done: function(event) {
 			event.preventDefault();
-			remote.done(me.id);
+			remote.done(me.get('id'));
 			this.getColorPointsForLayerAndPlayer(true);
 			if (this.locked == true){
 				var color = me.get('player_color');
-				var context = this.ctxArr[me.id];
+				var context = this.ctxArr[me.get('id')];
 				var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
 				var pix = imageData.data;
 				var redVal = (parseInt(color.substr(0,2),16));
@@ -685,7 +681,7 @@ components.drawing = function(){
 				e.preventDefault();
 			}
 			currentView = 0;
-			friendbar = new FriendBar();
+			friendbar = new FriendBar;
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 			this.$('#friends_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
@@ -694,7 +690,7 @@ components.drawing = function(){
 			e.preventDefault();
 			this.saveListState();
 			currentView = 1;
-			friendbar = new FriendBar();
+			friendbar = new FriendBar;
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 			this.$('#friends_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
@@ -703,7 +699,7 @@ components.drawing = function(){
 			e.preventDefault();
 			this.saveListState();
 			currentView = 2;
-			friendBar = new FriendBar();
+			friendBar = new FriendBar;
 			this.$('#friends_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
@@ -725,7 +721,7 @@ components.drawing = function(){
 				$(chatEl).append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+me.get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+message+'</span></div>');
 				inputEl.value = '';
 				chatEl.scrollTop = chatEl.scrollHeight;
-				remote.sendChat(me.get('current_case_id'), me.id, message);
+				remote.sendChat(me.get('current_case_id'), me.get('id'), message);
 			}
 		},
 		receiveChat: function(player_id, message) {
@@ -820,7 +816,7 @@ components.drawing = function(){
 					online_friends.each(function(friend){
 						if (!friend.get('layer_enabled') && friend.get('current_case_id') == me.get('current_case_id')){
 							friend.toggleVisibility();
-							remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, friend.get('id'), layer, emit);
+							remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.get('id'), layer, emit);
 						}
 					});
 				} else {
@@ -829,7 +825,7 @@ components.drawing = function(){
 			} else {
 				online_friends.each(function(friend){
 					if (friend.get('layer_enabled')){
-						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, friend.get('id'), layer, emit);
+						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.get('id'), layer, emit);
 					}
 				});
 			}
@@ -844,10 +840,10 @@ components.drawing = function(){
 		    }
 		},
 		cursorMovement: _.throttle(function(e) {
-		  remote.cursorPosition(me.get('current_case_id'), me.id, layer, {x: e.pageX, y: e.pageY});
+		  remote.cursorPosition(me.get('current_case_id'), me.get('id'), layer, {x: e.pageX, y: e.pageY});
 		}, 50),
 		newCursorPosition: function(player, current_layer, position) {
-		  if(player != me.id && current_layer == layer && online_friends.get(player).get('layer_enabled') && online_friends.get(player).get('current_case_id') == me.get('current_case_id')) {
+		  if(player != me.get('id') && current_layer == layer && online_friends.get(player).get('layer_enabled') && online_friends.get(player).get('current_case_id') == me.get('current_case_id')) {
 		    var offset = $('#scan_container').offset();
 		    if(position.x-6 >= offset.left && position.x-6 <= (offset.left+offset.width) && position.y+3 >= offset.top && position.y+3 <= (offset.top+offset.height)) {
 		      if($('#cursor_'+player).size() == 0) {

@@ -106,8 +106,8 @@ class ContouringActivity
 		returnedcolor = 'asdf'
 		assigned = false
 		_.each @colors, (color) ->
-			console.log 'colors'
-			console.log color
+			#console.log 'colors'
+			#console.log color
 			if assigned is false
 				if color.user is undefined 
 					returnedcolor = color.hex

@@ -90,7 +90,7 @@ server.all '/friends/:activity_id?', (req, res) ->
 	playersInfo = app.sessionManager.sessions_for_facebook_id
 	output = []
 	Hash(playersInfo).forEach (player) ->
-		console.log player
+		#console.log player
 		output.push ({
 			id: player.fbUser.id,
 			name: player.fbUser.first_name,
