@@ -167,8 +167,21 @@ class ContouringActivity
 			if player.isDone != true
 				result = false;
 		callback result
+	submitScore: (player, callback) ->	
+		@players[player.id].requestsScore = true
+		scoreResult = true;
+		doneResult = true
+		_.each @players, (player) ->
+			if player.requestsScore != true
+				scoreResult = false;
+		_.each @players, (player) ->
+			if player.isDone != true
+				doneResult = false;
+		callback doneResult && scoreResult
 	playerNotDone: (player) ->
 		@players[player.id].isDone = false
+		@players[player.id].scoreResult = false
+		
 ###
 #	CONTOURING ACTIVTY DATA
 ###

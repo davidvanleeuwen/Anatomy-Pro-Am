@@ -55,12 +55,18 @@ exports.createServer = (app) ->
 				emit.apply emit, ['setColoredPointsForThisLayer', {player: player, payload: points} ]
 		@done = (player) -> 
 			console.log player
+			sessionManager.publish 'playerIsDone', player
 			activityManager.current[player.current_case_id].playerDone player, (result)  ->
 				if result == true
-					sessionManager.publish 'everyoneIsDone', player.current_case_id
+					sessionManager.publish 'everyoneIsDone', player
 		@notDone = (player) ->
 			activityManager.current[player.current_case_id].playerNotDone player
-			sessionManager.publish 'playerNotDone', player.current_case_id
+			sessionManager.publish 'playerNotDone', player
+		@submitScore = (player) ->
+			activityManager.current[player.current_case_id].submitScore player, (result) ->
+				if result == true
+					sessionManager.publish 'scoreEveryone', player
+					console.log 'score everyone'
 		@joinActivity = (activity_id, player) ->
 			activityManager.current[activity_id].addPlayer(player)
 			sessionManager.setActivity player, activity_id

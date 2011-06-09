@@ -27,8 +27,8 @@ components.drawing = function(){
 			'click #undoTool': 'undoTool',
 			'click #send_chat':'sendChat',
 			'keyup #type':'sendChat',
+			'click #score_button':'scoreButton',
 			"click #done_button": "doneButton",
-			"click #everyone_done_button":"everyoneDoneButton",
 			"click #accept_invite":"pagerAcceptInvite",
 			"click #decline_invite":"pagerDeclineInvite",
 			"click #invite":"invite",
@@ -47,6 +47,7 @@ components.drawing = function(){
 			this.chatExpanded = false;
 			this.infoExpanded = false;
 			this.cursorToolEnabled = true;
+			this.everyoneDone = false;
 			//online_friends.bind('change', this.collectionChanged);
 		},
 		render: function() {
@@ -94,14 +95,31 @@ components.drawing = function(){
 			em.on('playerLeft', function (player_id){
 				online_friends.fetch();
 			});
-			em.on('playerNotDone', function (player_case_id){
-				if (player_case_id == me.get('current_case_id')){
+			em.on('playerIsDone', function (player){
+					online_friends.get(player.id).set({isDone:true});
+						console.log ( online_friends.get(player.id));
+			}.bind(this));
+			em.on('playerNotDone', function (player){
+				if (player.current_case_id == me.get('current_case_id')){
+					online_friends.get(player.id).set({isDone:false});
+						console.log ( online_friends.get(player.id));
 					console.log ('were not done anymore');
+					this.everyoneDone = false;
+					this.$('#score_button').removeClass('red_button');
+					this.$('#score_button').addClass('red_button_disabled');
 				}
 			}.bind(this));
-			em.on('everyoneIsDone', function (player_case_id){
-				if (player_case_id == me.get('current_case_id')){
+			em.on('everyoneIsDone', function (player){
+				if (player.current_case_id == me.get('current_case_id')){
 					console.log ('Everyone Is Done');
+					this.everyoneDone = true;
+					this.$('#score_button').addClass('red_button');
+					this.$('#score_button').removeClass('red_button_disabled');
+				}
+			}.bind(this));
+			em.on('scoreEveryone', function (player){
+				if (player.current_case_id == me.get('current_case_id')){
+					this.done();
 				}
 			}.bind(this));
 			em.on('setColor', function (color){
@@ -185,16 +203,19 @@ components.drawing = function(){
 			remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), me.get('id'), layer, emit);
 		},
 		removeAllListeners: function() {
-		  em.removeAllListeners('pointColored');
-		  em.removeAllListeners('playerLeft');
-		  em.removeAllListeners('canvasCleared');
-		  em.removeAllListeners('pointErased');
-		  em.removeAllListeners('setColoredPointsForThisLayer');
-		  em.removeAllListeners('JoinRequest');
-		  em.removeAllListeners('setChatHistory');
-		  em.removeAllListeners('newChat');
-		  em.removeAllListeners('newCursorPosition');
-		  em.removeAllListeners('playerNotDone');
+			em.removeAllListeners('pointColored');
+			em.removeAllListeners('playerLeft');
+			em.removeAllListeners('canvasCleared');
+			em.removeAllListeners('pointErased');
+			em.removeAllListeners('setColoredPointsForThisLayer');
+			em.removeAllListeners('JoinRequest');
+			em.removeAllListeners('setChatHistory');
+			em.removeAllListeners('newChat');
+			em.removeAllListeners('newCursorPosition');
+			em.removeAllListeners('playerNotDone');
+			em.removeAllListeners('playerNotDone');
+			em.removeAllListeners('everyoneIsDone');
+			em.removeAllListeners('scoreEveryone');
 		},
 		canvasMerge: function() {
 			/*Function is presently not necessary
@@ -626,68 +647,74 @@ components.drawing = function(){
 			//console.log("even here");
 			return typeMatrix;
 		},
-
-		everyoneDoneButton: function (e){
+		scoreButton: function(e){
 			e.preventDefault();
+			if (this.everyoneDone){
+				remote.submitScore(me);
+			}else{
+				//do nothing
+			}
+			
 		},
 		doneButton: function (e){
 			e.preventDefault();
-			if (!this.locked){
+			this.locked = !this.locked;
+			if (this.locked){
 				remote.done(me);
+				this.getColorPointsForLayerAndPlayer(true);
 				$('#done_text').text('UNLOCK');
 			}else{
 				remote.notDone(me);
 				$('#done_text').text("I'M DONE");
 			}
-			this.locked = !this.locked;
 		},
-		done: function(event) {
-			event.preventDefault();
-			this.getColorPointsForLayerAndPlayer(true);
-			if (this.locked == true){
-				var color = me.get('player_color');
-				var context = this.ctxArr[me.id];
-				var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
-				var pix = imageData.data;
-				var redVal = (parseInt(color.substr(0,2),16));
-				var greenVal = (parseInt(color.substr(2,2),16));
-				var blueVal = (parseInt(color.substr(4,2),16));
-				var typeMatrix = this.bwcc(imageData);
+		done: function() {
+			var self = this;
+			online_friends.each(function(friend){
+				if (friend.get('current_case_id') == me.get('current_case_id')){
+					var color = friend.get('player_color');
+					var context = this.ctxArr[friend.get('id')];
+					var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+					var pix = imageData.data;
+					var redVal = (parseInt(color.substr(0,2),16));
+					var greenVal = (parseInt(color.substr(2,2),16));
+					var blueVal = (parseInt(color.substr(4,2),16));
+					var typeMatrix = this.bwcc(imageData);
 
-				//Replace former with latter
+					//Replace former with latter
 
-				for(var y = 0; y < imageData.height; y++){
-					for(var x = 0; x < imageData.width; x++){
-						if(typeMatrix[y*(imageData.width) + x] == 0){
-							pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
-						}else{	
-								pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
-								pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
-								pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
-								pix[((y*(imageData.width*4)) + (x*4)) + 3]=100;
+					for(var y = 0; y < imageData.height; y++){
+						for(var x = 0; x < imageData.width; x++){
+							if(typeMatrix[y*(imageData.width) + x] == 0){
+								pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
+							}else{	
+									pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
+									pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
+									pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
+									pix[((y*(imageData.width*4)) + (x*4)) + 3]=100;
+							}
 						}
 					}
-				}
-				context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-				context.putImageData(imageData, 0, 0);
+					context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+					context.putImageData(imageData, 0, 0);
 
-				var scoreHit = 0;
-				//var goalArray;
-				var scoreMissed = 0;
+					var scoreHit = 0;
+					//var goalArray;
+					var scoreMissed = 0;
 
-				for(var y = 0; y < imageData.height; y++){
-					for(var x = 0; x < imageData.width; x++){
-						if((x > (imageData.width/6) && x < (2*imageData.width/6))
-							&& (y > (imageData.height/6) && y < (2*imageData.height/6))){
-								if(pix[((y*(imageData.width*4)) + (x*4)) + 3]== 100){ scoreHit++;
-								}else{scoreMissed++;}
+					for(var y = 0; y < imageData.height; y++){
+						for(var x = 0; x < imageData.width; x++){
+							if((x > (imageData.width/6) && x < (2*imageData.width/6))
+								&& (y > (imageData.height/6) && y < (2*imageData.height/6))){
+									if(pix[((y*(imageData.width*4)) + (x*4)) + 3]== 100){ scoreHit++;
+									}else{scoreMissed++;}
+							}
 						}
 					}
+
+					//alert("Your score " + scoreHit + " out of: " + (scoreHit+scoreMissed) + " or " + (100*scoreHit/(scoreHit+scoreMissed) + "%"));
 				}
-
-				//alert("Your score " + scoreHit + " out of: " + (scoreHit+scoreMissed) + " or " + (100*scoreHit/(scoreHit+scoreMissed) + "%"));
-
-			}	
+			}.bind(this));
 		},
 		expandInfo: function (e) { //added to allow current case info roll down
 			e.preventDefault();
@@ -859,7 +886,6 @@ components.drawing = function(){
 		},
 		getColorPointsForLayerAndPlayer: function(showAll) {
 			if(showAll) {
-				this.locked = !this.locked;
 				if(this.locked) {
 					online_friends.each(function(friend){
 						if (!friend.get('layer_enabled') && friend.get('current_case_id') == me.get('current_case_id')){
@@ -870,7 +896,6 @@ components.drawing = function(){
 				} 
 			} else {
 				online_friends.each(function(friend){
-
 					if (friend.get('layer_enabled')){
 						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.get('id'), layer, emit);
 					}

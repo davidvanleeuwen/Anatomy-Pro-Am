@@ -157,10 +157,13 @@
 						<!--holds tick marks for slider-->
 					</div>
 
-					<div class='red_button' id='done_button'>
-	                    <a href=""><span id='done_text'>I'M DONE</span></a>
-	                </div>
 				</div>  
+				<div class='red_button_disabled' id='score_button'>
+                    <a href=""><span id=''>SCORE IT!</span></a>
+                </div>
+				<div class='red_button' id='done_button'>
+                    <a href=""><span id='done_text'>I'M DONE</span></a>
+                </div>
 
 
 
@@ -208,7 +211,8 @@
 				<script type="text/template" id="player-template">
 					<a href="#" class="invisible">
 						<span class="fb_player">
-							<span class="fb_player_img"></span>
+							<span class="fb_player_img"><span class='fb_im_done'></span></span>
+							
 							<span class="fb_player_name"></span>
 						</span>
 					</a>
@@ -290,6 +294,7 @@
 		            </div>
             </div>	
 
+			
 
 
 														<!--END GAME CONTAINER -->

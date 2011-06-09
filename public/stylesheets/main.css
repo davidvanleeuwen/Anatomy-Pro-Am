@@ -394,6 +394,16 @@ height:30px; width:30px;}
 	background-position:; top center;
 }
 
+.fb_im_done {
+	height:16px;
+	width:15px;
+	z-index: 100;
+	position:relative;
+	top: 30px;
+	left: 30px;
+	display: block;
+}
+
 .fb_player .fb_player_name {
 	float: left;
 	font: 9px Verdana;
@@ -586,6 +596,22 @@ height:30px; width:30px;}
     
 }
 
+.red_button_disabled{
+    background:url(../images/red_button_bg_disabled.png) repeat-x;
+    margin:5px 10px 0 10px;
+    height:35px;
+    float:right;
+    
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    -khtml-border-radius:5px;
+    
+    border-top: 1px solid #000000;
+    border-bottom: 1px solid #505050;
+    
+}
+
 .red_button_active{
     background:url(../images/red_button_bg.png) repeat-x;
     margin:5px 10px 0 10px;
@@ -597,11 +623,11 @@ height:30px; width:30px;}
     border-radius:5px;
     -khtml-border-radius:5px;
     
-    border-top: 1px solid #FFFFFF;
-    border-bottom: 1px solid #FFFFFF;
-	border-left: 1px solid #FFFFFF;
-    border-right: 1px solid #FFFFFF;
-    
+
+	    -moz-box-shadow:inset 0 0 10px #ff989b;
+	   -webkit-box-shadow:inset 0 0 10px #ff989b;
+	   box-shadow:inset 0 0 10px #ff989b;
+
 }
 
 .red_button:hover{
@@ -626,6 +652,27 @@ height:30px; width:30px;}
     display:block;
 }
 
+.red_button_disabled:hover{
+    /*background:url(../images/red_button_hover_bg.png) repeat-x;*/
+}
+
+.red_button_disabled a{
+    background: -webkit-gradient(linear, left top, left bottom, from(#CCCCCC), to(#777777));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family:SteelfishRegular;
+    color:#AAAAAA;
+    font-size:21px;
+    display:block;
+    float:left;
+}
+
+.red_button_disabled span{
+    margin:5px 10px 5px 10px;
+    height:100%;
+    width:100%;
+    display:block;
+}
 .red_button_active:hover{
     background:url(../images/red_button_hover_bg.png) repeat-x;
 }
@@ -891,7 +938,7 @@ s
     display:block;
 }
 
-#slider{float:right; display:inline;}
+#slider{float:left; display:inline; margin: 0 0 0 30px}
 #slider div{display:block;}
 #slider_input {width: 150px; height: 30px; z-index: 1000;}
 
@@ -913,6 +960,11 @@ s
 	float: right;	
 }
 
+#score_button{
+	margin:0 0 0 10px;
+	float: right;
+}
+
 #slider_input{
 	float: left;
 	margin-right: 10px;
@@ -923,11 +975,11 @@ s
 }
 #layer{
 	position: absolute;
-	right: 250px;
-	top: 465px;
+	right: 360px;
+	top: 470px;
 	font-family:SteelfishRegular;
     color:#000000;
-    font-size:21px;
+    font-size:24px;
 }
                                                                                 /*footer container--*/
 

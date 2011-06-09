@@ -40,13 +40,21 @@ components.friendbar = function(){
 				if (currentView == 1){
 					this.$('.fb_player').attr('style', 'background-color: #55AA55');
 				}else{
-					
-						this.$('.fb_player').attr('style', 'background-color: #' + this.model.get('player_color'));
+					this.$('.fb_player').attr('style', 'background-color: #' + this.model.get('player_color'));
 				}
+
 			}
 			this.$('.fb_player').attr('id', this.model.get('id'));
 			this.$('.fb_player_img').attr('style', 'background: url(\'' + this.model.get('avatar')  + '\');');
+			this.$('.fb_im_done').attr('style', 'background: url(\'images/imdone_unchecked_small.png\');');
 			this.$('.fb_player_name').text(this.model.get('name'));
+			if (this.model.get('current_case_id') == me.get('current_case_id')){
+				if (this.model.get('isDone')){
+					this.$('.fb_im_done').attr('style', 'background: url(\'images/imdone_checked_small.png\');');
+				}else{
+					this.$('.fb_im_done').attr('style', 'background: url(\'images/imdone_unchecked_small.png\');');
+				}
+			}
 			var setVisible = false;
 			if(this.model.get('id') == me.id  || currentView == 1 || currentView == 2) {
 				setVisible = true;
