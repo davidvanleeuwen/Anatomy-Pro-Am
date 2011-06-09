@@ -201,7 +201,7 @@ components.friendbar = function(){
 				all_online_friends.each (function (friend){
 					allfriends++;
 					if (allfriends <= 6){
-						window.friendbar.addFriend (friend);
+						window.friendbar.addFriend(friend);
 					}
 				});
 			}
@@ -220,7 +220,7 @@ components.friendbar = function(){
 					online++;
 					if (currentView == 1){
 						if (online <= 6){
-							window.friendbar.addFriend (friend);
+							window.friendbar.addFriend(friend);
 						}
 					}
 				}

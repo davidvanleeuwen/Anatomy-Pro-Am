@@ -6,6 +6,7 @@ DNode = require 'dnode@0.6.10'
 _ = require('underscore@1.1.5')._
 Backbone = require 'backbone@0.3.3'
 resources  = require '../models/resources'
+sanitizer = require 'sanitizer@0.0.14'
 
 util = require './util'
 
@@ -65,8 +66,11 @@ exports.createServer = (app) ->
 			sessionManager.setActivity player, activity_id
 			sessionManager.publish 'PlayerStartedCase', player, activity_id
 		@sendChat = (activity_id, player_id, message) ->
-			activityManager.current[activity_id].addChatMessage player_id, message
-			sessionManager.publish 'newChat', player_id, message
+		  console.log message
+		  message = sanitizer.escape message
+		  console.log message
+		  activityManager.current[activity_id].addChatMessage player_id, message
+		  sessionManager.publish 'newChat', player_id, message
 		@getChatHistoryForActivity = (activity_id, emit) ->
 			activityManager.current[activity_id].getChatHistoryForActivity (chats) ->
 				emit.apply emit, ['setChatHistory', {payload: chats}]
@@ -79,7 +83,7 @@ exports.createServer = (app) ->
 			sessionManager.publish 'newCursorPosition', player, layer, position
 		@getColor = (activity_id, player_id, emit) ->
 			activityManager.current[activity_id].getColor player_id, (color) ->
-				console.log color
+				#console.log color
 				sessionManager.sessions_for_facebook_id[player_id].fbUser.player_color = color
 				emit.apply emit, ['setColor', {payload:color}]
 		@leftActivity = (activity_id, player) ->

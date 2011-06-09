@@ -34,18 +34,20 @@ components.drawing = function(){
 			"click #invite":"invite",
 			"click #dont_invite":"dontInvite",
 			'click #cursorTool':'cursorTool',
+			'click #zoomInTool':'zoomIn',
+			'click #zoomOutTool':'zoomOut',
 			'mousemove #scan_container': 'cursorMovement'
 		},
 		initialize: function() {
 			window.dThis=this;
 			_.bindAll(this, 'render', 'newCursorPosition');
 			this.render();
+			this.zoom = 1;
 			this.locked = false;
 			this.chatExpanded = false;
 			this.infoExpanded = false;
 			this.cursorToolEnabled = true;
-			online_friends.bind('change', this.collectionChanged);
-			
+			//online_friends.bind('change', this.collectionChanged);
 		},
 		render: function() {
 			if (view.computer) {
@@ -57,6 +59,7 @@ components.drawing = function(){
 					this.el.html('');
 					view.computer = t;
 					this.el.html(view.computer);
+			
 					this.setupView();
 				}.bind(this));
 			}
@@ -166,7 +169,6 @@ components.drawing = function(){
 			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 40));
 			
-			
 			var counter = 0;
 			imageRefs.forEach(function(img){
 				var distance = (counter * 40);
@@ -180,7 +182,7 @@ components.drawing = function(){
 			$(layers[0]).show();
 			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
 			window.layer = 0;
-			remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, me.id, layer, emit);
+			remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), me.get('id'), layer, emit);
 		},
 		removeAllListeners: function() {
 		  em.removeAllListeners('pointColored');
@@ -235,7 +237,7 @@ components.drawing = function(){
 			new CaseView();
 		},
 		colorPoint: function(points, color, context) {
-			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+			var imageData=context.getImageData(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
 			var pix = imageData.data;
 			var redVal = (parseInt(color.substr(0,2),16));
 			var greenVal = (parseInt(color.substr(2,2),16));
@@ -247,17 +249,109 @@ components.drawing = function(){
 				var slide = point.layer;
 				if(layer == slide) {
 					if(x>0&&y>0){
-						pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
-						pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
-						pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
-						pix[((y*(imageData.width*4)) + (x*4)) + 3]=255;
-						
+						if(this.zoom == 1){
+							pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
+							pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
+							pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
+							pix[((y*(imageData.width*4)) + (x*4)) + 3]=255;
+						}else if(this.zoom == 2){
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+0)*4)) + 0]=redVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+0)*4)) + 1]=greenVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+0)*4)) + 2]=blueVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+0)*4)) + 3]=255;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+1)*4)) + 0]=redVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+1)*4)) + 1]=greenVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+1)*4)) + 2]=blueVal;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+1)*4)) + 3]=255;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+0)*4)) + 0]=redVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+0)*4)) + 1]=greenVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+0)*4)) + 2]=blueVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+0)*4)) + 3]=255;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 0]=redVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 1]=greenVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 2]=blueVal;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 3]=255;
+							
+							
+							
+							
+						}
 						
 					}
 				}
 			}
 			context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 			context.putImageData(imageData, 0, 0);
+		},
+		zoomIn: function(event){
+			event.preventDefault();
+			if(this.zoom == 1){
+				this.zoom = 2;
+				for(arrKey in this.ctxArr){
+					this.ctxArr[arrKey].scale(2.0,2.0);
+					this.ctxArr[arrKey].clearRect(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
+				}				
+				this.zoomXOffset = event.clientX-this.canvas.offsetLeft+3;
+				this.zoomYOffset = event.clientY-this.canvas.offsetTop+29;
+				this.getColorPointsForLayerAndPlayer(false);
+				
+				
+				this.$('#scan_container').css('overflow', "scroll");
+				
+				
+				
+				var halfHeight = Math.floor(this.$('#scan_container').attr('scrollHeight')/4);
+				var halfWidth = Math.floor(this.$('#scan_container').attr('scrollWidth')/4);
+				
+				
+				//console.log("test time");
+				//console.log(layers);
+				//console.log("lets go!");
+				
+				
+				
+				for(arrKey in layers){
+					layers[arrKey].height *= 2;
+					
+					//layers[arrKey].width *= 2;
+					
+				}
+				//console.log(this.$('#images')[0]);
+				this.$('#images')[0].style.left=80;
+				this.$('#scan_container')[0].scrollTop = halfHeight;
+				this.$('#scan_container')[0].scrollLeft = halfWidth;
+				
+				this.$('#scan_container')[0].scrollTop = halfHeight;
+				this.$('#scan_container')[0].scrollLeft = halfWidth;
+				
+				
+				}
+			
+		},
+		zoomOut: function(event){
+			event.preventDefault();
+			if(this.zoom == 2){
+				for(arrKey in this.ctxArr){
+					this.ctxArr[arrKey].scale(.5,.5);
+					this.ctxArr[arrKey].clearRect(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
+				}
+				this.zoom = 1;
+			
+				for(arrKey in layers){
+					layers[arrKey].height /= 2;
+					
+				}
+				
+				this.$('#images')[0].style.left=0;
+				
+				
+			}
+			
+			this.$('#images')[0].style.left=40;
+			this.$('#scan_container')[0].scrollTop = 0;
+			this.$('#scan_container')[0].scrollLeft = 0;
+			this.$('#scan_container').css('overflow', "hidden");
+			this.getColorPointsForLayerAndPlayer(false);
 		},
 		cursorChangeIn: function(event) {
 			
@@ -283,6 +377,7 @@ components.drawing = function(){
 				if(layer == slide) {
 					
 					if(x>0&&y>0){
+						
 						pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
 					}
 					// Draw the ImageData at the given (x,y) coordinates.
@@ -299,9 +394,13 @@ components.drawing = function(){
 		},
 		startLine: function(event) {
 			event.preventDefault();
-			this.isDrawing = true;
-			this.oldX = event.clientX-this.canvas.offsetLeft+3;
-			this.oldY = event.clientY-this.canvas.offsetTop+29;
+			
+				
+				this.isDrawing = true;
+				this.oldX = event.clientX-this.canvas.offsetLeft+3;
+				this.oldY = event.clientY-this.canvas.offsetTop+29;
+			
+			
 		},
 		removeDuplicateElement: function(arrayName){
 		        var newArray=new Array();
@@ -316,6 +415,10 @@ components.drawing = function(){
 		drawLine: function(event) {
 			event.preventDefault();
 			if(this.isDrawing && !this.locked) {
+				var leftOffset = Math.floor(this.$('#scan_container')[0].scrollLeft/2);
+				var topOffset = Math.floor(this.$('#scan_container')[0].scrollTop/2);
+				//var leftOffset = 0;
+				//var topOffset = 0;
 				if(this.isErasing){
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
 					var yvar = event.clientY-this.canvas.offsetTop+29;
@@ -336,16 +439,16 @@ components.drawing = function(){
 						if(isVertical){
 							for (var ySubset = curY-2; ySubset < curY+2; ySubset++)
 								if(ySubset>0 && ySubset<this.canvas.height){
-									points[arrayPos] = {x: curX,
-										y: ySubset,
+									points[arrayPos] = {x: (Math.floor(curX/this.zoom)+leftOffset),
+										y:  (Math.floor(ySubset/this.zoom)+topOffset),
 										layer: layer};
 									arrayPos++;
 								}
 						}else{
 							for (var xSubset = curX-2; xSubset < curX+2; xSubset++)
 								if(xSubset>0 && xSubset<this.canvas.width){
-									points[arrayPos] = {x: xSubset,
-										y: curY,
+									points[arrayPos] = {x:  (Math.floor(xSubset/this.zoom)+leftOffset),
+										y: (Math.floor(curY/this.zoom)+topOffset),
 										layer: layer};
 									arrayPos++;
 								}
@@ -354,8 +457,8 @@ components.drawing = function(){
 					this.oldX = xvar;
 					this.oldY = yvar;
 					
-					remote.pointErased(me.get('current_case_id'), me.id, points);
-					this.erasePoint(points,this.ctxArr[me.id]);
+					remote.pointErased(me.get('current_case_id'), me.get('id'), points);
+					this.erasePoint(points,this.ctxArr[me.get('id')]);
 					
 				}else{
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
@@ -378,16 +481,16 @@ components.drawing = function(){
 						if(isVertical){
 							for (var ySubset = curY-Math.floor(penWidth/2); ySubset < curY+penWidth-Math.floor(penWidth/2); ySubset++)
 								if(ySubset>0 && ySubset<this.canvas.height){
-									points[arrayPos] = {x: curX,
-										y: ySubset,
+									points[arrayPos] = {x:  (Math.floor(curX/this.zoom)+leftOffset),
+										y:  (Math.floor(ySubset/this.zoom)+topOffset),
 										layer: layer};
 									arrayPos++;
 								}
 						}else{
 							for (var xSubset = curX-Math.floor(penWidth/2); xSubset < curX+penWidth-Math.floor(penWidth/2); xSubset++)
 								if(xSubset>0 && xSubset<this.canvas.width){
-									points[arrayPos] = {x: xSubset,
-										y: curY,
+									points[arrayPos] = {x:  (Math.floor(xSubset/this.zoom)+leftOffset),
+										y:  (Math.floor(curY/this.zoom)+topOffset),
 										layer: layer};
 									arrayPos++;
 								}
@@ -397,8 +500,8 @@ components.drawing = function(){
 					this.oldY = yvar;
 					
 					//this.drawLocally(points);
-					remote.pointColored(me.get('current_case_id'), me.id, points);
-					this.colorPoint(points, me.get('player_color'), this.ctxArr[me.id]);	
+					remote.pointColored(me.get('current_case_id'), me.get('id'), points);
+					this.colorPoint(points, me.get('player_color'), this.ctxArr[me.get('id')]);	
 				
 					
 				}
@@ -412,6 +515,7 @@ components.drawing = function(){
 			this.clearButtonStyles();
 			this.$('#drawingTool').addClass('red_button_active');
 			this.$('#erasingTool').addClass('red_button');
+
 		},
 		eraseTool: function(event) {
 			event.preventDefault();
@@ -428,6 +532,7 @@ components.drawing = function(){
 			this.$('#erasingTool').removeClass('red_button_active');
 			this.$('#drawingTool').removeClass('red_button');
 			this.$('#erasingTool').removeClass('red_button');	
+
 		},
 		endLine: function(event) {
 			event.preventDefault();
@@ -442,7 +547,6 @@ components.drawing = function(){
 			  
 				layer = $('.slider')[0].value;
 				for(ctxKey in this.ctxArr){
-					//var imageData=this.ctxArr[ctxKey].getImageData(0, 0, this.canvas.width, this.canvas.height);
 					this.ctxArr[ctxKey].clearRect(0, 0, this.canvas.width, this.canvas.height);
 				}
 				layers.each(function(n, el){
@@ -463,7 +567,6 @@ components.drawing = function(){
 			return curMin;
 		},
 		bwcc: function(imageData){
-
 			//Bwconncomp old version
 			//Takes matrtix as input
 			//Returns label matrix with uniquely labeled regions 
@@ -523,6 +626,7 @@ components.drawing = function(){
 			//console.log("even here");
 			return typeMatrix;
 		},
+
 		everyoneDoneButton: function (e){
 			e.preventDefault();
 		},
@@ -624,7 +728,7 @@ components.drawing = function(){
 				e.preventDefault();
 			}
 			currentView = 0;
-			friendbar = new FriendBar();
+			friendbar = new FriendBar;
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 			this.$('#friends_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
@@ -633,7 +737,7 @@ components.drawing = function(){
 			e.preventDefault();
 			this.saveListState();
 			currentView = 1;
-			friendbar = new FriendBar();
+			friendbar = new FriendBar;
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 			this.$('#friends_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
@@ -642,7 +746,7 @@ components.drawing = function(){
 			e.preventDefault();
 			this.saveListState();
 			currentView = 2;
-			friendBar = new FriendBar();
+			friendBar = new FriendBar;
 			this.$('#friends_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
@@ -660,11 +764,12 @@ components.drawing = function(){
 			var inputEl = this.$('#type')[0];
 			var chatEl = this.$('#chat_window')[0];
 			var message = inputEl.value;
+			
 			if(e.type == "click" || e.keyCode == 13 && message != '') {
-				$(chatEl).append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+me.get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+message+'</span></div>');
+				$(chatEl).append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+me.get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+message.replace(/&/g, "&amp;").replace(/</g,"&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;")+'</span></div>');
 				inputEl.value = '';
 				chatEl.scrollTop = chatEl.scrollHeight;
-				remote.sendChat(me.get('current_case_id'), me.id, message);
+				remote.sendChat(me.get('current_case_id'), me.get('id'), message);
 			}
 		},
 		receiveChat: function(player_id, message) {
@@ -672,12 +777,12 @@ components.drawing = function(){
      	 	// 
 			if (online_friends.get(player_id).get('current_case_id') == me.get('current_case_id')){
 				var chatEl = $('#chat_window')[0];
-				console.log (dThis.chatExpanded);
+				//console.log (dThis.chatExpanded);
 				if (!dThis.chatExpanded){
 					pendingMessages++;
 					console.log ('chat not expanded');
 					if ($('#chat_container').find('#chat_notification').size() == 0) {
-						console.log ('no chat window found');
+						//console.log ('no chat window found');
 						this.chat_notification_template = _.template($('#chat_notification_template').html());
 						$('#chat_container').append(this.chat_notification_template());
 						$('#chat_notification').html('<p>' + pendingMessages + '</p>');
@@ -759,14 +864,15 @@ components.drawing = function(){
 					online_friends.each(function(friend){
 						if (!friend.get('layer_enabled') && friend.get('current_case_id') == me.get('current_case_id')){
 							friend.toggleVisibility();
-							remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, friend.get('id'), layer, emit);
+							remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.get('id'), layer, emit);
 						}
 					});
 				} 
 			} else {
 				online_friends.each(function(friend){
-					if (friend.get('layer_enabled') || listState[friend.get ('id')].layer_enabled){
-						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, friend.get('id'), layer, emit);
+
+					if (friend.get('layer_enabled')){
+						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.get('id'), layer, emit);
 					}
 				});
 			}
@@ -781,10 +887,10 @@ components.drawing = function(){
 		    }
 		},
 		cursorMovement: _.throttle(function(e) {
-		  remote.cursorPosition(me.get('current_case_id'), me.id, layer, {x: e.pageX, y: e.pageY});
+		  remote.cursorPosition(me.get('current_case_id'), me.get('id'), layer, {x: e.pageX, y: e.pageY});
 		}, 50),
 		newCursorPosition: function(player, current_layer, position) {
-		  if(player != me.id && current_layer == layer && online_friends.get(player).get('layer_enabled') && online_friends.get(player).get('current_case_id') == me.get('current_case_id')) {
+		  if(player != me.get('id') && current_layer == layer && online_friends.get(player).get('layer_enabled') && online_friends.get(player).get('current_case_id') == me.get('current_case_id')) {
 		    var offset = $('#scan_container').offset();
 		    if(position.x-6 >= offset.left && position.x-6 <= (offset.left+offset.width) && position.y+3 >= offset.top && position.y+3 <= (offset.top+offset.height)) {
 		      if($('#cursor_'+player).size() == 0) {

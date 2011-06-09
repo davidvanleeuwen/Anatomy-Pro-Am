@@ -11,20 +11,20 @@ rfc3339 = require './rfc3339.js'
 
 storeUser = (userData, userCode) ->
 	##Will store user to DB.  
-	console.log 'store user'
+	#console.log 'store user'
 	addUser userData, (callback) ->
 		getUser userData.id, (cb) ->
 			if not cb.error
 				addOauthCredental cb.info.facebook_user.id, userCode, (callback) ->
-					console.log 'get user response back from adding oauth'
+					#console.log 'get user response back from adding oauth'
 					#console.log callback
 			else
-				console.log "this is coming from storeUser.getUser"
+				#console.log "this is coming from storeUser.getUser"
 				#console.log cb
 
 addOauthCredental = (userID, userCode, callback) ->
 	#/users/:user_id/facebook_user/authorizations(.:format)  
-	console.log userID + " " + userCode  
+	#console.log userID + " " + userCode  
 	dbPath = '/users/' + userID + '/facebook_user/authorizations.json' 
 	postData = {}
 	postData["id"] = config.fbconfig.internalAppID
@@ -38,7 +38,7 @@ addOauthCredental = (userID, userCode, callback) ->
 
 userDeauthed = (reqInfo, res) ->
 	#do something with deauthed user info
-	console.log(color "------------------- USER REMOVED APP! ----------------", 'red')
+	#console.log(color "------------------- USER REMOVED APP! ----------------", 'red')
 	#removed the following line as it started erroring - if we decide to use it i'll fix it
 	#console.log (JSON.parse(base64decode(reqInfo.body.signed_request.split('.')[1])).user_id)
 	#console.log(color "------------------- USER REMOVED APP! ----------------", 'red')
@@ -46,16 +46,16 @@ userDeauthed = (reqInfo, res) ->
 
 userDeclinedAccess = (reqInfo,res) ->
 	#so something when a user declines using the app from the access window
-	console.log color "------------------- USER DENIED TERMS ----------------", 'red'
-	console.log(reqInfo.query.error_reason)
-	console.log(reqInfo.query.error)
-	console.log(reqInfo.query.error_description)
-	console.log color "------------------- USER DENIED TERMS ----------------", 'red'
+	#console.log color "------------------- USER DENIED TERMS ----------------", 'red'
+	#console.log(reqInfo.query.error_reason)
+	#console.log(reqInfo.query.error)
+	#console.log(reqInfo.query.error_description)
+	#console.log color "------------------- USER DENIED TERMS ----------------", 'red'
 	res.redirect ('http://www.wisc.edu')
 
 authresponse = (req, res) ->
 	if req.query.code
-		console.log color "------------------- USER ACCEPTED TERMS, REQUESTING ACCESS TOKEN ----------------", 'green'
+		#console.log color "------------------- USER ACCEPTED TERMS, REQUESTING ACCESS TOKEN ----------------", 'green'
 		##compile access token requirements
 		path = '/oauth/access_token'
 		args = {
