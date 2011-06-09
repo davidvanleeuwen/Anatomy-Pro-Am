@@ -586,6 +586,24 @@ height:30px; width:30px;}
     
 }
 
+.red_button_active{
+    background:url(../images/red_button_bg.png) repeat-x;
+    margin:5px 10px 0 10px;
+    height:35px;
+    float:left;
+    
+    -moz-border-radius:5px;
+    -webkit-border-radius:5px;
+    border-radius:5px;
+    -khtml-border-radius:5px;
+    
+    border-top: 1px solid #FFFFFF;
+    border-bottom: 1px solid #FFFFFF;
+	border-left: 1px solid #FFFFFF;
+    border-right: 1px solid #FFFFFF;
+    
+}
+
 .red_button:hover{
     background:url(../images/red_button_hover_bg.png) repeat-x;
 }
@@ -602,6 +620,28 @@ height:30px; width:30px;}
 }
 
 .red_button span{
+    margin:5px 10px 5px 10px;
+    height:100%;
+    width:100%;
+    display:block;
+}
+
+.red_button_active:hover{
+    background:url(../images/red_button_hover_bg.png) repeat-x;
+}
+
+.red_button_active a{
+    background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#d3d3d3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family:SteelfishRegular;
+    color:#ffffff;
+    font-size:21px;
+    display:block;
+    float:left;
+}
+
+.red_button_active span{
     margin:5px 10px 5px 10px;
     height:100%;
     width:100%;
