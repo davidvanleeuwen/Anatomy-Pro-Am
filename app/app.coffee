@@ -52,10 +52,14 @@ exports.createServer = (app) ->
 		@getColoredPointsForThisLayerAndPlayer = (activity_id, requester_id, player, layer, emit) ->
 			activityManager.current[activity_id].getPointsForPlayer layer, player, (points) ->
 				emit.apply emit, ['setColoredPointsForThisLayer', {player: player, payload: points} ]
-		@done = (player_id) -> 
-		    #yes, this is empty for now - it is connected to the done button in the computer view and will be used eventually
-		@notDone = (player_id) ->
-			#also implemented by not used just yet
+		@done = (player) -> 
+			console.log player
+			activityManager.current[player.current_case_id].playerDone player, (result)  ->
+				if result == true
+					sessionManager.publish 'everyoneIsDone', player.current_case_id
+		@notDone = (player) ->
+			activityManager.current[player.current_case_id].playerNotDone player
+			sessionManager.publish 'playerNotDone', player.current_case_id
 		@joinActivity = (activity_id, player) ->
 			activityManager.current[activity_id].addPlayer(player)
 			sessionManager.setActivity player, activity_id

@@ -160,8 +160,15 @@ class ContouringActivity
 	    @activityData.newChat player_id, message    
 	getChatHistoryForActivity: (callback) ->
 	    return @activityData.getChatHistoryForActivity callback
-	
-
+	playerDone: (player, callback) ->
+		@players[player.id].isDone = true
+		result = true;
+		_.each @players, (player) ->
+			if player.isDone != true
+				result = false;
+		callback result
+	playerNotDone: (player) ->
+		@players[player.id].isDone = false
 ###
 #	CONTOURING ACTIVTY DATA
 ###

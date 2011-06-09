@@ -91,7 +91,16 @@ components.drawing = function(){
 			em.on('playerLeft', function (player_id){
 				online_friends.fetch();
 			});
-			
+			em.on('playerNotDone', function (player_case_id){
+				if (player_case_id == me.get('current_case_id')){
+					console.log ('were not done anymore');
+				}
+			}.bind(this));
+			em.on('everyoneIsDone', function (player_case_id){
+				if (player_case_id == me.get('current_case_id')){
+					console.log ('Everyone Is Done');
+				}
+			}.bind(this));
 			em.on('setColor', function (color){
 				console.log (color);
 				me.set({player_color:color.payload},{silent: true});
@@ -183,6 +192,7 @@ components.drawing = function(){
 		  em.removeAllListeners('setChatHistory');
 		  em.removeAllListeners('newChat');
 		  em.removeAllListeners('newCursorPosition');
+		  em.removeAllListeners('playerNotDone');
 		},
 		canvasMerge: function() {
 			/*Function is presently not necessary
@@ -519,10 +529,13 @@ components.drawing = function(){
 		doneButton: function (e){
 			e.preventDefault();
 			if (!this.locked){
-				remote.done(me.id);
+				remote.done(me);
+				$('#done_text').text('UNLOCK');
 			}else{
-				remote.notDone(me.id);
+				remote.notDone(me);
+				$('#done_text').text("I'M DONE");
 			}
+			this.locked = !this.locked;
 		},
 		done: function(event) {
 			event.preventDefault();
@@ -743,16 +756,13 @@ components.drawing = function(){
 			if(showAll) {
 				this.locked = !this.locked;
 				if(this.locked) {
-					$('#done_text').text('UNLOCK');
 					online_friends.each(function(friend){
 						if (!friend.get('layer_enabled') && friend.get('current_case_id') == me.get('current_case_id')){
 							friend.toggleVisibility();
 							remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, friend.get('id'), layer, emit);
 						}
 					});
-				} else {
-					$('#done_text').text("I'M DONE");
-				}
+				} 
 			} else {
 				online_friends.each(function(friend){
 					if (friend.get('layer_enabled') || listState[friend.get ('id')].layer_enabled){
