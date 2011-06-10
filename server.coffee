@@ -100,6 +100,7 @@ server.all '/friends/:activity_id?', (req, res) ->
 			current_case_id: player.currentActivity,
 			isDone: false;
 			everyoneDone: false;
+			hasSubmitted: false;
 			})
 	res.send(JSON.stringify(output))
 

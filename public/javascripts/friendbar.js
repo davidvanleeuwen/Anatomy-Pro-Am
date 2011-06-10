@@ -46,11 +46,16 @@ components.friendbar = function(){
 			}
 			this.$('.fb_player').attr('id', this.model.get('id'));
 			this.$('.fb_player_img').attr('style', 'background: url(\'' + this.model.get('avatar')  + '\');');
-			this.$('.fb_im_done').attr('style', 'background: url(\'images/imdone_unchecked_small.png\');');
 			this.$('.fb_player_name').text(this.model.get('name'));
-			if (this.model.get('current_case_id') == me.get('current_case_id')){
+			if ((this.model.get('current_case_id') == me.get('current_case_id')) && currentView == 0){
 				if (this.model.get('isDone')){
-					this.$('.fb_im_done').attr('style', 'background: url(\'images/imdone_checked_small.png\');');
+					if (this.model.get('hasSubmitted')){
+						
+						this.$('.fb_im_done').attr('style', 'background: url(\'images/scoreit_unchecked_small.png\');');
+					}else{
+						this.$('.fb_im_done').attr('style', 'background: url(\'images/imdone_checked_small.png\');');
+						
+					}
 				}else{
 					this.$('.fb_im_done').attr('style', 'background: url(\'images/imdone_unchecked_small.png\');');
 				}

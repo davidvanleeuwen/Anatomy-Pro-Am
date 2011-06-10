@@ -36,7 +36,9 @@ components.drawing = function(){
 			'click #cursorTool':'cursorTool',
 			'click #zoomInTool':'zoomIn',
 			'click #zoomOutTool':'zoomOut',
-			'mousemove #scan_container': 'cursorMovement'
+			'mousemove #scan_container': 'cursorMovement',
+			'click #open_leaderboard_button':'openLeaderboardButton',
+			'click #close_scorecard_button':'closeScorecardButton'
 		},
 		initialize: function() {
 			window.dThis=this;
@@ -48,6 +50,7 @@ components.drawing = function(){
 			this.infoExpanded = false;
 			this.cursorToolEnabled = true;
 			this.everyoneDone = false;
+			this.hideEveryone = false;
 			//online_friends.bind('change', this.collectionChanged);
 		},
 		render: function() {
@@ -97,13 +100,14 @@ components.drawing = function(){
 			});
 			em.on('playerIsDone', function (player){
 					online_friends.get(player.id).set({isDone:true});
-						console.log ( online_friends.get(player.id));
+			}.bind(this));
+			em.on('playerSubmitted', function (player){
+					online_friends.get(player.id).set({hasSubmitted:true});
 			}.bind(this));
 			em.on('playerNotDone', function (player){
 				if (player.current_case_id == me.get('current_case_id')){
 					online_friends.get(player.id).set({isDone:false});
-						console.log ( online_friends.get(player.id));
-					console.log ('were not done anymore');
+					online_friends.get(player.id).set({hasSubmitted:false});
 					this.everyoneDone = false;
 					this.$('#score_button').removeClass('red_button');
 					this.$('#score_button').addClass('red_button_disabled');
@@ -111,7 +115,6 @@ components.drawing = function(){
 			}.bind(this));
 			em.on('everyoneIsDone', function (player){
 				if (player.current_case_id == me.get('current_case_id')){
-					console.log ('Everyone Is Done');
 					this.everyoneDone = true;
 					this.$('#score_button').addClass('red_button');
 					this.$('#score_button').removeClass('red_button_disabled');
@@ -119,15 +122,13 @@ components.drawing = function(){
 			}.bind(this));
 			em.on('scoreEveryone', function (player){
 				if (player.current_case_id == me.get('current_case_id')){
+					$("#score_popup_tag").show();
 					this.done();
 				}
 			}.bind(this));
 			em.on('setColor', function (color){
-				console.log (color);
 				me.set({player_color:color.payload},{silent: true});
 				online_friends.get(me.get('id')).set({player_color:color.payload},{silent: true});
-				console.log (me);
-				console.log (online_friends.get(me.get('id')));
 				online_friends.fetch();
 			});
 			em.on('pointColored', function (player_id, points) {
@@ -187,14 +188,21 @@ components.drawing = function(){
 			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 40));
 			
+			var slider;
+			slider = YAHOO.widget.Slider.getHorizSlider("slider-bg", "slider-thumb", 0, (imageRefs.length - 1) * 40, 40);
+			slider.subscribe('slideEnd', function(){
+				this.changeLayer(slider.getValue() / 40);
+			}.bind(this));
+			$('#slider-bg').css({'height': 20, 'width':(imageRefs.length) * 33});
 			var counter = 0;
 			imageRefs.forEach(function(img){
-				var distance = (counter * 40);
+				var distance = (counter * 40) + 5;
 				var tickTemplate = '<div class="tick" style="padding-left:' + distance + 'px;">' + (counter + 1) + '</div>';
 				this.$('#images').append('<img src="'+img+'" style="display: none;" />');
 				this.$('#tick_holder').append(tickTemplate);
 				counter++;
 			});
+			
 
 			layers = this.$('#images').children();
 			$(layers[0]).show();
@@ -249,6 +257,14 @@ components.drawing = function(){
 				*/
 		
 			
+		},
+		openLeaderboardButton: function(e){
+			e.preventDefault();
+			this.goBack(e);
+		},
+		closeScorecardButton: function (e){
+			e.preventDefault();
+			this.goBack(e);
 		},
 		goBack: function(e) {
 			e.preventDefault();
@@ -385,7 +401,6 @@ components.drawing = function(){
 		},
 		cursorChangeOut: function(event) {
 			document.body.style.cursor='default';
-			
 		},
 		erasePoint: function(points,context) {
 			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
@@ -398,7 +413,6 @@ components.drawing = function(){
 				if(layer == slide) {
 					
 					if(x>0&&y>0){
-						
 						pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
 					}
 					// Draw the ImageData at the given (x,y) coordinates.
@@ -559,14 +573,14 @@ components.drawing = function(){
 			event.preventDefault();
 			this.isDrawing = false;
 		},
-		changeLayer: function(event) {
-			if($('.slider')[0].value != layer){
+		changeLayer: function(sliderValue) {
+			if(sliderValue != layer){
 			  // remove all cursors
 			  $('.cursors').each(function(i, el) {
 			    $(el).remove();
 			  });
 			  
-				layer = $('.slider')[0].value;
+				layer = sliderValue;
 				for(ctxKey in this.ctxArr){
 					this.ctxArr[ctxKey].clearRect(0, 0, this.canvas.width, this.canvas.height);
 				}
@@ -670,8 +684,22 @@ components.drawing = function(){
 		},
 		done: function() {
 			var self = this;
+			var totalScore = 0;
+			var totalPlayers = 0;
 			online_friends.each(function(friend){
 				if (friend.get('current_case_id') == me.get('current_case_id')){
+					totalPlayers++;
+					var nameString = '<li><span style="color:#' + friend.get("player_color") + '">' + friend.get("name") + '</span></li>';
+					var scoreString = '<li><span class="des_cancer" id="hit_' + friend.get("id") + '"> 0 </span> - <span class="des_healthy" id="missed_' + friend.get("id") + '">0</span> = <span id="total_' + friend.get("id") + '" style="color:#' + friend.get('player_color') + '">0</span></li>';
+					$("#score_names_ul").append(nameString);
+					$("#score_number_ul").append(scoreString);
+				}
+			});
+			
+			online_friends.each(function(friend){
+				if (friend.get('current_case_id') == me.get('current_case_id')){
+					var scoreHit = 0;
+					var scoreMissed = 0;
 					var color = friend.get('player_color');
 					var context = this.ctxArr[friend.get('id')];
 					var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
@@ -697,24 +725,27 @@ components.drawing = function(){
 					}
 					context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 					context.putImageData(imageData, 0, 0);
-
-					var scoreHit = 0;
-					//var goalArray;
-					var scoreMissed = 0;
-
 					for(var y = 0; y < imageData.height; y++){
 						for(var x = 0; x < imageData.width; x++){
 							if((x > (imageData.width/6) && x < (2*imageData.width/6))
 								&& (y > (imageData.height/6) && y < (2*imageData.height/6))){
-									if(pix[((y*(imageData.width*4)) + (x*4)) + 3]== 100){ scoreHit++;
-									}else{scoreMissed++;}
+									if(pix[((y*(imageData.width*4)) + (x*4)) + 3]== 100){ 
+										scoreHit++;
+									}else{
+										scoreMissed++;
+									}
+									$('#hit_' + friend.get("id")).text(scoreHit);
+									$('#missed_' + friend.get("id")).text(scoreMissed / 4);
+									$('#total_' + friend.get("id")).text(scoreHit - (scoreMissed / 4));
 							}
 						}
 					}
-
+					totalScore += (scoreHit - (scoreMissed * .25));
 					//alert("Your score " + scoreHit + " out of: " + (scoreHit+scoreMissed) + " or " + (100*scoreHit/(scoreHit+scoreMissed) + "%"));
 				}
 			}.bind(this));
+			var t = 0;
+			$("#numbers_total_ul").append('<li>' + (totalScore / totalPlayers) + '</li>');
 		},
 		expandInfo: function (e) { //added to allow current case info roll down
 			e.preventDefault();
@@ -739,12 +770,24 @@ components.drawing = function(){
 		},
 		hideDrawing: function (e){ //added to allow hiding of all drawings 
 			e.preventDefault();
-			online_friends.each(function(friend){
-				if (friend.get('layer_enabled')){
-					window.dThis.ctxArr[friend.get('id')].clearRect(0, 0, window.dThis.canvas.width, window.dThis.canvas.height);
-					friend.toggleVisibility();
-				}
-			});
+			this.hideEveryone = !this.hideEveryone
+			if (this.hideEveryone){
+				this.saveListState(e);
+				$("#hide_drawing").html("<a href=''><span>SHOW DRAWINGS</span></a>");
+				online_friends.each(function(friend){
+					if (friend.get('layer_enabled')){
+						window.dThis.ctxArr[friend.get('id')].clearRect(0, 0, window.dThis.canvas.width, window.dThis.canvas.height);
+						friend.toggleVisibility();
+					}
+				});
+			}else{	
+				$("#hide_drawing").html("<a href=''><span>HIDE DRAWINGS</span></a>");
+				_.each(listState, function(friend){
+					console.log (friend);
+					online_friends.get(friend.id).set({layer_enabled: friend.layer_enabled});
+				});
+				this.getColorPointsForLayerAndPlayer(true);
+			}
 		},
 		resetDrawing: function (e){ //added to allow reset of entire drawing (clear all my points)
 			e.preventDefault();
@@ -782,7 +825,8 @@ components.drawing = function(){
 			if (currentView == 0){
 				listState = {}
 				online_friends.each (function (f){
-					listState[f.get ('id')] = {layer_enabled: f.get('layer_enabled')};
+					listState[f.get ('id')] = {id: f.get('id'), layer_enabled: f.get('layer_enabled')};
+					console.log (f.get('layer_enabled'));
 				});
 			}
 		},

@@ -63,6 +63,7 @@ exports.createServer = (app) ->
 			activityManager.current[player.current_case_id].playerNotDone player
 			sessionManager.publish 'playerNotDone', player
 		@submitScore = (player) ->
+			sessionManager.publish 'playerSubmitted', player
 			activityManager.current[player.current_case_id].submitScore player, (result) ->
 				if result == true
 					sessionManager.publish 'scoreEveryone', player

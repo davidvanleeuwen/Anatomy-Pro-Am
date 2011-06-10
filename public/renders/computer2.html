@@ -150,9 +150,16 @@
 					</div>
 				</div>
                 <div id="slider">
-		
+					<!-- removing range input for now as only chrome supports it.
 					<input type="range" id="slider_input" class="slider" min="0" max="3" value="0" />
-      
+      				
+					replacing with YUI slider -->
+					
+					<div id="slider-bg" class="yui-h-slider" title="Slider">
+					    <div id="slider-thumb" class="yui-slider-thumb"><img src="http://yui.yahooapis.com/2.9.0/build/slider/assets/thumb-n.gif"></div>
+					</div>
+					
+
 					<div id="tick_holder">
 						<!--holds tick marks for slider-->
 					</div>
@@ -292,6 +299,46 @@
 	                </div>
 
 		            </div>
+					<!-- SCORECARD -->
+
+
+				<div class="score_popup" id='score_popup_tag'>
+					<div class="score_title">
+						<h1>SCORECARD</h1>
+					</div>
+					<div class="score_description">
+						<p>Your score is:<br /> <span class="des_cancer">Cancer Identified</span> - <span class="des_healthy">Healthy Tissue Killed</span></p>
+					</div>
+					<div class="score_names">
+						<ul class="names" id='score_names_ul'>
+						<!-- <li><span>Greg</span></li> -->
+						</ul>
+					</div>
+					<div class="score_numbers">
+						<ul class="numbers" id='score_number_ul'>
+						<!--<li><span class="des_cancer">250</span> - <span class="des_healthy">100</span> = <span>150</span></li> -->
+						</ul>
+					</div>
+					<div class="score_divider">
+					</div>
+					<div class="total_score">
+						<ul class="names_total">
+						<li>Team Score:</li>
+						</ul>
+						<ul class="numbers_total" id='numbers_total_ul'>
+						<!--<li>752</li>-->
+						</ul>
+					</div>
+					<div class="score_divider">
+					</div>
+					<div class="leaderboard_button" id='open_leaderboard_button'>
+						<a href=""><span>LEADERBOARD</span></a>
+					</div>
+					<div class="close_scorecard_button" id='close_scorecard_button'>
+						<a href=""><span>CLOSE</span></a>
+					</div>
+				</div>
+
             </div>	
 
 			
