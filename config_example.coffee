@@ -27,10 +27,9 @@ exports.sql = {
 
 # Facebook settings
 exports.fbconfig = {
-
-	appId: '195426547154882'
-	apiKey: '31140e3cf6361171d37ce76eaabfac78'
-	appSecret: '4fc5dd2a7e9946b959504ab1f229b6bc'
+	appId: '1234'
+	apiKey: '1234'
+	appSecret: '1234'
 	redirect_uri: 'http://c.apa.dev.mirerca.com/authresponse/'
 	url: 'http://apps.facebook.com/anatomy_pro-am/'
 	signedup: 'http://c.apa.dev.mirerca.com/finishedsignin/'

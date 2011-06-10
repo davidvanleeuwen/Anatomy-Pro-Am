@@ -44,9 +44,8 @@ components.drawing = function(){
 			this.zoom = 1;
 			this.locked = false;
 			this.chatExpanded = false;
-			this.cursorToolEnabled = false;
-			online_friends.bind('change', this.collectionChanged);
-			
+			this.cursorToolEnabled = true;
+			//online_friends.bind('change', this.collectionChanged);
 		},
 		render: function() {
 			if (view.computer) {
@@ -66,7 +65,7 @@ components.drawing = function(){
 		setupView: function() {
 			window.friendbar = new FriendBar;
 			this.$('#current_info_container').hide();
-			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
+			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.get('id')).get('player_color'));
 			this.canvasArr = {};
 			this.ctxArr = {};
 			this.index = 0;
@@ -89,12 +88,26 @@ components.drawing = function(){
 			/* Retreive chat messages */
 			remote.getChatHistoryForActivity(me.get('current_case_id'), emit);
 			
+			/* Retrieve my color */
+			remote.getColor(me.get('current_case_id'), me.get('id'), emit);
 			
 			/*********************************************
 			*               Event listeners              *
 			**********************************************/
 			
-			em.on('pointColored', function(player_id, points) {
+			em.on('playerLeft', function (player_id){
+				online_friends.fetch();
+			});
+			
+			em.on('setColor', function (color){
+				console.log (color);
+				me.set({player_color:color.payload},{silent: true});
+				online_friends.get(me.get('id')).set({player_color:color.payload},{silent: true});
+				console.log (me);
+				console.log (online_friends.get(me.get('id')));
+				online_friends.fetch();
+			});
+			em.on('pointColored', function (player_id, points) {
 				if (online_friends.get(player_id).get('layer_enabled')){
 					if(player_id != me.id)
 						this.localDrawEvent(points, online_friends.get(player_id).get('player_color'), this.ctxArr[player_id]);	
@@ -194,8 +207,6 @@ components.drawing = function(){
 			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 40));
 			
-			
-			
 			var counter = 0;
 			imageRefs.forEach(function(img){
 				var distance = (counter * 40);
@@ -209,7 +220,7 @@ components.drawing = function(){
 			$(layers[0]).show();
 			// refactor to put images/slides/layers ?? into models/collections with attribute active: true
 			window.layer = 0;
-			remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, me.id, layer, emit);
+			remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), me.get('id'), layer, emit);
 		},
 		removeAllListeners: function() {
 		  em.removeAllListeners('pointColored');
@@ -257,6 +268,8 @@ components.drawing = function(){
 		},
 		goBack: function(e) {
 			e.preventDefault();
+			remote.leftActivity (me.get('current_case_id'), me);
+			me.set({current_case_id:0},{silent:true});
 			delete this;
 			new CaseView;
 		},
@@ -519,10 +532,11 @@ components.drawing = function(){
 					}
 					this.oldX = xvar;
 					this.oldY = yvar;
-					
+			
 					remote.pointErased(me.get('current_case_id'), me.id, points);
 					this.localEraseEvent(points, this.ctxArr[me.id]);
 					
+
 					
 				}else{
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
@@ -564,8 +578,10 @@ components.drawing = function(){
 					this.oldY = yvar;
 					
 					//this.drawLocally(points);
+
 					remote.pointColored(me.get('current_case_id'), me.id, points);
 					this.localDrawEvent(points, me.get('player_color'), this.ctxArr[me.id]);	
+
 				
 					
 				}
@@ -574,13 +590,13 @@ components.drawing = function(){
 		drawTool: function(event) {
 			event.preventDefault();
 			this.isErasing = false;
-			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
+			this.$('.drawingTool').attr('style', 'background:' + online_friends.get(me.get('id')).get('player_color'));
 			this.$('.erasingTool').attr('style', 'background: #FFFFFF');
 		},
 		eraseTool: function(event) {
 			event.preventDefault();
 			this.isErasing = true;
-			this.$('.erasingTool').attr('style', 'background:' + online_friends.get(me.id).get('player_color'));
+			this.$('.erasingTool').attr('style', 'background:' + online_friends.get(me.get('id')).get('player_color'));
 			this.$('.drawingTool').attr('style', 'background: #FFFFFF');
 		},
 		endLine: function(event) {
@@ -635,13 +651,13 @@ components.drawing = function(){
 			}
 		},
 		arrayMin: function(array) {
-			var curMin = array[0];
+				var curMin = array[0];
 			for(var c = 1; c < array.length; c++)
 				if(curMin > array[c])curMin = array[c];
 			return curMin;
 		},
 		bwcc: function(imageData){
-			
+
 			//Bwconncomp old version
 			//Takes matrtix as input
 			//Returns label matrix with uniquely labeled regions 
@@ -649,16 +665,16 @@ components.drawing = function(){
 			var height = imageData.height;
 			var nextLabel = 0;
 			var pix = imageData.data;
-			
+
 			var linked = new Array();
 			var typeMatrix = new Array();
-			
+
 			for(var y = 0; y < height; y++){
 				//console.log("y and height is");
 				//console.log(y);
 				console.log(height);
 				for(var x = 0; x < width; x++){
-					
+
 					 if((x>0 && y>0)
 					 && (pix[((y*(width*4)) + ((x-1)*4)) + 3]==pix[((y*(width*4)) + (x*4)) + 3])
 					 && (pix[(((y-1)*(width*4)) + (x*4)) + 3]==pix[((y*(width*4)) + (x*4)) + 3])
@@ -692,7 +708,7 @@ components.drawing = function(){
 					var temp = linked[typeMatrix[y*(width) + x]];
 					//console.log(typeMatrix[y*(width) + x]);
 					typeMatrix[y*(width) + x] = this.arrayMin(temp);
-					
+
 					//console.log(linked[typeMatrix[y*(width) + x]].length );
 				}
 			}	
@@ -703,51 +719,50 @@ components.drawing = function(){
 		},
 		done: function(event) {
 			event.preventDefault();
-			//alert("ok here");
-			//remote.done(me.id);
-			var color = me.get('player_color');
-			var context = this.ctxArr[me.id];
-			var imageData=context.getImageData(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
-			var pix = imageData.data;
-			var redVal = (parseInt(color.substr(0,2),16));
-			var greenVal = (parseInt(color.substr(2,2),16));
-			var blueVal = (parseInt(color.substr(4,2),16));
-			var typeMatrix = this.bwcc(imageData);
-			
-			//Replace former with latter
-			
-			for(var y = 0; y < imageData.height; y++){
-				for(var x = 0; x < imageData.width; x++){
-					if(typeMatrix[y*(imageData.width) + x] == 0){
-						pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
-					}else if(pix[((y*(imageData.width*4)) + (x*4)) + 3] == 0){
-							pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
-							pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
-							pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
-							pix[((y*(imageData.width*4)) + (x*4)) + 3]=100;
+
+			remote.done(me.get('id'));
+			this.getColorPointsForLayerAndPlayer(true);
+			if (this.locked == true){
+				var color = me.get('player_color');
+				var context = this.ctxArr[me.get('id')];
+				var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+				var pix = imageData.data;
+				var redVal = (parseInt(color.substr(0,2),16));
+				var greenVal = (parseInt(color.substr(2,2),16));
+				var blueVal = (parseInt(color.substr(4,2),16));
+				var typeMatrix = this.bwcc(imageData);
+				for(var y = 0; y < imageData.height; y++){
+					for(var x = 0; x < imageData.width; x++){
+						if(typeMatrix[y*(imageData.width) + x] == 0){
+							pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
+						}else{	
+								pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
+								pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
+								pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
+								pix[((y*(imageData.width*4)) + (x*4)) + 3]=100;
+						}
 					}
 				}
-			}
-			context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-			context.putImageData(imageData, 0, 0);
-			
-			var scoreHit = 0;
-			//var goalArray;
-			var scoreMissed = 0;
-			
-			for(var y = 0; y < imageData.height; y++){
-				for(var x = 0; x < imageData.width; x++){
-					if((x > (imageData.width/6) && x < (2*imageData.width/6))
-						&& (y > (imageData.height/6) && y < (2*imageData.height/6))){
-							if(pix[((y*(imageData.width*4)) + (x*4)) + 3]== 100){ scoreHit++;
-							}else{scoreMissed++;}
+				context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+				context.putImageData(imageData, 0, 0);
+
+				var scoreHit = 0;
+				//var goalArray;
+				var scoreMissed = 0;
+
+				for(var y = 0; y < imageData.height; y++){
+					for(var x = 0; x < imageData.width; x++){
+						if((x > (imageData.width/6) && x < (2*imageData.width/6))
+							&& (y > (imageData.height/6) && y < (2*imageData.height/6))){
+								if(pix[((y*(imageData.width*4)) + (x*4)) + 3]== 100){ scoreHit++;
+								}else{scoreMissed++;}
+						}
 					}
 				}
-			}
-			
-			alert("Your score " + scoreHit + " out of: " + (scoreHit+scoreMissed) + " or " + (100*scoreHit/(scoreHit+scoreMissed) + "%"));
-			
-			//this.getColorPointsForLayerAndPlayer(true);
+
+				//alert("Your score " + scoreHit + " out of: " + (scoreHit+scoreMissed) + " or " + (100*scoreHit/(scoreHit+scoreMissed) + "%"));
+
+			}	
 		},
 		expandInfo: function (e) { //added to allow current case info roll down
 			e.preventDefault();
@@ -783,7 +798,7 @@ components.drawing = function(){
 				e.preventDefault();
 			}
 			currentView = 0;
-			friendbar = new FriendBar();
+			friendbar = new FriendBar;
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 			this.$('#friends_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
@@ -792,7 +807,7 @@ components.drawing = function(){
 			e.preventDefault();
 			this.saveListState();
 			currentView = 1;
-			friendbar = new FriendBar();
+			friendbar = new FriendBar;
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 			this.$('#friends_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
@@ -801,7 +816,7 @@ components.drawing = function(){
 			e.preventDefault();
 			this.saveListState();
 			currentView = 2;
-			friendBar = new FriendBar();
+			friendBar = new FriendBar;
 			this.$('#friends_tab').attr('style','background: url(../images/tab_bg_active.png) repeat-x');
 			this.$('#online_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
 			this.$('#team_tab').attr('style','background: url(../images/tab_bg.png) repeat-x');
@@ -819,36 +834,39 @@ components.drawing = function(){
 			var inputEl = this.$('#type')[0];
 			var chatEl = this.$('#chat_window')[0];
 			var message = inputEl.value;
+			
 			if(e.type == "click" || e.keyCode == 13 && message != '') {
-				$(chatEl).append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+me.get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+message+'</span></div>');
+				$(chatEl).append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+me.get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+message.replace(/&/g, "&amp;").replace(/</g,"&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;")+'</span></div>');
 				inputEl.value = '';
 				chatEl.scrollTop = chatEl.scrollHeight;
-				remote.sendChat(me.get('current_case_id'), me.id, message);
+				remote.sendChat(me.get('current_case_id'), me.get('id'), message);
 			}
 		},
 		receiveChat: function(player_id, message) {
      	 	// should be fixed serverside - publish to other clients!
      	 	// 
-			var chatEl = $('#chat_window')[0];
-			console.log (dThis.chatExpanded);
-			if (!dThis.chatExpanded){
-				pendingMessages++;
-				console.log ('chat not expanded');
-				if ($('#chat_container').find('#chat_notification').size() == 0) {
-					console.log ('no chat window found');
-					this.chat_notification_template = _.template($('#chat_notification_template').html());
-					$('#chat_container').append(this.chat_notification_template());
-					$('#chat_notification').html('<p>' + pendingMessages + '</p>');
-				}else{
-					$('#chat_notification').html('<p>' + pendingMessages + '</p>');
+			if (online_friends.get(player_id).get('current_case_id') == me.get('current_case_id')){
+				var chatEl = $('#chat_window')[0];
+				//console.log (dThis.chatExpanded);
+				if (!dThis.chatExpanded){
+					pendingMessages++;
+					console.log ('chat not expanded');
+					if ($('#chat_container').find('#chat_notification').size() == 0) {
+						//console.log ('no chat window found');
+						this.chat_notification_template = _.template($('#chat_notification_template').html());
+						$('#chat_container').append(this.chat_notification_template());
+						$('#chat_notification').html('<p>' + pendingMessages + '</p>');
+					}else{
+						$('#chat_notification').html('<p>' + pendingMessages + '</p>');
+					}
+				}
+		      	if(player_id != me.get('id')) {
+			        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
+			        $('#cursor_'+player_id+' .cursor_blob').html(message);
+			        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
+			        chatEl.scrollTop = chatEl.scrollHeight;
 				}
 			}
-	      	if(player_id != me.get('id')) {
-		        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
-		        $('#cursor_'+player_id+' .cursor_blob').html(message);
-		        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
-		        chatEl.scrollTop = chatEl.scrollHeight;
-		      }
 		},
 		setChatHistory: function(data) {
 		  var chatEl = $('#chat_window')[0];
@@ -914,9 +932,9 @@ components.drawing = function(){
 				if(this.locked) {
 					$('#done_text').text('UNLOCK');
 					online_friends.each(function(friend){
-						if (!friend.get('layer_enabled')){
+						if (!friend.get('layer_enabled') && friend.get('current_case_id') == me.get('current_case_id')){
 							friend.toggleVisibility();
-							remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, friend.get('id'), layer, emit);
+							remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.get('id'), layer, emit);
 						}
 					});
 				} else {
@@ -925,7 +943,7 @@ components.drawing = function(){
 			} else {
 				online_friends.each(function(friend){
 					if (friend.get('layer_enabled')){
-						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.id, friend.get('id'), layer, emit);
+						remote.getColoredPointsForThisLayerAndPlayer(me.get('current_case_id'), me.get('id'), friend.get('id'), layer, emit);
 					}
 				});
 			}
@@ -940,10 +958,10 @@ components.drawing = function(){
 		    }
 		},
 		cursorMovement: _.throttle(function(e) {
-		  remote.cursorPosition(me.get('current_case_id'), me.id, layer, {x: e.pageX, y: e.pageY});
+		  remote.cursorPosition(me.get('current_case_id'), me.get('id'), layer, {x: e.pageX, y: e.pageY});
 		}, 50),
 		newCursorPosition: function(player, current_layer, position) {
-		  if(player != me.id && current_layer == layer && this.cursorToolEnabled) {
+		  if(player != me.get('id') && current_layer == layer && online_friends.get(player).get('layer_enabled') && online_friends.get(player).get('current_case_id') == me.get('current_case_id')) {
 		    var offset = $('#scan_container').offset();
 		    if(position.x-6 >= offset.left && position.x-6 <= (offset.left+offset.width) && position.y+3 >= offset.top && position.y+3 <= (offset.top+offset.height)) {
 		      if($('#cursor_'+player).size() == 0) {

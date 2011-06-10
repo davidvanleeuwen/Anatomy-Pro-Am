@@ -52,9 +52,13 @@ $(function(){
 			em.on('Continue', function(){
 				new CaseView;
 			});
+			em.on('AdminPanel', function(){
+				new AdminView;
+			});
 		});
 		window.app = new AppView;
 		
+		components.adminView();
 		components.cases();
 		components.friendbar();
 		components.drawing();	

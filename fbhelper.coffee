@@ -11,21 +11,20 @@ rfc3339 = require './rfc3339.js'
 
 storeUser = (userData, userCode) ->
 	##Will store user to DB.  
-	console.log 'store user'
+	#console.log 'store user'
 	addUser userData, (callback) ->
 		getUser userData.id, (cb) ->
 			if not cb.error
 				addOauthCredental cb.info.facebook_user.id, userCode, (callback) ->
-					console.log 'get user response back from adding oauth'
+					#console.log 'get user response back from adding oauth'
 					#console.log callback
 			else
-				console.log "this is coming from storeUser.getUser"
+				#console.log "this is coming from storeUser.getUser"
 				#console.log cb
 
 addOauthCredental = (userID, userCode, callback) ->
 	#/users/:user_id/facebook_user/authorizations(.:format)  
-	console.log 'this is the oauth area'
-	console.log userID + " " + userCode  
+	#console.log userID + " " + userCode  
 	dbPath = '/users/' + userID + '/facebook_user/authorizations.json' 
 	postData = {}
 	postData["id"] = config.fbconfig.internalAppID
@@ -39,7 +38,7 @@ addOauthCredental = (userID, userCode, callback) ->
 
 userDeauthed = (reqInfo, res) ->
 	#do something with deauthed user info
-	console.log(color "------------------- USER REMOVED APP! ----------------", 'red')
+	#console.log(color "------------------- USER REMOVED APP! ----------------", 'red')
 	#removed the following line as it started erroring - if we decide to use it i'll fix it
 	#console.log (JSON.parse(base64decode(reqInfo.body.signed_request.split('.')[1])).user_id)
 	#console.log(color "------------------- USER REMOVED APP! ----------------", 'red')
@@ -47,16 +46,16 @@ userDeauthed = (reqInfo, res) ->
 
 userDeclinedAccess = (reqInfo,res) ->
 	#so something when a user declines using the app from the access window
-	console.log color "------------------- USER DENIED TERMS ----------------", 'red'
-	console.log(reqInfo.query.error_reason)
-	console.log(reqInfo.query.error)
-	console.log(reqInfo.query.error_description)
-	console.log color "------------------- USER DENIED TERMS ----------------", 'red'
+	#console.log color "------------------- USER DENIED TERMS ----------------", 'red'
+	#console.log(reqInfo.query.error_reason)
+	#console.log(reqInfo.query.error)
+	#console.log(reqInfo.query.error_description)
+	#console.log color "------------------- USER DENIED TERMS ----------------", 'red'
 	res.redirect ('http://www.wisc.edu')
 
 authresponse = (req, res) ->
 	if req.query.code
-		console.log color "------------------- USER ACCEPTED TERMS, REQUESTING ACCESS TOKEN ----------------", 'green'
+		#console.log color "------------------- USER ACCEPTED TERMS, REQUESTING ACCESS TOKEN ----------------", 'green'
 		##compile access token requirements
 		path = '/oauth/access_token'
 		args = {
@@ -121,7 +120,8 @@ gatherInitLogin = (authToken, userID, getToken, cb) ->
 			cb {error: callback.error}
 	fbGetFriendsObject authToken, (callback) ->
 		if callback.data
-			addMyFriends callback.data, userID
+			addMyFriends callback.data, userID, (cb) ->
+				a = 1
 	
 fbGetFriendsObject = (authToken, callback) ->
 	graph = new fbgraph.GraphAPI authToken
@@ -143,13 +143,15 @@ fbGetMeObject = (authToken, callback) ->
 		else
 			callback {data: data}
 			
-addMyFriends = (d, myID) ->
+addMyFriends = (d, myID, cb) ->
 	updateAllOnlineStatus myID, d.data
 	Hash(d.data).forEach (friend) ->
 		addUserAsFriend myID, friend
 	getUser myID, (getUserResult) ->
 		if not getUserResult.error
-			getFriends getUserResult.info.facebook_user.id, (friendsResult) ->
+			
+			getFriends getUserResult.info.facebook_user.uid, (friendsResult) ->
+				a = 1
 				#console.log friendsResult
 		else
 		 	console.log "This is from addMyFriends.getUser"
@@ -207,15 +209,14 @@ updateAllOnlineStatus = (UID, friends) ->
 									setOnlineStatus outObject, friend
 						res.on 'error', (e) ->
 							console.log 'Error: ' + e
+						
 							
 setOnlineStatus = (dateTime, friend) ->
 	getUser friend.id, (cb) ->
 		dbPath = '/users/' + cb.info.facebook_user.id + '/facebook_user.json'
 		if cb.error == 0 or cb.error == 100
-			console.log cb
 			client.perform config.sql.fullHost + dbPath, "PUT", (res) ->
-				if res.response.body != undefined
-					console.log res.response.body
+				a = 1
 			,JSON.stringify dateTime	
 		else
 			console.log cb.error
@@ -229,6 +230,7 @@ getFriends = (uid, cb) ->
 				cb result
 
 exports.getOnlineFriends = (uid, cb) ->
+
 	getFriends uid, (callback) ->
 		toReturn = {}
 		date = new Date()
@@ -236,10 +238,8 @@ exports.getOnlineFriends = (uid, cb) ->
 		Hash(callback.users).forEach (value) ->
 			if value.facebook_user != null && value.facebook_user != undefined
 				if value.facebook_user.last_online != undefined && value.facebook_user.last_online != null
-					console.log Date.parse(date).getTime() - Date.parse(value.facebook_user.last_online).getTime() 
 					if Date.parse(date).getTime() - Date.parse(value.facebook_user.last_online).getTime()  < 300000 #5 minute timeout @ 300,000 ms
 						toReturn[value.id] = value.facebook_user
-		console.log JSON.stringify toReturn
 		cb toReturn
 
 exports.appRequest = (myid, yourid) ->
@@ -252,6 +252,7 @@ exports.appRequest = (myid, yourid) ->
 	method = 'apprequests'
 	title = 'We need your help!'
 	message = ""
+
 	getUser myid, (myInfo) ->
 		console.log myInfo
 		getUser yourid, (yourInfo) ->
@@ -282,8 +283,9 @@ associateFriend = (uid, friendID) ->
 	,postData
 
 addUser = (info, callback) ->
+		
 	getUser info.id, (cb) ->
-		if cb.error is 100 and info.first_name is not null
+		if cb.error is 100 and info.first_name is null
 			#this is set when the user exists, but they have invalid info.  This will then overwrite the user.  console.log 'get user response with error'
 			console.log color '------------------- USER EXISTS AS FRIEND ADDITION - RECREATING -------------------\n', 'green'
 			console.log info.id + " " + info.name
@@ -304,6 +306,7 @@ addUser = (info, callback) ->
 			console.log info.id + " " + info.name
 			postData = formatUser info
 			dbPath = '/facebook_users.json'
+			#console.log postData
 			#client2 = new httpClient.httpclient
 			client.perform config.sql.fullHost + dbPath, "POST", (resp) -> 
 				result = {}
@@ -323,11 +326,11 @@ addUserAsFriend = (playerID, friendInfo) ->
 	getUser playerID, (cb) ->
 		myID = cb.info.facebook_user.id
 		addUser friendInfo, (cb) ->
-			console.log cb
 			if cb.info != undefined
 				associateFriend myID, cb.info.facebook_user.id
 
 getUser = (fbid, cb) ->
+		
 	dbPath = '/facebook_users/uid/' + fbid + '.json'
 	#client = new httpClient.httpclient
 	client.perform config.sql.fullHost + dbPath, "GET", (res) -> 
