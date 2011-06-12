@@ -33,51 +33,61 @@ exports.createServer = (app) ->
 		@sendJoinRequest = (fn, id, player_id, player_name, player_avatar) ->
 			sessionManager.sendJoinRequest fn, id, player_id, player_name, player_avatar
 		@newCase = (case_number, thisPlayer, emit) ->
+		  # NEED AN ACTIVITY_ID TO PUBLISH TO ACTIVITY
 			returnedValue = activityManager.newActivity case_number, thisPlayer
 			sessionManager.setActivity thisPlayer, returnedValue
 			emit.apply emit, ['setCurrentCase', returnedValue]
-			sessionManager.publish 'PlayerStartedCase', thisPlayer, returnedValue
+			players = activityManager.current[activity_id].getPlayers()
+			sessionManager.publishToActivity players, 'PlayerStartedCase', thisPlayer, returnedValue
 		@getCase = (activity_id) ->
 			return activityManager.getActivity(activity_id)
 		@pointColored = (activity_id, player_id, points) ->
 			for point in points
 				activityManager.current[activity_id].createPoint player_id, point
-			sessionManager.publish 'pointColored', player_id, points
+			players = activityManager.current[activity_id].getPlayers()
+			sessionManager.publishToActivity players, 'pointColored', player_id, points
 		@pointErased = (activity_id, player_id, points) ->
 			for point in points
 				activityManager.current[activity_id].deletePoint player_id, point
-			sessionManager.publish 'pointErased', player_id, points
+			players = activityManager.current[activity_id].getPlayers()
+			sessionManager.publishToActivity players, 'pointErased', player_id, points
 		@clearCanvas = (activity_id, player_id, layer) ->
 			activityManager.current[activity_id].clearCanvas player_id, layer
-			sessionManager.publish 'canvasCleared', player_id, layer
+			players = activityManager.current[activity_id].getPlayers()
+			sessionManager.publishToActivity players, 'canvasCleared', player_id, layer
 		@getColoredPointsForThisLayerAndPlayer = (activity_id, requester_id, player, layer, emit) ->
 			activityManager.current[activity_id].getPointsForPlayer layer, player, (points) ->
 				emit.apply emit, ['setColoredPointsForThisLayer', {player: player, payload: points} ]
 		@done = (player) -> 
-			console.log player
-			sessionManager.publish 'playerIsDone', player
+		  # NEED AN ACTIVITY_ID TO PUBLISH TO ACTIVITY
+		  players = activityManager.current[activity_id].getPlayers()
+			sessionManager.publishToActivity players, 'playerIsDone', player
 			activityManager.current[player.current_case_id].playerDone player, (result)  ->
 				if result == true
-					sessionManager.publish 'everyoneIsDone', player
+					sessionManager.publishToActivity players, 'everyoneIsDone', player
 		@notDone = (player) ->
+		  # NEED AN ACTIVITY_ID TO PUBLISH TO ACTIVITY
+		  players = activityManager.current[activity_id].getPlayers()
 			activityManager.current[player.current_case_id].playerNotDone player
-			sessionManager.publish 'playerNotDone', player
+			sessionManager.publishToActivity players, 'playerNotDone', player
 		@submitScore = (player) ->
-			sessionManager.publish 'playerSubmitted', player
+		  # NEED AN ACTIVITY_ID TO PUBLISH TO ACTIVITY
+		  players = activityManager.current[activity_id].getPlayers()
+			sessionManager.publishToActivity players, 'playerSubmitted', player
 			activityManager.current[player.current_case_id].submitScore player, (result) ->
 				if result == true
-					sessionManager.publish 'scoreEveryone', player
+					sessionManager.publishToActivity players, 'scoreEveryone', player
 					console.log 'score everyone'
 		@joinActivity = (activity_id, player) ->
 			activityManager.current[activity_id].addPlayer(player)
 			sessionManager.setActivity player, activity_id
-			sessionManager.publish 'PlayerStartedCase', player, activity_id
+			players = activityManager.current[activity_id].getPlayers()
+			sessionManager.publishToActivity players, 'PlayerStartedCase', player, activity_id
 		@sendChat = (activity_id, player_id, message) ->
-		  console.log message
 		  message = sanitizer.escape message
-		  console.log message
 		  activityManager.current[activity_id].addChatMessage player_id, message
-		  sessionManager.publish 'newChat', player_id, message
+		  players = activityManager.current[activity_id].getPlayers()
+		  sessionManager.publishToActivity players, 'newChat', player_id, message
 		@getChatHistoryForActivity = (activity_id, emit) ->
 			activityManager.current[activity_id].getChatHistoryForActivity (chats) ->
 				emit.apply emit, ['setChatHistory', {payload: chats}]
@@ -87,7 +97,8 @@ exports.createServer = (app) ->
 		@appRequest = (myid, yourid) ->
 			fbhelper.appRequest myid, yourid
 		@cursorPosition = (activity_id, player, layer, position) ->
-			sessionManager.publish 'newCursorPosition', player, layer, position
+		  players = activityManager.current[activity_id].getPlayers()
+			sessionManager.publishToActivity players, 'newCursorPosition', player, layer, position
 		@getColor = (activity_id, player_id, emit) ->
 			activityManager.current[activity_id].getColor player_id, (color) ->
 				#console.log color
@@ -96,7 +107,8 @@ exports.createServer = (app) ->
 		@leftActivity = (activity_id, player) ->
 			activityManager.current[activity_id].removePlayer(player.id);
 			sessionManager.setActivity player, 0
-			sessionManager.publish 'playerLeft', player
+			players = activityManager.current[activity_id].getPlayers()
+			sessionManager.publishToActivity players, 'playerLeft', player
 			
 		# dnode/coffeescript fix:
 		@version = config.version

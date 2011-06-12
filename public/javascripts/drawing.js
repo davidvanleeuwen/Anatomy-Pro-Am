@@ -844,29 +844,25 @@ components.drawing = function(){
 			}
 		},
 		receiveChat: function(player_id, message) {
-     	 	// should be fixed serverside - publish to other clients!
-     	 	// 
-			if (online_friends.get(player_id).get('current_case_id') == me.get('current_case_id')){
-				var chatEl = $('#chat_window')[0];
-				//console.log (dThis.chatExpanded);
-				if (!dThis.chatExpanded){
-					pendingMessages++;
-					console.log ('chat not expanded');
-					if ($('#chat_container').find('#chat_notification').size() == 0) {
-						//console.log ('no chat window found');
-						this.chat_notification_template = _.template($('#chat_notification_template').html());
-						$('#chat_container').append(this.chat_notification_template());
-						$('#chat_notification').html('<p>' + pendingMessages + '</p>');
-					}else{
-						$('#chat_notification').html('<p>' + pendingMessages + '</p>');
-					}
+			var chatEl = $('#chat_window')[0];
+			//console.log (dThis.chatExpanded);
+			if (!dThis.chatExpanded){
+				pendingMessages++;
+				console.log ('chat not expanded');
+				if ($('#chat_container').find('#chat_notification').size() == 0) {
+					//console.log ('no chat window found');
+					this.chat_notification_template = _.template($('#chat_notification_template').html());
+					$('#chat_container').append(this.chat_notification_template());
+					$('#chat_notification').html('<p>' + pendingMessages + '</p>');
+				}else{
+					$('#chat_notification').html('<p>' + pendingMessages + '</p>');
 				}
-		      	if(player_id != me.get('id')) {
-			        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
-			        $('#cursor_'+player_id+' .cursor_blob').html(message);
-			        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
-			        chatEl.scrollTop = chatEl.scrollHeight;
-				}
+			}
+	      	if(player_id != me.get('id')) {
+		        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
+		        $('#cursor_'+player_id+' .cursor_blob').html(message);
+		        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
+		        chatEl.scrollTop = chatEl.scrollHeight;
 			}
 		},
 		setChatHistory: function(data) {
