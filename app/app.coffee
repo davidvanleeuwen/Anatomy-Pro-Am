@@ -26,10 +26,10 @@ exports.createServer = (app) ->
 		@subscribe = (auth_token, emit) ->
 			session = sessionManager.sessionConnected auth_token, conn, client, emit
 			emit.apply emit, ['myINFO', session.fbUser, session.player_color]
-			sessionManager.publish 'FriendCameOnline', session.fbUser
+			sessionManager.publishToAll 'FriendCameOnline', session.fbUser
 		conn.on 'end', ->
 			session = sessionManager.sessionDisconnected conn
-			sessionManager.publish 'FriendWentOffline', session.fbUser
+			sessionManager.publishToAll 'FriendWentOffline', session.fbUser
 		@sendJoinRequest = (fn, id, player_id, player_name, player_avatar) ->
 			sessionManager.sendJoinRequest fn, id, player_id, player_name, player_avatar
 		@newCase = (case_number, thisPlayer, emit) ->

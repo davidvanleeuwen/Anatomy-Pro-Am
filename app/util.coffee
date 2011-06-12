@@ -72,8 +72,8 @@ class SessionManager
 		
 		return session_conn
 	
-	# publish is to send a message to all connected users
-	publish: () ->
+	# publishToAll is to send a message to all connected users
+	publishToAll: () ->
 		args = arguments
 		Hash(@sessions_for_connection).forEach (player) ->
 		  player.emit.apply player.emit, args
