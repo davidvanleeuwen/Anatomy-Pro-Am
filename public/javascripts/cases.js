@@ -3,8 +3,8 @@ components.cases = function(){
 	window.CaseView = Backbone.View.extend({
 		el: $('#game'),
 		events: {
-			'click #case1': 'selectCase',
-			'click #case2': 'selectCase',
+			'click #case1': 'selectCase1',
+			'click #case2': 'selectCase2',
 			'click #coming_soon_button': 'closeComingSoon',
 			"click #accept_invite":"pagerAcceptInvite",
 			"click #decline_invite":"pagerDeclineInvite",
@@ -47,13 +47,20 @@ components.cases = function(){
 			$('#coming_soon').show();
 			console.log ('ComingSoon');
 		},
-		selectCase: function(e) {
+		selectCase1: function(e) {
 			e.preventDefault();
 			//Passing 283408 for the room number for now - indicates activity - this will be auto generated later on
 			
 			remote.newCase(283408, me, emit);
-			new ComputerView();
+			new ComputerView(1);
 		},	
+		selectCase2: function(e) {
+			e.preventDefault();
+			//Passing 283408 for the room number for now - indicates activity - this will be auto generated later on
+			
+			remote.newCase(283408, me, emit);
+			new ComputerView(2);
+		},
 		pagerAcceptInvite: function (e){
 			e.preventDefault();
 			console.log ('received case id ' + invitation['case_id']);

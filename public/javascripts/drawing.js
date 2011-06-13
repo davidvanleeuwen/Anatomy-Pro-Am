@@ -37,7 +37,7 @@ components.drawing = function(){
 			'click #zoomOutTool':'zoomOut',
 			'mousemove #scan_container': 'cursorMovement'
 		},
-		initialize: function() {
+		initialize: function(caseNum) {
 			window.dThis=this;
 			_.bindAll(this, 'render', 'newCursorPosition');
 			this.render();
@@ -45,6 +45,7 @@ components.drawing = function(){
 			this.locked = false;
 			this.chatExpanded = false;
 			this.cursorToolEnabled = true;
+			this.caseNum=caseNum;
 			//online_friends.bind('change', this.collectionChanged);
 		},
 		render: function() {
@@ -131,7 +132,6 @@ components.drawing = function(){
 				
 			}.bind(this));
 			
-			//Joe new test stuff
 			
 			em.on('mouseDownErase', function(player_id, layer) {
 				if (online_friends.get(player_id).get('layer_enabled')){
@@ -204,7 +204,14 @@ components.drawing = function(){
 			/*********************************************/
 			
 			// fixtures for the images (scans):
-			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
+			if(this.caseNum == 1){
+				var imageRefs = ['/images/cases/case3/1.png', '/images/cases/case3/2.png'];
+				$('.slider')[0].max = 1;
+				
+				
+			}else{
+				var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
+			}
 			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 40));
 			
 			var counter = 0;
@@ -330,10 +337,11 @@ components.drawing = function(){
 		},
 		localEraseEvent: function(points,context){
 			if(layer == points[0].layer){
+				context.globalCompositeOperation = "destination-out";
 				context.beginPath();
 				var tempStrokeStyle = context.strokeStyle;
 				context.strokeStyle = "rgba(0,0,0,1)";
-				context.lineWidth = ""+(this.zoom*5);
+				context.lineWidth = ""+(10);
 				var offset = Math.floor(context.lineWidth/2);
 				//console.log(points.length-1-offset);
 				
@@ -342,7 +350,7 @@ components.drawing = function(){
 				context.lineTo(points[points.length-1-offset].x*this.zoom,points[points.length-1-offset].y*this.zoom);
 				context.stroke();
 				context.strokeStyle = tempStrokeStyle;
-				
+				context.globalCompositeOperation = "copy";
 				
 			}
 		},
@@ -386,7 +394,7 @@ components.drawing = function(){
 					
 				}
 				//console.log(this.$('#images')[0]);
-				this.$('#images')[0].style.left=80;
+				this.$('#images')[0].style.left=0;
 				this.$('#scan_container')[0].scrollTop = halfHeight;
 				this.$('#scan_container')[0].scrollLeft = halfWidth;
 				
@@ -422,7 +430,6 @@ components.drawing = function(){
 				
 			}
 			
-			this.$('#images')[0].style.left=40;
 			this.$('#scan_container')[0].scrollTop = 0;
 			this.$('#scan_container')[0].scrollLeft = 0;
 			this.$('#scan_container').css('overflow', "hidden");
@@ -470,7 +477,7 @@ components.drawing = function(){
 			
 				if(this.isErasing){
 					this.ctxArr[me.id].globalCompositeOperation = "destination-out"; //Needed to erase 
-					remote.mouseDownErase(me.get('current_case_id'), me.id, layer);
+				//	remote.mouseDownErase(me.get('current_case_id'), me.id, layer);
 				}
 				this.isDrawing = true;
 				this.oldX = event.clientX-this.canvas.offsetLeft+3;
@@ -513,7 +520,7 @@ components.drawing = function(){
 						var curX = Math.floor(this.oldX+(delX/stepCount)*(c+1));
 						var curY = Math.floor(this.oldY+(delY/stepCount)*(c+1));
 						if(isVertical){
-							for (var ySubset = curY-2; ySubset < curY+2; ySubset++)
+							for (var ySubset = curY-4; ySubset < curY+4; ySubset++)
 								if(ySubset>0 && ySubset<this.canvas.height){
 									points[arrayPos] = {x: (Math.floor(curX/this.zoom)+leftOffset),
 										y:  (Math.floor(ySubset/this.zoom)+topOffset),
@@ -521,7 +528,7 @@ components.drawing = function(){
 									arrayPos++;
 								}
 						}else{
-							for (var xSubset = curX-2; xSubset < curX+2; xSubset++)
+							for (var xSubset = curX-4; xSubset < curX+4; xSubset++)
 								if(xSubset>0 && xSubset<this.canvas.width){
 									points[arrayPos] = {x:  (Math.floor(xSubset/this.zoom)+leftOffset),
 										y: (Math.floor(curY/this.zoom)+topOffset),
@@ -602,7 +609,6 @@ components.drawing = function(){
 		endLine: function(event) {
 			event.preventDefault();
 			
-			
 			if(this.ctxArr[me.id].globalCompositeOperation != "copy"){
 				
 				
@@ -618,9 +624,10 @@ components.drawing = function(){
 					
 				this.ctxArr[me.id].clearRect(0, 0, this.canvas.width, this.canvas.height);
 				this.ctxArr[me.id].putImageData(imageData, 0, 0);
-			*/	remote.mouseUpErase(me.get('current_case_id'), me.id, layer);
-			
+				remote.mouseUpErase(me.get('current_case_id'), me.id, layer);
+			*/
 			}
+			
 			this.isDrawing = false;
 			
 		},
