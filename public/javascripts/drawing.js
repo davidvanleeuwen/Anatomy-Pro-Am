@@ -221,7 +221,6 @@ components.drawing = function(){
 			em.removeAllListeners('newChat');
 			em.removeAllListeners('newCursorPosition');
 			em.removeAllListeners('playerNotDone');
-			em.removeAllListeners('playerNotDone');
 			em.removeAllListeners('everyoneIsDone');
 			em.removeAllListeners('scoreEveryone');
 		},
@@ -664,7 +663,7 @@ components.drawing = function(){
 		scoreButton: function(e){
 			e.preventDefault();
 			if (this.everyoneDone){
-				remote.submitScore(me);
+				remote.submitScore(me.get('current_case_id'), me);
 			}else{
 				//do nothing
 			}
@@ -674,11 +673,11 @@ components.drawing = function(){
 			e.preventDefault();
 			this.locked = !this.locked;
 			if (this.locked){
-				remote.done(me);
+				remote.done(me.get('current_case_id'), me);
 				this.getColorPointsForLayerAndPlayer(true);
 				$('#done_text').text('UNLOCK');
 			}else{
-				remote.notDone(me);
+				remote.notDone(me.get('current_case_id'),me);
 				$('#done_text').text("I'M DONE");
 			}
 		},
