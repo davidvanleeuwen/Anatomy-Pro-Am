@@ -190,7 +190,7 @@ components.drawing = function(){
 			
 			var slider;
 			slider = YAHOO.widget.Slider.getHorizSlider("slider-bg", "slider-thumb", 0, (imageRefs.length - 1) * 40, 40);
-			slider.subscribe('slideEnd', function(){
+			slider.subscribe('change', function(){
 				this.changeLayer(slider.getValue() / 40);
 			}.bind(this));
 			$('#slider-bg').css({'height': 20, 'width':(imageRefs.length) * 33});
