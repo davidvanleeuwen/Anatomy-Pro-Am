@@ -122,6 +122,9 @@ components.drawing = function(){
 			}.bind(this));
 			em.on('scoreEveryone', function (player){
 				if (player.current_case_id == me.get('current_case_id')){
+					this.score_card_template = _.template($('#score_card_template').html());
+					$("#score_popup_tag").html('');
+					$("#score_popup_tag").append(this.score_card_template());
 					$("#score_popup_tag").show();
 					this.done();
 				}
