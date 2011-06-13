@@ -37,6 +37,7 @@ resources.models.Player = Backbone.Model.extend({
 });
 
 
+
 resources.models.Person = Backbone.Model.extend({
 	defaults: {
 		id: 0,
@@ -45,7 +46,10 @@ resources.models.Person = Backbone.Model.extend({
 		player_color: '000000',
 		avatar: "http://graph.facebook.com/100001658412828/picture",
 		layer_enabled: false,
-		current_case_id: 9999
+		current_case_id: 9999,
+		isDone: false,
+		everyoneDone: false,
+		hasSubmitted: false
 	},
 	clear: function() {
 		if (this.view){

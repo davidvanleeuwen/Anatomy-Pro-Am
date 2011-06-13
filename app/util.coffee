@@ -72,11 +72,20 @@ class SessionManager
 		
 		return session_conn
 	
-	publish: () ->
+	# publishToAll is to send a message to all connected users
+	publishToAll: () ->
 		args = arguments
 		Hash(@sessions_for_connection).forEach (player) ->
-			    player.emit.apply player.emit, args
-			
+		  player.emit.apply player.emit, args
+	
+	# publishToActivity is to send a message to all conected users within a activity that is defined as the first argument
+	publishToActivity: () ->
+	  args = arguments
+	  Hash(@sessions_for_connection).forEach (connection) ->
+	    Hash(args[0]).forEach (player) ->
+	      if player is connection.facebook_id
+	        connection.emit.apply connection.emit, _.without(args, args[0])
+	
 	sendJoinRequest: () ->
 		args = arguments
 		Hash(@sessions_for_connection).forEach (player) ->
@@ -146,8 +155,11 @@ class ContouringActivity
 		@players[player.id] = player
 	removePlayer: (player) ->
 		@players[player] = null
-	getPlayers: (player) ->
-		return @players
+	getPlayers: () ->
+	  playerIDs = []
+	  Hash(@players).forEach (player) ->
+	    playerIDs.push player.id
+	  return playerIDs
 	createPoint: (player_id, point) ->
 		@activityData.newPoint player_id, point
 	deletePoint: (player_id, point, callback) ->
@@ -160,8 +172,28 @@ class ContouringActivity
 	    @activityData.newChat player_id, message    
 	getChatHistoryForActivity: (callback) ->
 	    return @activityData.getChatHistoryForActivity callback
-	
-
+	playerDone: (player, callback) ->
+		@players[player.id].isDone = true
+		result = true;
+		_.each @players, (player) ->
+			if player.isDone != true
+				result = false;
+		callback result
+	submitScore: (player, callback) ->	
+		@players[player.id].requestsScore = true
+		scoreResult = true;
+		doneResult = true
+		_.each @players, (player) ->
+			if player.requestsScore != true
+				scoreResult = false;
+		_.each @players, (player) ->
+			if player.isDone != true
+				doneResult = false;
+		callback doneResult && scoreResult
+	playerNotDone: (player) ->
+		@players[player.id].isDone = false
+		@players[player.id].scoreResult = false
+		
 ###
 #	CONTOURING ACTIVTY DATA
 ###
