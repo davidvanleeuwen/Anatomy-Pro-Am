@@ -40,7 +40,7 @@ components.drawing = function(){
 			'click #open_leaderboard_button':'openLeaderboardButton',
 			'click #close_scorecard_button':'closeScorecardButton'
 		},
-		initialize: function() {
+		initialize: function(caseNum) {
 			window.dThis=this;
 			_.bindAll(this, 'render', 'newCursorPosition');
 			this.render();
@@ -49,8 +49,10 @@ components.drawing = function(){
 			this.chatExpanded = false;
 			this.infoExpanded = false;
 			this.cursorToolEnabled = true;
+			this.caseNum=caseNum;
 			this.everyoneDone = false;
 			this.hideEveryone = false;
+
 			//online_friends.bind('change', this.collectionChanged);
 		},
 		render: function() {
@@ -79,8 +81,12 @@ components.drawing = function(){
 				//document.getElementById('scan').innerHTML += '<canvas class="scanvas" id="scanvas" height="325" width="431" style="position: absolute; top:'+(1*(self.index*100+50))+';left:250; z-index: 5"></canvas>';
 				self.canvasArr[playerID] = ($('canvas')[9-self.index]);
 				self.ctxArr[playerID] = self.canvasArr[playerID].getContext("2d");
+				self.ctxArr[playerID].globalCompositeOperation = "copy"; //Needed to erase 
+				self.ctxArr[playerID].lineCap = "butt"; 
 				self.index++;
 			});
+			this.ctxArr[me.id].globalCompositeOperation = "copy";
+			
 			this.canvas = $('canvas')[10];
 			this.ctx = this.canvas.getContext("2d");
 			this.isErasing = false;
@@ -133,20 +139,64 @@ components.drawing = function(){
 			});
 			em.on('pointColored', function (player_id, points) {
 				if (online_friends.get(player_id).get('layer_enabled')){
-					this.colorPoint(points, online_friends.get(player_id).get('player_color'), this.ctxArr[player_id]);	
+					if(player_id != me.id)
+						this.localDrawEvent(points, online_friends.get(player_id).get('player_color'), this.ctxArr[player_id]);	
 				}
 			}.bind(this));
+			
 			em.on('canvasCleared', function (player_id, player_layer) {
 				//this.ctxArr[ctxKey].clearRect(0, 0, this.canvas.width, this.canvas.height);
 				if (layer == player_layer){
 					if (this.ctxArr[player_id] != null && this.ctxArr[player_id] != undefined){
 						this.ctxArr[player_id].clearRect(0, 0, this.canvas.width, this.canvas.height);	
+						this.canvasArr[player_id].width =  this.canvasArr[player_id].width;
 					}
 				}
 			}.bind(this));
 			em.on('pointErased', function(player_id, points) {
-				this.erasePoint(points,this.ctxArr[player_id]);
+				if (online_friends.get(player_id).get('layer_enabled')){
+					if(player_id != me.id)
+						this.localEraseEvent(points,  this.ctxArr[player_id]);	
+				}
+				
 			}.bind(this));
+			
+			
+			em.on('mouseDownErase', function(player_id, layer) {
+				if (online_friends.get(player_id).get('layer_enabled')){
+					if(player_id != me.id)
+						this.ctxArr[player_id].globalCompositeOperation = "destination-out"; //Needed to erase 	
+				}
+				
+			}.bind(this));
+			
+			em.on('mouseUpErase', function(player_id, layer) {
+				if (online_friends.get(player_id).get('layer_enabled')){
+					if(player_id != me.id){
+						
+					/*	var imageData=this.ctxArr[player_id].getImageData(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
+						var pix = imageData.data;
+						for(var y = 0; y <imageData.height; y++)
+							for(var x = 0; x < imageData.width; x++)
+								if(pix[((y*(imageData.width*4)) + (x*4)) + 0]==0 
+								&& pix[((y*(imageData.width*4)) + (x*4)) + 1]==0
+								&& pix[((y*(imageData.width*4)) + (x*4)) + 2]==0)
+								pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
+
+						this.ctxArr[player_id].clearRect(0, 0, this.canvas.width, this.canvas.height);
+						this.ctxArr[player_id].putImageData(imageData, 0, 0);
+				*/		this.ctxArr[player_id].globalCompositeOperation = "copy"; //Needed to erase 
+						
+						
+						
+						
+						}	
+				}
+				
+			}.bind(this));
+			
+			
+			
 			em.on('setColoredPointsForThisLayer', function(points){
 				if(points) {
 					var color = online_friends.get(points.player).get('player_color');
@@ -185,7 +235,14 @@ components.drawing = function(){
 			/*********************************************/
 			
 			// fixtures for the images (scans):
-			var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
+			if(this.caseNum == 1){
+				var imageRefs = ['/images/cases/case3/1.png', '/images/cases/case3/2.png'];
+				$('.slider')[0].max = 1;
+				
+				
+			}else{
+				var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
+			}
 			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 40));
 			
 			var slider;
@@ -307,26 +364,59 @@ components.drawing = function(){
 							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 1]=greenVal;
 							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 2]=blueVal;
 							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 3]=255;
-							
-							
-							
-							
-						}
-						
+						}			
 					}
 				}
 			}
 			context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-			context.putImageData(imageData, 0, 0);
+			context.putImageData(imageData, 0, 0);	
+		},
+		localDrawEvent: function(points,color,context){
+			if(layer == points[0].layer){
+				context.beginPath();
+				context.strokeStyle = '#' + color;
+				context.lineWidth = ""+this.zoom; 
+				var offset = Math.floor(context.lineWidth/2);
+				offset = 0;
+				context.moveTo(points[0+offset].x*this.zoom,points[0+offset].y*this.zoom);
+				context.lineTo(points[points.length-1-offset].x*this.zoom,points[points.length-1-offset].y*this.zoom);
+				context.stroke();
+				
+			}
+		},
+		localEraseEvent: function(points,context){
+			if(layer == points[0].layer){
+				context.globalCompositeOperation = "destination-out";
+				context.beginPath();
+				var tempStrokeStyle = context.strokeStyle;
+				context.strokeStyle = "rgba(0,0,0,1)";
+				context.lineWidth = ""+(10);
+				var offset = Math.floor(context.lineWidth/2);
+				//console.log(points.length-1-offset);
+				
+				
+				context.moveTo(points[0+offset].x*this.zoom,points[0+offset].y*this.zoom);
+				context.lineTo(points[points.length-1-offset].x*this.zoom,points[points.length-1-offset].y*this.zoom);
+				context.stroke();
+				context.strokeStyle = tempStrokeStyle;
+				context.globalCompositeOperation = "copy";
+				
+			}
 		},
 		zoomIn: function(event){
 			event.preventDefault();
 			if(this.zoom == 1){
 				this.zoom = 2;
 				for(arrKey in this.ctxArr){
-					this.ctxArr[arrKey].scale(2.0,2.0);
+					//this.ctxArr[arrKey].scale(2.0,2.0);
 					this.ctxArr[arrKey].clearRect(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
-				}				
+				}		
+				for(arrKey in this.canvasArr){
+					//this.ctxArr[arrKey].scale(2.0,2.0);
+					this.canvasArr[arrKey].width = this.canvasArr[arrKey].width;
+				}		
+				
+						
 				this.zoomXOffset = event.clientX-this.canvas.offsetLeft+3;
 				this.zoomYOffset = event.clientY-this.canvas.offsetTop+29;
 				this.getColorPointsForLayerAndPlayer(false);
@@ -353,7 +443,7 @@ components.drawing = function(){
 					
 				}
 				//console.log(this.$('#images')[0]);
-				this.$('#images')[0].style.left=80;
+				this.$('#images')[0].style.left=0;
 				this.$('#scan_container')[0].scrollTop = halfHeight;
 				this.$('#scan_container')[0].scrollLeft = halfWidth;
 				
@@ -368,9 +458,15 @@ components.drawing = function(){
 			event.preventDefault();
 			if(this.zoom == 2){
 				for(arrKey in this.ctxArr){
-					this.ctxArr[arrKey].scale(.5,.5);
+					//this.ctxArr[arrKey].scale(.5,.5);
 					this.ctxArr[arrKey].clearRect(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
 				}
+				
+				for(arrKey in this.canvasArr){
+					//this.ctxArr[arrKey].scale(2.0,2.0);
+					this.canvasArr[arrKey].width = this.canvasArr[arrKey].width;
+				}
+				
 				this.zoom = 1;
 			
 				for(arrKey in layers){
@@ -383,7 +479,6 @@ components.drawing = function(){
 				
 			}
 			
-			this.$('#images')[0].style.left=40;
 			this.$('#scan_container')[0].scrollTop = 0;
 			this.$('#scan_container')[0].scrollLeft = 0;
 			this.$('#scan_container').css('overflow', "hidden");
@@ -402,7 +497,7 @@ components.drawing = function(){
 			document.body.style.cursor='default';
 		},
 		erasePoint: function(points,context) {
-			var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+			var imageData=context.getImageData(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
 			var pix = imageData.data;
 			for(var c = 0; c < points.length; c++){
 				var point = points[c];
@@ -410,26 +505,29 @@ components.drawing = function(){
 				var y = point.y; 
 				var slide = point.layer;
 				if(layer == slide) {
-					
 					if(x>0&&y>0){
-						pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
+						if(this.zoom == 1){
+							pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
+						}else if(this.zoom == 2){
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+0)*4)) + 3]=0;
+							pix[(((2*y+0)*(imageData.width*4)) + ((2*x+1)*4)) + 3]=0;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+0)*4)) + 3]=0;
+							pix[(((2*y+1)*(imageData.width*4)) + ((2*x+1)*4)) + 3]=0;
+						}			
+
 					}
-					// Draw the ImageData at the given (x,y) coordinates.
-					/*this.ctx.fillStyle = 'rgb(255,255,255)';
-					this.ctx.moveTo(0,0);
-					console.log('Erase: x: '+x, 'y: '+y);
-					this.ctx.fillRect(x,y,1,1);
-					*/
 				}
 			}
 			context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-			context.putImageData(imageData, 0, 0);
-			
+			context.putImageData(imageData, 0, 0);		
 		},
 		startLine: function(event) {
 			event.preventDefault();
 			
-				
+				if(this.isErasing){
+					this.ctxArr[me.id].globalCompositeOperation = "destination-out"; //Needed to erase 
+				//	remote.mouseDownErase(me.get('current_case_id'), me.id, layer);
+				}
 				this.isDrawing = true;
 				this.oldX = event.clientX-this.canvas.offsetLeft+3;
 				this.oldY = event.clientY-this.canvas.offsetTop+29;
@@ -467,11 +565,11 @@ components.drawing = function(){
 						var stepCount = Math.abs(delY);
 						var isVertical = false;
 					}
-					for(var c = 0; c < stepCount; c++){
+					for(var c = 0; c <= stepCount; c++){
 						var curX = Math.floor(this.oldX+(delX/stepCount)*(c+1));
 						var curY = Math.floor(this.oldY+(delY/stepCount)*(c+1));
 						if(isVertical){
-							for (var ySubset = curY-2; ySubset < curY+2; ySubset++)
+							for (var ySubset = curY-4; ySubset < curY+4; ySubset++)
 								if(ySubset>0 && ySubset<this.canvas.height){
 									points[arrayPos] = {x: (Math.floor(curX/this.zoom)+leftOffset),
 										y:  (Math.floor(ySubset/this.zoom)+topOffset),
@@ -479,7 +577,7 @@ components.drawing = function(){
 									arrayPos++;
 								}
 						}else{
-							for (var xSubset = curX-2; xSubset < curX+2; xSubset++)
+							for (var xSubset = curX-4; xSubset < curX+4; xSubset++)
 								if(xSubset>0 && xSubset<this.canvas.width){
 									points[arrayPos] = {x:  (Math.floor(xSubset/this.zoom)+leftOffset),
 										y: (Math.floor(curY/this.zoom)+topOffset),
@@ -490,9 +588,11 @@ components.drawing = function(){
 					}
 					this.oldX = xvar;
 					this.oldY = yvar;
+			
+					remote.pointErased(me.get('current_case_id'), me.id, points);
+					this.localEraseEvent(points, this.ctxArr[me.id]);
 					
-					remote.pointErased(me.get('current_case_id'), me.get('id'), points);
-					this.erasePoint(points,this.ctxArr[me.get('id')]);
+
 					
 				}else{
 					var xvar = event.clientX-this.canvas.offsetLeft+3;
@@ -508,7 +608,7 @@ components.drawing = function(){
 						var stepCount = Math.abs(delY);
 						var isVertical = false;
 					}
-					for(var c = 0; c < stepCount; c++){
+					for(var c = 0; c <= stepCount; c++){
 						var curX = Math.floor(this.oldX+(delX/stepCount)*(c+1));
 						var curY = Math.floor(this.oldY+(delY/stepCount)*(c+1));
 						var penWidth = 1;
@@ -534,8 +634,10 @@ components.drawing = function(){
 					this.oldY = yvar;
 					
 					//this.drawLocally(points);
-					remote.pointColored(me.get('current_case_id'), me.get('id'), points);
-					this.colorPoint(points, me.get('player_color'), this.ctxArr[me.get('id')]);	
+
+					remote.pointColored(me.get('current_case_id'), me.id, points);
+					this.localDrawEvent(points, me.get('player_color'), this.ctxArr[me.id]);	
+
 				
 					
 				}
@@ -570,7 +672,28 @@ components.drawing = function(){
 		},
 		endLine: function(event) {
 			event.preventDefault();
+			
+			if(this.ctxArr[me.id].globalCompositeOperation != "copy"){
+				
+				
+				this.ctxArr[me.id].globalCompositeOperation = "copy";
+			/*	var imageData=this.ctxArr[me.id].getImageData(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
+				var pix = imageData.data;
+				for(var y = 0; y <imageData.height; y++)
+					for(var x = 0; x < imageData.width; x++)
+						if(pix[((y*(imageData.width*4)) + (x*4)) + 0]==0 
+						&& pix[((y*(imageData.width*4)) + (x*4)) + 1]==0
+						&& pix[((y*(imageData.width*4)) + (x*4)) + 2]==0)
+						pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
+					
+				this.ctxArr[me.id].clearRect(0, 0, this.canvas.width, this.canvas.height);
+				this.ctxArr[me.id].putImageData(imageData, 0, 0);
+				remote.mouseUpErase(me.get('current_case_id'), me.id, layer);
+			*/
+			}
+			
 			this.isDrawing = false;
+			
 		},
 		changeLayer: function(sliderValue) {
 			if(sliderValue != layer){
@@ -583,6 +706,10 @@ components.drawing = function(){
 				for(ctxKey in this.ctxArr){
 					this.ctxArr[ctxKey].clearRect(0, 0, this.canvas.width, this.canvas.height);
 				}
+				for(arrKey in this.canvasArr){
+					this.canvasArr[arrKey].width = this.canvasArr[arrKey].width;
+				}
+				
 				layers.each(function(n, el){
 					if(layer != n) {
 						$(el).hide();

@@ -47,8 +47,20 @@ exports.createServer = (app) ->
 		@pointErased = (activity_id, player_id, points) ->
 			for point in points
 				activityManager.current[activity_id].deletePoint player_id, point
+<<<<<<< HEAD
+			sessionManager.publish 'pointErased', player_id, points
+		
+		@mouseDownErase = (activity_id, player_id, layer) ->
+			sessionManager.publish 'mouseDownErase', player_id, layer
+		@mouseUpErase = (activity_id, player_id, layer) ->
+			sessionManager.publish 'mouseUpErase', player_id, layer	
+			
+			
+			
+=======
 			players = activityManager.current[activity_id].getPlayers()
 			sessionManager.publishToActivity players, 'pointErased', player_id, points
+>>>>>>> ups/master
 		@clearCanvas = (activity_id, player_id, layer) ->
 			activityManager.current[activity_id].clearCanvas player_id, layer
 			players = activityManager.current[activity_id].getPlayers()
