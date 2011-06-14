@@ -239,7 +239,7 @@ components.drawing = function(){
 			// fixtures for the images (scans):
 			if(this.caseNum == 1){
 				var imageRefs = ['/images/cases/case3/1.png', '/images/cases/case3/2.png'];
-				$('.slider')[0].max = 1;
+				//$('.slider')[0].max = 1;
 				
 				
 			}else{
