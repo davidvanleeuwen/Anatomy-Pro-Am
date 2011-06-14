@@ -968,7 +968,7 @@ components.drawing = function(){
 				$(chatEl).append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+me.get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+message.replace(/&/g, "&amp;").replace(/</g,"&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;")+'</span></div>');
 				inputEl.value = '';
 				chatEl.scrollTop = chatEl.scrollHeight;
-				remote.sendChat(me.get('current_case_id'), me.get('id'), message);
+				remote.sendChat(me.get('current_case_id'), me.get('id'), layer, message);
 			}
 		},
 		receiveChat: function(player_id, message) {
@@ -976,7 +976,6 @@ components.drawing = function(){
 			//console.log (dThis.chatExpanded);
 			if (!dThis.chatExpanded){
 				pendingMessages++;
-				console.log ('chat not expanded');
 				if ($('#chat_container').find('#chat_notification').size() == 0) {
 					//console.log ('no chat window found');
 					this.chat_notification_template = _.template($('#chat_notification_template').html());
@@ -988,7 +987,7 @@ components.drawing = function(){
 			}
 	      	if(player_id != me.get('id')) {
 		        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
-		        $('#cursor_'+player_id+' .cursor_blob').html(message);
+				$('#cursor_'+player_id+' .cursor_blob').html(message);
 		        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
 		        chatEl.scrollTop = chatEl.scrollHeight;
 			}
@@ -1083,21 +1082,36 @@ components.drawing = function(){
 		  remote.cursorPosition(me.get('current_case_id'), me.get('id'), layer, {x: e.pageX, y: e.pageY});
 		}, 50),
 		newCursorPosition: function(player, current_layer, position) {
-		  if(player != me.get('id') && current_layer == layer && online_friends.get(player).get('layer_enabled') && online_friends.get(player).get('current_case_id') == me.get('current_case_id')) {
-		    var offset = $('#scan_container').offset();
+		  if(player != me.get('id') && online_friends.get(player).get('layer_enabled') && online_friends.get(player).get('current_case_id') == me.get('current_case_id')) {
+		    var offset = $('#scan_container').offset();	
+			var color = online_friends.get(player).get('player_color');
 		    if(position.x-6 >= offset.left && position.x-6 <= (offset.left+offset.width) && position.y+3 >= offset.top && position.y+3 <= (offset.top+offset.height)) {
 		      if($('#cursor_'+player).size() == 0) {
 		        $('#cursor_'+player).show();
-    		    $('#scan_container #images').after('<div class="cursors" id="cursor_'+player+'"><div class="cursor_blob">...</div><div class="cursor_arrow"></div></div>');
-    		    var color = online_friends.get(player).get('player_color');
+				if (current_layer == layer){
+    		    	$('#scan_container #images').after('<div class="cursors" id="cursor_'+player+'"><div class="cursor_blob">...</div><div class="cursor_arrow"></div></div>');
+    		   		$('#cursor_'+player+' .cursor_blob').css({'background-color': '#'+color, opacity: 1});
+	    		    $('#cursor_'+player+' .cursor_arrow').css({'border-top-color': '#'+color, opacity: 1});
+				}else{
+
+	    		    $('#scan_container #images').after('<div class="cursors" id="cursor_'+player+'"><div class="cursor_blob">Layer: ' + (current_layer + 1) + '</div><div class="cursor_arrow"></div></div>');
+	    		   	$('#cursor_'+player+' .cursor_blob').css({'background-color': '#'+color, opacity: .5});
+	    		    $('#cursor_'+player+' .cursor_arrow').css({'border-top-color': '#'+color, opacity: .5});
+				}
     		    $('#cursor_'+player).css({
     		      top: (position.y+3)+'px',
     		      left: (position.x-6)+'px'
-    		    }); 
-    		    $('#cursor_'+player+' .cursor_blob').css('background-color', '#'+color);
-    		    $('#cursor_'+player+' .cursor_arrow').css('border-top-color', '#'+color);
-    		  } else {
+    		    });
+ 			 } else {
     		    $('#cursor_'+player).show();
+				if (current_layer == layer){
+    		   		$('#cursor_'+player+' .cursor_blob').css({'background-color': '#'+color, opacity: 1});
+	    		    $('#cursor_'+player+' .cursor_arrow').css({'border-top-color': '#'+color, opacity: 1});
+				}else{
+					//$('#cursor_'+player+' .cursor_blob').html('Layer: ' + (current_layer+1));
+	    		    $('#cursor_'+player+' .cursor_blob').css({'background-color': '#'+color, opacity: .5});
+	    		    $('#cursor_'+player+' .cursor_arrow').css({'border-top-color': '#'+color, opacity: .5});
+				}
     		    $('#cursor_'+player).css({
     		      top: (position.y+3)+'px',
     		      left: (position.x-6)+'px'

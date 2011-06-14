@@ -25,6 +25,7 @@ components.adminView = function(){
 			em.on('playerLeft', function(fbUser){
 				this.playerLeftCase(fbUser);
 			}.bind(this));
+			new RoomView();
 		},
 		render: function() {
 			console.log ('rendering');
@@ -41,7 +42,6 @@ components.adminView = function(){
 			}
 		},
 		playerCameOnline: function(fbUser){
-			allUsers.add (fbUser);
 			new PlayerView({model:fbUser});
 			
 		},
@@ -63,6 +63,9 @@ components.adminView = function(){
 		}
 	});
 	window.PlayerView = Backbone.View.extend({
+		
+	});
+	window.RoomView = Backbone.View.extend({
 		el: '#adminWindow',
 		initialize: function(){
 			this.room_left_template = _.template($('#left_column_template').html());
@@ -74,7 +77,6 @@ components.adminView = function(){
 			allUsers.bind('remove', this.refresh);
 			allUsers.bind('refresh', this.refresh);
 			allUsers.bind('change', this.refresh);
-			allUsers.fetch();
 		},
 		render: function(){
 

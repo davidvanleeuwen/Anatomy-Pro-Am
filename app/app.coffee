@@ -47,20 +47,11 @@ exports.createServer = (app) ->
 		@pointErased = (activity_id, player_id, points) ->
 			for point in points
 				activityManager.current[activity_id].deletePoint player_id, point
-<<<<<<< HEAD
-			sessionManager.publish 'pointErased', player_id, points
-		
+				sessionManager.publish 'pointErased', player_id, points
 		@mouseDownErase = (activity_id, player_id, layer) ->
 			sessionManager.publish 'mouseDownErase', player_id, layer
 		@mouseUpErase = (activity_id, player_id, layer) ->
 			sessionManager.publish 'mouseUpErase', player_id, layer	
-			
-			
-			
-=======
-			players = activityManager.current[activity_id].getPlayers()
-			sessionManager.publishToActivity players, 'pointErased', player_id, points
->>>>>>> ups/master
 		@clearCanvas = (activity_id, player_id, layer) ->
 			activityManager.current[activity_id].clearCanvas player_id, layer
 			players = activityManager.current[activity_id].getPlayers()
@@ -89,11 +80,11 @@ exports.createServer = (app) ->
 			activityManager.current[activity_id].addPlayer(player)
 			sessionManager.setActivity player, activity_id
 			sessionManager.publishToAll 'PlayerStartedCase', player, activity_id
-		@sendChat = (activity_id, player_id, message) ->
+		@sendChat = (activity_id, player_id, layer, message) ->
 			message = sanitizer.escape message
 			activityManager.current[activity_id].addChatMessage player_id, message
 			players = activityManager.current[activity_id].getPlayers()
-			sessionManager.publishToActivity players, 'newChat', player_id, message
+			sessionManager.publishToActivity players, 'newChat', player_id, layer, message
 		@getChatHistoryForActivity = (activity_id, emit) ->
 			activityManager.current[activity_id].getChatHistoryForActivity (chats) ->
 				emit.apply emit, ['setChatHistory', {payload: chats}]
