@@ -31,14 +31,16 @@ exports.createServer = (app) ->
 			session = sessionManager.sessionDisconnected conn
 			sessionManager.publishToAll 'FriendWentOffline', session.fbUser
 		@sendJoinRequest = (fn, id, player_id, player_name, player_avatar) ->
-			sessionManager.sendJoinRequest fn, id, player_id, player_name, player_avatar
+			caseNum = activityManager.current[id].getCaseID()
+			console.log caseNum
+			sessionManager.sendJoinRequest fn, id, caseNum, player_id, player_name, player_avatar
 		@newCase = (case_number, thisPlayer, emit) ->
 			returnedValue = activityManager.newActivity case_number, thisPlayer
 			sessionManager.setActivity thisPlayer, returnedValue
 			emit.apply emit, ['setCurrentCase', returnedValue]
 			sessionManager.publishToAll 'PlayerStartedCase', thisPlayer, returnedValue
 		@getCase = (activity_id) ->
-			return activityManager.getActivity(activity_id)
+			return activityManager.current[id].getCaseID
 		@pointColored = (activity_id, player_id, points) ->
 			for point in points
 				activityManager.current[activity_id].createPoint player_id, point

@@ -413,7 +413,7 @@ height:30px; width:30px;}
 
 #images {
 	position: absolute;
-	left: 40px;
+	left: 250px;
 	top: 60px;
 	z-index: 1;
 	float: left;

@@ -89,7 +89,7 @@ class SessionManager
 	sendJoinRequest: () ->
 		args = arguments
 		Hash(@sessions_for_connection).forEach (player) ->
-			if player.facebook_id is args[2]
+			if player.facebook_id is args[3]
 				player.emit.apply player.emit, args
 	
 	playerForConnection: (conn) ->
@@ -149,6 +149,8 @@ class ContouringActivity
 		]
 	getID: () ->
 		return @id
+	getCaseID: () ->
+		return @caseID
 	setCaseID: (case_id) ->
 		@caseID = case_id
 	addPlayer: (player) ->
@@ -202,6 +204,7 @@ class ContouringActivityData
 		@redisClient = redis.createClient config.redis.port, config.redis.server
 		@redisClient.select config.redis.db
 	newPoint: (player_id, point) ->
+		console.log JSON.stringify point
 		client = @redisClient
 		thisID = @id
 		client.sismember 'activity:'+thisID+':layer:'+point.layer+':player:'+player_id+':points', JSON.stringify({point}), (err, ismember) ->

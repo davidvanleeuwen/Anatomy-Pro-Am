@@ -9,6 +9,7 @@ components.drawing = function(){
 			'click #current_case_info_open': 'expandInfo', //added to allow current case info roll down
 			'click #current_case_info_close': 'retractInfo', //added to allow current case info roll up
 			'click #expand_collapse_button':'chatExpandRetract',
+			'click #chat_notification' : 'chatExpandRetract',
 			"mousedown .scanvas": "startLine",
 			"mousemove .scanvas" : "drawLine",
 			"mouseup .scanvas": "endLine",
@@ -41,18 +42,19 @@ components.drawing = function(){
 			'click #close_scorecard_button':'closeScorecardButton'
 		},
 		initialize: function(caseNum) {
+			console.log (caseNum);
 			window.dThis=this;
 			_.bindAll(this, 'render', 'newCursorPosition');
-			this.render();
+			
 			this.zoom = 1;
 			this.locked = false;
 			this.chatExpanded = false;
 			this.infoExpanded = false;
 			this.cursorToolEnabled = true;
-			this.caseNum=caseNum;
+			this.caseNum = caseNum;
 			this.everyoneDone = false;
 			this.hideEveryone = false;
-
+			this.render();
 			//online_friends.bind('change', this.collectionChanged);
 		},
 		render: function() {
@@ -65,7 +67,6 @@ components.drawing = function(){
 					this.el.html('');
 					view.computer = t;
 					this.el.html(view.computer);
-			
 					this.setupView();
 				}.bind(this));
 			}
@@ -217,8 +218,9 @@ components.drawing = function(){
 				}
 			}.bind(this));
 			//Removed the below function from apps.js, placed here to make it more relevant for the drawing pager.  This will be changed later. 
-			em.on('JoinRequest', function(caseNumber, player_id, player_name, player_avatar) {
-				invitation['case_id'] = caseNumber;
+			em.on('JoinRequest', function(activity_id, case_number, player_id, player_name, player_avatar) {
+				invitation['activity_id'] = activity_id;
+				invitation['case_number'] = case_number;
 				invitation['player_id'] = player_id;
 				invitation['player_name'] = player_name;
 				invitation['player_avitar'] = player_avatar;
@@ -237,15 +239,13 @@ components.drawing = function(){
 			/*********************************************/
 			
 			// fixtures for the images (scans):
+			console.log (this.caseNum);
 			if(this.caseNum == 1){
 				var imageRefs = ['/images/cases/case3/1.png', '/images/cases/case3/2.png'];
-				//$('.slider')[0].max = 1;
-				
-				
 			}else{
 				var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 			}
-			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 40));
+			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 38));
 			
 			var slider;
 			slider = YAHOO.widget.Slider.getHorizSlider("slider-bg", "slider-thumb", 0, (imageRefs.length - 1) * 40, 40);
@@ -257,7 +257,7 @@ components.drawing = function(){
 			imageRefs.forEach(function(img){
 				var distance = (counter * 40) + 5;
 				var tickTemplate = '<div class="tick" style="padding-left:' + distance + 'px;">' + (counter + 1) + '</div>';
-				this.$('#images').append('<img src="'+img+'" style="display: none;" />');
+				this.$('#images').append('<img src="'+img+'" style="display: none; vertical-align: center;" />');
 				this.$('#tick_holder').append(tickTemplate);
 				counter++;
 			});
@@ -1009,19 +1009,21 @@ components.drawing = function(){
 		},	
 		pagerAcceptInvite: function (e){
 			e.preventDefault();
-			console.log ('received case id ' + invitation['case_id']);
-			remote.joinActivity(invitation['case_id'], me);
-			me.set({current_case_id: invitation['case_id']}, {silent:true});
+			console.log ('received case id ' + invitation['case_number'] + " activity " + invitation['activity_id']);
+			remote.joinActivity(invitation['activity_id'], me);
+			me.set({current_case_id: invitation['activity_id']}, {silent:false});
 			online_friends.each(function (friend){
 				if (friend.get('id') == me.get('id')){
-					friend.set({current_case_id: invitation['case_id']}, {silent:true});
+					friend.set({current_case_id: invitation['activity_id']}, {silent:false});
 					console.log ('changed friend case id');
 				}
 			});
 			this.removeAllListeners();
 			currentView = 0;
+			console.log (invitation['case_number']);
+			delete this;
+			new ComputerView(invitation['case_number']);
 			invitation = {};
-			new ComputerView();
 		},
 		pagerDeclineInvite: function (e){
 			e.preventDefault();
