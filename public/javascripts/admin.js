@@ -41,14 +41,11 @@ components.adminView = function(){
 			}
 		},
 		playerCameOnline: function(fbUser){
-			console.log (fbUser);
-			new RoomView();
-			//$('#adminWindow').append ('<p>Player Came Online</p>');
-			//$('#adminWindow').append (JSON.stringify(fbUser));
+			allUsers.add (fbUser);
+			new PlayerView({model:fbUser});
 			
 		},
 		playerWentOffline: function(fbUser){
-			console.log (fbUser);
 			//$('#adminWindow').append ('<p>Player Went Offline</p>');
 			//$('#adminWindow').append (JSON.stringify(fbUser));
 				
@@ -65,7 +62,7 @@ components.adminView = function(){
 			//$('#adminWindow').append (JSON.stringify(fbUser));
 		}
 	});
-	window.RoomView = Backbone.View.extend({
+	window.PlayerView = Backbone.View.extend({
 		el: '#adminWindow',
 		initialize: function(){
 			this.room_left_template = _.template($('#left_column_template').html());
@@ -83,16 +80,12 @@ components.adminView = function(){
 
 		},
 		refresh: function(){
-
-			if (window.rooms.length % 2 == 0){
-				$('#adminWindow').append(this.room_right_template());
-			}else{
-				$('#adminWindow').append(this.room_left_template());
-			}
-			
-			$('#new_column').append(this.player_info_template());
+			console.log (this.model);
+			$('#adminWindow').append(this.player_info_template());
 			$('#new_select').append(this.select_template());
-			$('#new_name').html('Greg');
+			$('#new_name').html(this.model.first_name);
+			$('#room_id').html(this.model.current_case_id);
+			
 		}
 	});
 };
