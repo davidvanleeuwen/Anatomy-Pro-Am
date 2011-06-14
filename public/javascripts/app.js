@@ -19,6 +19,7 @@ $(function(){
 			$.get('/renders/splash.html', function(t){
 				this.el.html(t);
 			}.bind(this));
+
 		},
 		startGame: function(e) {
 			e.preventDefault();
