@@ -85,12 +85,22 @@ components.drawing = function(){
 				self.ctxArr[playerID].lineCap = "butt"; 
 				self.index++;
 			});
-			this.ctxArr[me.id].globalCompositeOperation = "copy";
+			
+			self.canvasArr["goal"] = ($('canvas')[9-self.index]);
+			self.ctxArr["goal"] = self.canvasArr["goal"].getContext("2d");
+			
 			
 			this.canvas = $('canvas')[10];
 			this.ctx = this.canvas.getContext("2d");
 			this.isErasing = false;
 			
+			
+		
+		
+			
+			this.ctxArr[me.id].clearRect(0, 0, this.canvas.width, this.canvas.height);
+			this.canvasArr[me.id].width = this.canvasArr[me.id].width;
+
 			/* Retreive chat messages */
 			remote.getChatHistoryForActivity(me.get('current_case_id'), emit);
 			
@@ -237,11 +247,13 @@ components.drawing = function(){
 			// fixtures for the images (scans):
 			if(this.caseNum == 1){
 				var imageRefs = ['/images/cases/case3/1.png', '/images/cases/case3/2.png'];
-				$('.slider')[0].max = 1;
-				
+				//$('.slider')[0].max = 1;
+				this.$('#scan_container #images')[0].style.top=-8540;
 				
 			}else{
 				var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
+				this.$('#scan_container #images')[0].style.left=((this.canvas.width/2)-this.$('#scan_container #images')[0].style.width)/4;
+				
 			}
 			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 40));
 			
@@ -403,10 +415,16 @@ components.drawing = function(){
 				
 			}
 		},
+		clean: function(){
+				
+			
+				this.getColorPointsForLayerAndPlayer(false);
+		},
 		zoomIn: function(event){
 			event.preventDefault();
 			if(this.zoom == 1){
 				this.zoom = 2;
+				
 				for(arrKey in this.ctxArr){
 					//this.ctxArr[arrKey].scale(2.0,2.0);
 					this.ctxArr[arrKey].clearRect(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
@@ -442,8 +460,11 @@ components.drawing = function(){
 					//layers[arrKey].width *= 2;
 					
 				}
+				if(this.caseNum == 1)
+					this.$('#scan_container #images')[0].style.top=-8520;
+				if(this.caseNum == 2)
+					this.$('#scan_container #images')[0].style.left=(this.canvas.width-this.$('#scan_container #images')[0].style.width)/4;
 				//console.log(this.$('#images')[0]);
-				this.$('#images')[0].style.left=0;
 				this.$('#scan_container')[0].scrollTop = halfHeight;
 				this.$('#scan_container')[0].scrollLeft = halfWidth;
 				
@@ -473,8 +494,10 @@ components.drawing = function(){
 					layers[arrKey].height /= 2;
 					
 				}
-				
-				this.$('#images')[0].style.left=0;
+				if(this.caseNum == 1)
+					this.$('#scan_container #images')[0].style.top=-8540;
+				if(this.caseNum == 2)
+					this.$('#scan_container #images')[0].style.left=((this.canvas.width/2)-this.$('#scan_container #images')[0].style.width)/4;
 				
 				
 			}
@@ -531,6 +554,8 @@ components.drawing = function(){
 				this.isDrawing = true;
 				this.oldX = event.clientX-this.canvas.offsetLeft+3;
 				this.oldY = event.clientY-this.canvas.offsetTop+29;
+				console.log("X: " + this.oldX);
+				console.log("Y: " + this.oldY);
 			
 			
 		},
@@ -787,6 +812,74 @@ components.drawing = function(){
 			//console.log("even here");
 			return typeMatrix;
 		},
+			blobify: function(imageData){
+				var pixelStack = [[0, 0]];
+				var width = imageData.width;
+				var height = imageData.height;
+				var pix = imageData.data;
+				
+				while(pixelStack.length)
+				{
+				  var newPos, x, y, pixelPos, reachLeft, reachRight;
+				  newPos = pixelStack.pop();
+				  x = newPos[0];
+				  y = newPos[1];
+
+				  pixelPos = (y*width + x) * 4;
+				  while(y-- >= 0 && pix[pixelPos+3]==0){
+				    pixelPos -= width * 4;
+				  }
+				  pixelPos += width * 4;
+				  ++y;
+				  reachLeft = false;
+				  reachRight = false;
+				  while(y++ < height-1 && pix[pixelPos+3]==0)
+				  {
+				    pix[pixelPos]=0;
+					pix[pixelPos+1]=0;
+					pix[pixelPos+2]=0;
+					pix[pixelPos+3]=255;
+				    if(x > 0)
+				    {
+				      if(pix[(pixelPos - 4)+3]==0)
+				      {
+				        if(!reachLeft){
+				          pixelStack.push([x - 1, y]);
+				          reachLeft = true;
+				        }
+				      }
+				      else if(reachLeft)
+				      {
+				        reachLeft = false;
+				      }
+				    }
+
+				    if(x < width-1)
+				    {
+				      if(pix[(pixelPos + 4)+3]==0)
+				      {
+				        if(!reachRight)
+				        {
+				          pixelStack.push([x + 1, y]);
+				          reachRight = true;
+				        }
+				      }
+				      else if(reachRight)
+				      {
+				        reachRight = false;
+				      }
+				    }
+
+				    pixelPos += width * 4;
+				  }
+				}
+				imageData.data = pix;
+				
+				
+				return imageData;
+			},
+			
+		
 		scoreButton: function(e){
 			e.preventDefault();
 			if (this.everyoneDone){
@@ -809,6 +902,8 @@ components.drawing = function(){
 			}
 		},
 		done: function() {
+			
+			this.clean();
 			var self = this;
 			var totalScore = 0;
 			var totalPlayers = 0;
@@ -824,50 +919,139 @@ components.drawing = function(){
 			
 			online_friends.each(function(friend){
 				if (friend.get('current_case_id') == me.get('current_case_id')){
-					var scoreHit = 0;
-					var scoreMissed = 0;
 					var color = friend.get('player_color');
 					var context = this.ctxArr[friend.get('id')];
-					var imageData=context.getImageData(0, 0, this.canvas.width, this.canvas.height);
+					var imageData=context.getImageData(0, 0, this.canvas.width/2, this.canvas.height/2);
 					var pix = imageData.data;
 					var redVal = (parseInt(color.substr(0,2),16));
 					var greenVal = (parseInt(color.substr(2,2),16));
 					var blueVal = (parseInt(color.substr(4,2),16));
-					var typeMatrix = this.bwcc(imageData);
-
-					//Replace former with latter
-
-					for(var y = 0; y < imageData.height; y++){
-						for(var x = 0; x < imageData.width; x++){
-							if(typeMatrix[y*(imageData.width) + x] == 0){
-								pix[((y*(imageData.width*4)) + (x*4)) + 3]=0;
-							}else{	
-									pix[((y*(imageData.width*4)) + (x*4)) + 0]=redVal;
-									pix[((y*(imageData.width*4)) + (x*4)) + 1]=greenVal;
-									pix[((y*(imageData.width*4)) + (x*4)) + 2]=blueVal;
-									pix[((y*(imageData.width*4)) + (x*4)) + 3]=100;
+					
+					console.log("Before bwcc");
+					console.log(new Date());
+					//var typeMatrix = this.bwcc(imageData);
+					var newImageData = this.blobify(imageData);
+					//Uninvert the blobify
+					console.log("After bwcc");
+					console.log(new Date());
+					
+					for(var y = 0; y < newImageData.height; y++){
+						for(var x = 0; x < newImageData.width; x++){
+							if(newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 3] == 0){
+								newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 0]=redVal;
+								newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 1]=greenVal;
+								newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 2]=blueVal;
+								newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 3]=100;
+							}else if( (newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 0] == 0)	
+									&& (newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 1] == 0)	
+									&& (newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 2] == 0)){	
+								newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 3]=0;	
 							}
 						}
 					}
 					context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-					context.putImageData(imageData, 0, 0);
-					for(var y = 0; y < imageData.height; y++){
-						for(var x = 0; x < imageData.width; x++){
-							if((x > (imageData.width/6) && x < (2*imageData.width/6))
-								&& (y > (imageData.height/6) && y < (2*imageData.height/6))){
-									if(pix[((y*(imageData.width*4)) + (x*4)) + 3]== 100){ 
-										scoreHit++;
-									}else{
-										scoreMissed++;
-									}
-									$('#hit_' + friend.get("id")).text(scoreHit);
-									$('#missed_' + friend.get("id")).text(scoreMissed / 4);
-									$('#total_' + friend.get("id")).text(scoreHit - (scoreMissed / 4));
-							}
-						}
+					context.putImageData(newImageData, 0, 0);
+					
+					console.log("Before score");
+					console.log(new Date());
+					
+					
+					var targetHit = 0;
+					var targetMissed = 0;
+					var healthyHit = 0;
+					var healthyMissed = 0;
+					
+					
+					var goalArrX = new Array();
+					var goalArrY = new Array();
+					var healthyArrX = new Array();
+					var healthyArrY = new Array();
+					
+					
+					
+					if(this.caseNum == 1){
+						
+						goalArrX[0] = 142;
+						goalArrY[0] = 57;
+						goalArrX[1] = 190;
+						goalArrY[1] = 63;
+						goalArrX[2] = 242;
+						goalArrY[2] = 69;
+						goalArrX[3] = 561;
+						goalArrY[3] = 366;
+						goalArrX[4] = 448;
+						goalArrY[4] = 347;
+						goalArrX[5] = 662;
+						goalArrY[5] = 68;
+						goalArrX[6] = 660;
+						goalArrY[6] = 164;
+						goalArrX[7] = 473;
+						goalArrY[7] = 196;
+						goalArrX[8] = 411;
+						goalArrY[8] = 255;
+						goalArrX[9] = 359;
+						goalArrY[9] = 289;
+						
+						healthyArrX[0] = 42;
+						healthyArrY[0] = 57;
+						healthyArrX[1] = 190;
+						healthyArrY[1] = 263;
+						healthyArrX[2] = 442;
+						healthyArrY[2] = 69;
+						healthyArrX[3] = 541;
+						healthyArrY[3] = 266;
+						healthyArrX[4] = 148;
+						healthyArrY[4] = 147;
+						healthyArrX[5] = 612;
+						healthyArrY[5] = 100;
+						healthyArrX[6] = 60;
+						healthyArrY[6] = 264;
+						healthyArrX[7] = 73;
+						healthyArrY[7] = 196;
+						
+						
+						
 					}
-					totalScore += (scoreHit - (scoreMissed * .25));
-					//alert("Your score " + scoreHit + " out of: " + (scoreHit+scoreMissed) + " or " + (100*scoreHit/(scoreHit+scoreMissed) + "%"));
+					if(this.caseNum == 2){
+						
+						
+						
+						
+						
+					}
+					
+					for(var c = 0; c < goalArrX.length; c++){
+						if((newImageData.data[((goalArrY[c]*(newImageData.width*4)) + (goalArrX[c]*4)) + 3]) == 100)
+							targetHit++;
+						else
+							targetMissed++;
+						
+						
+						
+					}
+					
+					for(var c = 0; c < healthyArrX.length; c++){
+						if((newImageData.data[((healthyArrY[c]*(newImageData.width*4)) + (healthyArrX[c]*4)) + 3]) == 100)
+							healthyHit++;
+						else
+							healthyMissed++;
+						
+						
+						
+					}
+					
+					
+					
+				
+					//totalScore += (scoreHit - (scoreMissed * .25));
+					$('#hit_' + friend.get("id")).text(targetHit);
+					$('#missed_' + friend.get("id")).text(targetMissed / 4);
+					$('#total_' + friend.get("id")).text(targetHit - (targetMissed / 4));
+					console.log("After score");
+					console.log(new Date());
+					
+					
+					alert("Your score " + targetHit + " out of: " + (targetHit+targetMissed) + " with " + healthyHit + " wrong regions identified");
 				}
 			}.bind(this));
 			var t = 0;
@@ -1078,28 +1262,54 @@ components.drawing = function(){
 		    }
 		},
 		cursorMovement: _.throttle(function(e) {
-		  remote.cursorPosition(me.get('current_case_id'), me.get('id'), layer, {x: e.pageX, y: e.pageY});
+			var self = this;
+			if(this.zoom == 1)
+		  		remote.cursorPosition(me.get('current_case_id'), me.get('id'), layer, {x: e.pageX, y: e.pageY});
+			if(this.zoom == 2)
+		  		remote.cursorPosition(me.get('current_case_id'), me.get('id'), layer, {x: ((e.pageX+25+self.$('#scan_container')[0].scrollLeft)/2), y: ((e.pageY+30+self.$('#scan_container')[0].scrollTop)/2)});
 		}, 50),
 		newCursorPosition: function(player, current_layer, position) {
-		  if(player != me.get('id') && current_layer == layer && online_friends.get(player).get('layer_enabled') && online_friends.get(player).get('current_case_id') == me.get('current_case_id')) {
+		var self = this;  
+		if(player != me.get('id') && current_layer == layer && online_friends.get(player).get('layer_enabled') && online_friends.get(player).get('current_case_id') == me.get('current_case_id')) {
 		    var offset = $('#scan_container').offset();
 		    if(position.x-6 >= offset.left && position.x-6 <= (offset.left+offset.width) && position.y+3 >= offset.top && position.y+3 <= (offset.top+offset.height)) {
 		      if($('#cursor_'+player).size() == 0) {
 		        $('#cursor_'+player).show();
     		    $('#scan_container #images').after('<div class="cursors" id="cursor_'+player+'"><div class="cursor_blob">...</div><div class="cursor_arrow"></div></div>');
     		    var color = online_friends.get(player).get('player_color');
-    		    $('#cursor_'+player).css({
-    		      top: (position.y+3)+'px',
-    		      left: (position.x-6)+'px'
-    		    }); 
+    		    
+				
+				console.log(self.$('#scan_container')[0].scrollLeft);
+				if(this.zoom == 1){
+					$('#cursor_'+player).css({
+	    		      top: (position.y-self.$('#scan_container')[0].scrollTop)+'px',
+	    		      left: (position.x-10-self.$('#scan_container')[0].scrollLeft)+'px'
+	    		    }); 
+				}else if(this.zoom == 2){
+					$('#cursor_'+player).css({
+	    		      top: (((position.y*2)-30)-self.$('#scan_container')[0].scrollTop)+'px',
+	    		      left: (((position.x*2)-30)-self.$('#scan_container')[0].scrollLeft)+'px'
+	    		    });
+				}
     		    $('#cursor_'+player+' .cursor_blob').css('background-color', '#'+color);
     		    $('#cursor_'+player+' .cursor_arrow').css('border-top-color', '#'+color);
     		  } else {
+	
     		    $('#cursor_'+player).show();
-    		    $('#cursor_'+player).css({
-    		      top: (position.y+3)+'px',
-    		      left: (position.x-6)+'px'
-    		    });
+				var self = this;
+    			console.log(self.$('#scan_container')[0].scrollLeft);
+	
+		    	if(this.zoom == 1){
+					$('#cursor_'+player).css({
+	    		      top: (position.y-self.$('#scan_container')[0].scrollTop)+'px',
+	    		      left: (position.x-10-self.$('#scan_container')[0].scrollLeft)+'px'
+	    		    });
+				}else if(this.zoom == 2){
+					$('#cursor_'+player).css({
+	    		      top: (((position.y*2)-30)-self.$('#scan_container')[0].scrollTop)+'px',
+	    		      left: (((position.x*2)-30)-self.$('#scan_container')[0].scrollLeft)+'px'
+	    		    });
+				}
     		  }
 		    } else {
 		      $('#cursor_'+player).hide();
