@@ -413,7 +413,7 @@ height:30px; width:30px;}
 
 #images {
 	position: absolute;
-	left: 40px;
+	left: 250px;
 	top: 60px;
 	z-index: 1;
 	float: left;
@@ -1181,7 +1181,7 @@ s
     max-width: 140px;
     font: 11px Verdana;
     border-radius: 5px;
-    margin: 0 0 -2px 0;
+    margin: 0 0 0 0;
 }
 
 .cursor_arrow {
@@ -1364,7 +1364,7 @@ s
 
 
 #slider-bg {
-    background:url(http://yui.yahooapis.com/2.9.0/build/slider/assets/bg-fader.gif) 0px 0 no-repeat;
+    background:url(http://yui.yahooapis.com/2.9.0/build/slider/assets/bg-h.gif) 0px 0 no-repeat;
 	display:block;
     -moz-border-radius: 0px;
     -webkit-border-radius: 0px;
