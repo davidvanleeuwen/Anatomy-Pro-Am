@@ -111,12 +111,9 @@ class ActivityManager
 		
 class ContouringActivity
 	getColor : (userID, cb) ->
-		console.log 'get color in util'
 		returnedcolor = 'asdf'
 		assigned = false
 		_.each @colors, (color) ->
-			#console.log 'colors'
-			#console.log color
 			if assigned is false
 				if color.user is undefined 
 					returnedcolor = color.hex

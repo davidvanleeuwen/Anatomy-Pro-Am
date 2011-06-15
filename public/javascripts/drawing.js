@@ -245,7 +245,7 @@ components.drawing = function(){
 			}else{
 				var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 			}
-			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 38));
+			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 28));
 			
 			var slider;
 			slider = YAHOO.widget.Slider.getHorizSlider("slider-bg", "slider-thumb", 0, (imageRefs.length - 1) * 40, 40);
@@ -1096,7 +1096,7 @@ components.drawing = function(){
 	    		    $('#cursor_'+player+' .cursor_arrow').css({'border-top-color': '#'+color, opacity: 1});
 				}else{
 
-	    		    $('#scan_container #images').after('<div class="cursors" id="cursor_'+player+'"><div class="cursor_blob">Layer: ' + (current_layer + 1) + '</div><div class="cursor_arrow"></div></div>');
+	    		    $('#scan_container #images').after('<div class="cursors" id="cursor_'+player+'"><div class="cursor_blob">...</div><div class="cursor_arrow"></div></div>');
 	    		   	$('#cursor_'+player+' .cursor_blob').css({'background-color': '#'+color, opacity: .5});
 	    		    $('#cursor_'+player+' .cursor_arrow').css({'border-top-color': '#'+color, opacity: .5});
 				}

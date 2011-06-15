@@ -31,13 +31,14 @@ exports.createServer = (app) ->
 			session = sessionManager.sessionDisconnected conn
 			sessionManager.publishToAll 'FriendWentOffline', session.fbUser
 		@sendJoinRequest = (fn, id, player_id, player_name, player_avatar) ->
+			console.log (id + " " + player_id + " " + player_name + " " + player_avatar)
 			caseNum = activityManager.current[id].getCaseID()
 			console.log caseNum
 			sessionManager.sendJoinRequest fn, id, caseNum, player_id, player_name, player_avatar
 		@newCase = (case_number, thisPlayer, emit) ->
 			returnedValue = activityManager.newActivity case_number, thisPlayer
 			sessionManager.setActivity thisPlayer, returnedValue
-			emit.apply emit, ['setCurrentCase', returnedValue]
+			emit.apply emit, ['setCurrentCase', case_number, returnedValue]
 			sessionManager.publishToAll 'PlayerStartedCase', thisPlayer, returnedValue
 		@getCase = (activity_id) ->
 			return activityManager.current[id].getCaseID
@@ -100,7 +101,6 @@ exports.createServer = (app) ->
 			sessionManager.publishToActivity players, 'newCursorPosition', player, layer, position
 		@getColor = (activity_id, player_id, emit) ->
 			activityManager.current[activity_id].getColor player_id, (color) ->
-				#console.log color
 				sessionManager.sessions_for_facebook_id[player_id].fbUser.player_color = color
 				emit.apply emit, ['setColor', {payload:color}]
 		@leftActivity = (activity_id, player) ->
