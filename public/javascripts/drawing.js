@@ -9,6 +9,7 @@ components.drawing = function(){
 			'click #current_case_info_open': 'expandInfo', //added to allow current case info roll down
 			'click #current_case_info_close': 'retractInfo', //added to allow current case info roll up
 			'click #expand_collapse_button':'chatExpandRetract',
+			'click #chat_notification' : 'chatExpandRetract',
 			"mousedown .scanvas": "startLine",
 			"mousemove .scanvas" : "drawLine",
 			"mouseup .scanvas": "endLine",
@@ -41,18 +42,19 @@ components.drawing = function(){
 			'click #close_scorecard_button':'closeScorecardButton'
 		},
 		initialize: function(caseNum) {
+			console.log (caseNum);
 			window.dThis=this;
 			_.bindAll(this, 'render', 'newCursorPosition');
-			this.render();
+			
 			this.zoom = 1;
 			this.locked = false;
 			this.chatExpanded = false;
 			this.infoExpanded = false;
 			this.cursorToolEnabled = true;
-			this.caseNum=caseNum;
+			this.caseNum = caseNum;
 			this.everyoneDone = false;
 			this.hideEveryone = false;
-
+			this.render();
 			//online_friends.bind('change', this.collectionChanged);
 		},
 		render: function() {
@@ -65,7 +67,6 @@ components.drawing = function(){
 					this.el.html('');
 					view.computer = t;
 					this.el.html(view.computer);
-			
 					this.setupView();
 				}.bind(this));
 			}
@@ -217,8 +218,9 @@ components.drawing = function(){
 				}
 			}.bind(this));
 			//Removed the below function from apps.js, placed here to make it more relevant for the drawing pager.  This will be changed later. 
-			em.on('JoinRequest', function(caseNumber, player_id, player_name, player_avatar) {
-				invitation['case_id'] = caseNumber;
+			em.on('JoinRequest', function(activity_id, case_number, player_id, player_name, player_avatar) {
+				invitation['activity_id'] = activity_id;
+				invitation['case_number'] = case_number;
 				invitation['player_id'] = player_id;
 				invitation['player_name'] = player_name;
 				invitation['player_avitar'] = player_avatar;
@@ -237,15 +239,13 @@ components.drawing = function(){
 			/*********************************************/
 			
 			// fixtures for the images (scans):
+			console.log (this.caseNum);
 			if(this.caseNum == 1){
 				var imageRefs = ['/images/cases/case3/1.png', '/images/cases/case3/2.png'];
-				$('.slider')[0].max = 1;
-				
-				
 			}else{
 				var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 			}
-			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 40));
+			this.$('#slider_input').attr('style', 'width:' + ((imageRefs.length - 1) * 28));
 			
 			var slider;
 			slider = YAHOO.widget.Slider.getHorizSlider("slider-bg", "slider-thumb", 0, (imageRefs.length - 1) * 40, 40);
@@ -257,7 +257,7 @@ components.drawing = function(){
 			imageRefs.forEach(function(img){
 				var distance = (counter * 40) + 5;
 				var tickTemplate = '<div class="tick" style="padding-left:' + distance + 'px;">' + (counter + 1) + '</div>';
-				this.$('#images').append('<img src="'+img+'" style="display: none;" />');
+				this.$('#images').append('<img src="'+img+'" style="display: none; vertical-align: center;" />');
 				this.$('#tick_holder').append(tickTemplate);
 				counter++;
 			});
@@ -968,7 +968,7 @@ components.drawing = function(){
 				$(chatEl).append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+me.get('player_color')+'; font-weight: bold;">me:</span><span class="chat_message"> '+message.replace(/&/g, "&amp;").replace(/</g,"&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;")+'</span></div>');
 				inputEl.value = '';
 				chatEl.scrollTop = chatEl.scrollHeight;
-				remote.sendChat(me.get('current_case_id'), me.get('id'), message);
+				remote.sendChat(me.get('current_case_id'), me.get('id'), layer, message);
 			}
 		},
 		receiveChat: function(player_id, message) {
@@ -976,7 +976,6 @@ components.drawing = function(){
 			//console.log (dThis.chatExpanded);
 			if (!dThis.chatExpanded){
 				pendingMessages++;
-				console.log ('chat not expanded');
 				if ($('#chat_container').find('#chat_notification').size() == 0) {
 					//console.log ('no chat window found');
 					this.chat_notification_template = _.template($('#chat_notification_template').html());
@@ -988,7 +987,7 @@ components.drawing = function(){
 			}
 	      	if(player_id != me.get('id')) {
 		        var player = online_friends.filter(function(chatFriend) { return chatFriend.get('id') === player_id });
-		        $('#cursor_'+player_id+' .cursor_blob').html(message);
+				$('#cursor_'+player_id+' .cursor_blob').html(message);
 		        $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message+'</span></div>');
 		        chatEl.scrollTop = chatEl.scrollHeight;
 			}
@@ -1010,19 +1009,21 @@ components.drawing = function(){
 		},	
 		pagerAcceptInvite: function (e){
 			e.preventDefault();
-			console.log ('received case id ' + invitation['case_id']);
-			remote.joinActivity(invitation['case_id'], me);
-			me.set({current_case_id: invitation['case_id']}, {silent:true});
+			console.log ('received case id ' + invitation['case_number'] + " activity " + invitation['activity_id']);
+			remote.joinActivity(invitation['activity_id'], me);
+			me.set({current_case_id: invitation['activity_id']}, {silent:false});
 			online_friends.each(function (friend){
 				if (friend.get('id') == me.get('id')){
-					friend.set({current_case_id: invitation['case_id']}, {silent:true});
+					friend.set({current_case_id: invitation['activity_id']}, {silent:false});
 					console.log ('changed friend case id');
 				}
 			});
 			this.removeAllListeners();
 			currentView = 0;
+			console.log (invitation['case_number']);
+			delete this;
+			new ComputerView(invitation['case_number']);
 			invitation = {};
-			new ComputerView();
 		},
 		pagerDeclineInvite: function (e){
 			e.preventDefault();
@@ -1083,21 +1084,36 @@ components.drawing = function(){
 		  remote.cursorPosition(me.get('current_case_id'), me.get('id'), layer, {x: e.pageX, y: e.pageY});
 		}, 50),
 		newCursorPosition: function(player, current_layer, position) {
-		  if(player != me.get('id') && current_layer == layer && online_friends.get(player).get('layer_enabled') && online_friends.get(player).get('current_case_id') == me.get('current_case_id')) {
-		    var offset = $('#scan_container').offset();
+		  if(player != me.get('id') && online_friends.get(player).get('layer_enabled') && online_friends.get(player).get('current_case_id') == me.get('current_case_id')) {
+		    var offset = $('#scan_container').offset();	
+			var color = online_friends.get(player).get('player_color');
 		    if(position.x-6 >= offset.left && position.x-6 <= (offset.left+offset.width) && position.y+3 >= offset.top && position.y+3 <= (offset.top+offset.height)) {
 		      if($('#cursor_'+player).size() == 0) {
 		        $('#cursor_'+player).show();
-    		    $('#scan_container #images').after('<div class="cursors" id="cursor_'+player+'"><div class="cursor_blob">...</div><div class="cursor_arrow"></div></div>');
-    		    var color = online_friends.get(player).get('player_color');
+				if (current_layer == layer){
+    		    	$('#scan_container #images').after('<div class="cursors" id="cursor_'+player+'"><div class="cursor_blob">...</div><div class="cursor_arrow"></div></div>');
+    		   		$('#cursor_'+player+' .cursor_blob').css({'background-color': '#'+color, opacity: 1});
+	    		    $('#cursor_'+player+' .cursor_arrow').css({'border-top-color': '#'+color, opacity: 1});
+				}else{
+
+	    		    $('#scan_container #images').after('<div class="cursors" id="cursor_'+player+'"><div class="cursor_blob">...</div><div class="cursor_arrow"></div></div>');
+	    		   	$('#cursor_'+player+' .cursor_blob').css({'background-color': '#'+color, opacity: .5});
+	    		    $('#cursor_'+player+' .cursor_arrow').css({'border-top-color': '#'+color, opacity: .5});
+				}
     		    $('#cursor_'+player).css({
     		      top: (position.y+3)+'px',
     		      left: (position.x-6)+'px'
-    		    }); 
-    		    $('#cursor_'+player+' .cursor_blob').css('background-color', '#'+color);
-    		    $('#cursor_'+player+' .cursor_arrow').css('border-top-color', '#'+color);
-    		  } else {
+    		    });
+ 			 } else {
     		    $('#cursor_'+player).show();
+				if (current_layer == layer){
+    		   		$('#cursor_'+player+' .cursor_blob').css({'background-color': '#'+color, opacity: 1});
+	    		    $('#cursor_'+player+' .cursor_arrow').css({'border-top-color': '#'+color, opacity: 1});
+				}else{
+					//$('#cursor_'+player+' .cursor_blob').html('Layer: ' + (current_layer+1));
+	    		    $('#cursor_'+player+' .cursor_blob').css({'background-color': '#'+color, opacity: .5});
+	    		    $('#cursor_'+player+' .cursor_arrow').css({'border-top-color': '#'+color, opacity: .5});
+				}
     		    $('#cursor_'+player).css({
     		      top: (position.y+3)+'px',
     		      left: (position.x-6)+'px'
