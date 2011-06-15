@@ -59,17 +59,17 @@ exports.createServer = (app) ->
 		@done = (activity_id, player) ->
 			players = activityManager.current[activity_id].getPlayers()
 			sessionManager.publishToActivity players, 'playerIsDone', player
-			activityManager.current[player.current_case_id].playerDone player, (result) ->
+			activityManager.current[activity_id].playerDone player, (result) ->
 				if result == true
 					sessionManager.publishToActivity players, 'everyoneIsDone', player
 		@notDone = (activity_id, player) ->
 			players = activityManager.current[activity_id].getPlayers()
-			activityManager.current[player.current_case_id].playerNotDone player
+			activityManager.current[activity_id].playerNotDone player
 			sessionManager.publishToActivity players, 'playerNotDone', player
 		@submitScore = (activity_id, player) ->
 			players = activityManager.current[activity_id].getPlayers()
 			sessionManager.publishToActivity players, 'playerSubmitted', player
-			activityManager.current[player.current_case_id].submitScore player, (result) ->
+			activityManager.current[activity_id].submitScore player, (result) ->
 				if result == true
 					sessionManager.publishToActivity players, 'scoreEveryone', player
 					console.log 'score everyone'

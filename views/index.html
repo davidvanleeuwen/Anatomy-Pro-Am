@@ -9,7 +9,14 @@
 		});
 		FB.Canvas.setAutoResize();
 	};
-
+	
+	CFInstall.check({
+		mode: "inline"
+	
+	});
+	showPrompt = function(){
+		$('#prompt').show();
+	};
 	(function() {
 		var e = document.createElement('script');
 		e.async = true;

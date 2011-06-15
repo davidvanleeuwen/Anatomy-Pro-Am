@@ -1,6 +1,7 @@
 <html>
 	<head id='APMHead'>
 		<title>Anatomy Pro-Am</title>
+		<meta http-equiv="X-UA-Compatible" content="chrome=1">
 		<script src="/browserify.js"></script>
 		<script src="/dnode.js"></script> 
 
@@ -28,8 +29,20 @@
 		<script src="http://yui.yahooapis.com/2.9.0/build/slider/slider-min.js"></script>
 
 		<link type="text/css" rel="stylesheet" href="stylesheets/main.css" >
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+
+		
 	</head>
 	<body>
+		
+	  <!--[if IE]>
+		<div id='prompt' class='generic' style="margin: 40px 20px 20px 20px;text-align:center;">
+			
+			Anatomy Pro-Am uses state of the art web technologies which are not supported by older web browsers.
+			We suggest using Google Chrome Frame to allow your existing browser to be compatible with our software.
+			
+		</div>
+		  <![endif]-->
 		<%- body %>
 	</body>
 </html>
