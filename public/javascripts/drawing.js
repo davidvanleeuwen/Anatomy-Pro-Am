@@ -64,6 +64,7 @@ components.drawing = function(){
 				this.setupView();
 			} else {
 				$.get('/renders/computer2.html', function(t){
+					console.log ('cached drawing');
 					this.el.html('');
 					view.computer = t;
 					this.el.html(view.computer);
@@ -141,7 +142,8 @@ components.drawing = function(){
 				if (player.current_case_id == me.get('current_case_id')){
 					this.score_card_template = _.template($('#score_card_template').html());
 					$("#score_popup_tag").html(this.score_card_template());
-					$("#score_popup_tag").show();
+					// moved to actual scoring routine for now..  $("#score_popup_tag").show();
+					
 					this.done();
 				}
 			}.bind(this));
@@ -342,6 +344,8 @@ components.drawing = function(){
 			e.preventDefault();
 			remote.leftActivity (me.get('current_case_id'), me);
 			me.set({current_case_id:0},{silent:true});
+			view.computer = null;
+			this.removeAllListeners();
 			delete this;
 			new CaseView();
 		},
@@ -974,7 +978,7 @@ components.drawing = function(){
 					
 					
 					if(this.caseNum == 1){
-						
+						$("#score_popup_tag").show();
 						goalArrX[0] = 142;
 						goalArrY[0] = 57;
 						goalArrX[1] = 190;
@@ -1012,16 +1016,9 @@ components.drawing = function(){
 						healthyArrY[6] = 264;
 						healthyArrX[7] = 73;
 						healthyArrY[7] = 196;
-						
-						
-						
 					}
 					if(this.caseNum == 2){
-						
-						
-						
-						
-						
+						$("#thanks_for_playing").show();	
 					}
 					
 					for(var c = 0; c < goalArrX.length; c++){
@@ -1029,9 +1026,6 @@ components.drawing = function(){
 							targetHit++;
 						else
 							targetMissed++;
-						
-						
-						
 					}
 					
 					for(var c = 0; c < healthyArrX.length; c++){
@@ -1039,23 +1033,17 @@ components.drawing = function(){
 							healthyHit++;
 						else
 							healthyMissed++;
-						
-						
-						
 					}
-					
-					
-					
-				
 					//totalScore += (scoreHit - (scoreMissed * .25));
-					$('#hit_' + friend.get("id")).text(targetHit);
-					$('#missed_' + friend.get("id")).text(targetMissed / 4);
-					$('#total_' + friend.get("id")).text(targetHit - (targetMissed / 4));
+					$('#hit_' + friend.get("id")).text(targetHit * 10);
+					$('#missed_' + friend.get("id")).text((healthyHit / 4) * 10);
+					$('#total_' + friend.get("id")).text((targetHit * 10) - ((healthyHit / 4) * 10));
+					totalScore += (targetHit * 10) - ((healthyHit / 4) * 10);
 					console.log("After score");
 					console.log(new Date());
 					
 					
-					alert("Your score " + targetHit + " out of: " + (targetHit+targetMissed) + " with " + healthyHit + " wrong regions identified");
+					//alert("Your score " + targetHit + " out of: " + (targetHit+targetMissed) + " with " + healthyHit + " wrong regions identified");
 				}
 			}.bind(this));
 			var t = 0;
@@ -1157,7 +1145,7 @@ components.drawing = function(){
 				remote.sendChat(me.get('current_case_id'), me.get('id'), layer, message);
 			}
 		},
-		receiveChat: function(player_id, message) {
+		receiveChat: function(player_id, layer, message) {
 			var chatEl = $('#chat_window')[0];
 			//console.log (dThis.chatExpanded);
 			if (!dThis.chatExpanded){
