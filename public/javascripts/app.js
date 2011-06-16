@@ -44,7 +44,7 @@ $(function(){
 					avatar: "http://graph.facebook.com/" + myInfo.id + "/picture"
 				}, {silent: true});
 			});
-			em.on('setCurrentCase', function(currentCase) {
+			em.on('setCurrentCase', function(caseNum, currentCase) {
 				console.log ('current case' + currentCase);
 				me.set({
 				current_case_id: currentCase

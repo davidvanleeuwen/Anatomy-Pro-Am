@@ -14,8 +14,9 @@ components.cases = function(){
 			_.bindAll(this, 'render');
 			this.render();
 			var self = this;
-			em.on('JoinRequest', function(caseNumber, player_id, player_name, player_avatar) {
-				invitation['case_id'] = caseNumber;
+			em.on('JoinRequest', function(activity_id, case_number, player_id, player_name, player_avatar) {
+				invitation['activity_id'] = activity_id;
+				invitation['case_number'] = case_number;
 				invitation['player_id'] = player_id;
 				invitation['player_name'] = player_name;
 				invitation['player_avitar'] = player_avatar;
@@ -51,28 +52,28 @@ components.cases = function(){
 			e.preventDefault();
 			//Passing 283408 for the room number for now - indicates activity - this will be auto generated later on
 			
-			remote.newCase(283408, me, emit);
+			remote.newCase(1, me, emit);
 			new ComputerView(1);
 		},	
 		selectCase2: function(e) {
 			e.preventDefault();
 			//Passing 283408 for the room number for now - indicates activity - this will be auto generated later on
 			
-			remote.newCase(283408, me, emit);
+			remote.newCase(2, me, emit);
 			new ComputerView(2);
 		},
 		pagerAcceptInvite: function (e){
 			e.preventDefault();
-			console.log ('received case id ' + invitation['case_id']);
-			remote.joinActivity(invitation['case_id'], me);
-			me.set({current_case_id: invitation['case_id']}, {silent:true});
+			console.log ('received case id ' + invitation['activity_id']);
+			remote.joinActivity(invitation['activity_id'], me);
+			me.set({current_case_id: invitation['activity_id']}, {silent:true});
 			online_friends.each(function (friend){
 				if (friend.get('id') == me.get('id')){
-					friend.set({current_case_id: invitation['case_id']}, {silent:true});
+					friend.set({current_case_id: invitation['activity_id']}, {silent:true});
 					console.log ('changed friend case id');
 				}
 			});
-			new ComputerView();
+			new ComputerView(invitation['case_number']);
 		},
 		pagerDeclineInvite: function (e){
 			e.preventDefault();

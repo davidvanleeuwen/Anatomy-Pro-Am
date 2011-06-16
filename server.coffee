@@ -94,7 +94,7 @@ server.all '/friends/:activity_id?', (req, res) ->
 		output.push ({
 			id: player.fbUser.id,
 			name: player.fbUser.first_name,
-			player_color: player.fbUser.player_color, 
+			player_color: player.fbUser.player_color,
 			avatar: "http://graph.facebook.com/" + player.fbUser.id + "/picture", 
 			layer_enabled: false,
 			current_case_id: player.currentActivity,
