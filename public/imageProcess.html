@@ -1,0 +1,64 @@
+<body>
+<canvas id="canvas" ></canvas>
+</body>
+
+
+<script>
+
+
+
+
+var can = document.getElementById('canvas');
+var ctx = can.getContext('2d');
+
+var img = new Image();
+
+
+img.onload = function(){
+    can.width = img.width;
+    can.height = img.height;
+    ctx.drawImage(img, 0, 0, img.width, img.height);
+
+	var imageData=ctx.getImageData(0, 0, can.width, can.height);
+	var pix = imageData.data;
+
+
+	var targetArr = new Array(can.width*can.height);
+	var k = 0;
+	
+	for(var i = 0; i <img.height; i++){
+	    for(var j = 0; j <img.width; j++){
+	       if(parseInt(pix[k].toString()) == 255){
+				targetArr.push(j);
+				targetArr.push(i);
+				document.write("( " + j + " , " + i + " ) <br />");
+				
+			}
+	       //intPixArray[k+1] = parseInt(pix[k+1].toString());
+	       //intPixArray[k+2] = parseInt(pix[k+2].toString());
+	       //intPixArray[k+3] = parseInt(pix[k+3].toString());
+			//document.write(intPixArray[k+0] + ",");
+			//document.write(intPixArray[k+1] + ",");
+			//document.write(intPixArray[k+2] + ",");
+			//document.write(intPixArray[k+3] + "<br />");
+			
+	
+	
+	       k+=4;
+	    }
+	}
+	
+	
+
+}
+img.src = 'images/cases/case1/perfect0.png';
+
+
+
+
+
+
+</script>
+
+
+

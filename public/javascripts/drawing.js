@@ -64,6 +64,7 @@ components.drawing = function(){
 				this.setupView();
 			} else {
 				$.get('/renders/computer2.html', function(t){
+					console.log ('cached drawing');
 					this.el.html('');
 					view.computer = t;
 					this.el.html(view.computer);
@@ -82,7 +83,7 @@ components.drawing = function(){
 				//document.getElementById('scan').innerHTML += '<canvas class="scanvas" id="scanvas" height="325" width="431" style="position: absolute; top:'+(1*(self.index*100+50))+';left:250; z-index: 5"></canvas>';
 				self.canvasArr[playerID] = ($('canvas')[9-self.index]);
 				self.ctxArr[playerID] = self.canvasArr[playerID].getContext("2d");
-				self.ctxArr[playerID].globalCompositeOperation = "copy"; //Needed to erase 
+				self.ctxArr[playerID].globalCompositeOperation = "source-over"; //Needed to erase 
 				self.ctxArr[playerID].lineCap = "butt"; 
 				self.index++;
 			});
@@ -141,7 +142,8 @@ components.drawing = function(){
 				if (player.current_case_id == me.get('current_case_id')){
 					this.score_card_template = _.template($('#score_card_template').html());
 					$("#score_popup_tag").html(this.score_card_template());
-					$("#score_popup_tag").show();
+					// moved to actual scoring routine for now..  $("#score_popup_tag").show();
+					
 					this.done();
 				}
 			}.bind(this));
@@ -198,7 +200,7 @@ components.drawing = function(){
 
 						this.ctxArr[player_id].clearRect(0, 0, this.canvas.width, this.canvas.height);
 						this.ctxArr[player_id].putImageData(imageData, 0, 0);
-				*/		this.ctxArr[player_id].globalCompositeOperation = "copy"; //Needed to erase 
+				*/		this.ctxArr[player_id].globalCompositeOperation = "source-over"; //Needed to erase 
 						
 						
 						
@@ -253,7 +255,7 @@ components.drawing = function(){
 			if(this.caseNum == 1){
 				var imageRefs = ['/images/cases/case3/1.png', '/images/cases/case3/2.png'];
 				//$('.slider')[0].max = 1;
-				//this.$('#scan_container #images')[0].style.top=-8540;
+				this.$('#scan_container #images')[0].style.top=-8540;
 			}else{
 				var imageRefs = ['/images/cases/case1/1.png', '/images/cases/case1/2.png','/images/cases/case1/3.png', '/images/cases/case1/4.png'];
 				this.$('#scan_container #images')[0].style.left=((this.canvas.width/2)-this.$('#scan_container #images')[0].style.width)/4;
@@ -342,6 +344,8 @@ components.drawing = function(){
 			e.preventDefault();
 			remote.leftActivity (me.get('current_case_id'), me);
 			me.set({current_case_id:0},{silent:true});
+			view.computer = null;
+			this.removeAllListeners();
 			delete this;
 			new CaseView();
 		},
@@ -415,7 +419,7 @@ components.drawing = function(){
 				context.lineTo(points[points.length-1-offset].x*this.zoom,points[points.length-1-offset].y*this.zoom);
 				context.stroke();
 				context.strokeStyle = tempStrokeStyle;
-				context.globalCompositeOperation = "copy";
+				context.globalCompositeOperation = "source-over";
 				
 			}
 		},
@@ -702,10 +706,10 @@ components.drawing = function(){
 		endLine: function(event) {
 			event.preventDefault();
 			
-			if(this.ctxArr[me.id].globalCompositeOperation != "copy"){
+			if(this.ctxArr[me.id].globalCompositeOperation != "source-over"){
 				
 				
-				this.ctxArr[me.id].globalCompositeOperation = "copy";
+				this.ctxArr[me.id].globalCompositeOperation = "source-over";
 			/*	var imageData=this.ctxArr[me.id].getImageData(0, 0, this.canvas.width*this.zoom, this.canvas.height*this.zoom);
 				var pix = imageData.data;
 				for(var y = 0; y <imageData.height; y++)
@@ -974,7 +978,7 @@ components.drawing = function(){
 					
 					
 					if(this.caseNum == 1){
-						
+						$("#score_popup_tag").show();
 						goalArrX[0] = 142;
 						goalArrY[0] = 57;
 						goalArrX[1] = 190;
@@ -1012,116 +1016,153 @@ components.drawing = function(){
 						healthyArrY[6] = 264;
 						healthyArrX[7] = 73;
 						healthyArrY[7] = 196;
-						
-						
-						
 					}
 					if(this.caseNum == 2){
-						
-						
-						//layer 0
-
-//tumor
-
-
-//healthy
-
-[09:26:33.412] "Y: 192"
-[09:26:29.427] "X: 235"
-[09:26:29.430] "Y: 176"
-[09:26:31.185] "X: 267"
-[09:26:31.189] "Y: 254"
-[09:26:33.408] "X: 320"
-[09:26:35.944] "X: 392"
-[09:26:35.948] "Y: 235"
---
-[09:26:42.975] "X: 500"
-[09:26:42.980] "Y: 214"
-[09:26:44.673] "X: 543"
-[09:26:44.680] "Y: 198"
-[09:26:46.371] "X: 506"
-[09:26:46.378] "Y: 265"
-
-//layer 1
-
-
-//tumor
-
-[09:29:52.932] "Y: 169"
-[09:29:41.408] "X: 442"
-[09:29:41.412] "Y: 102"
-[09:29:45.198] "X: 425"
-[09:29:45.202] "Y: 85"
-[09:29:48.857] "X: 506"
-[09:29:48.861] "Y: 118"
-[09:29:51.118] "X: 541"
-[09:29:51.123] "Y: 154"
-[09:29:52.927] "X: 535"
-
-//healthy
-
-[09:31:15.260] "X: 505"
-[09:30:55.506] "X: 255"
-[09:30:55.509] "Y: 117"
-[09:30:57.242] "X: 316"
-[09:30:57.245] "Y: 103"
-[09:30:59.501] "X: 194"
-[09:30:59.504] "Y: 196"
-[09:31:01.090] "X: 240"
-[09:31:01.094] "Y: 272"
-[09:31:02.537] "X: 285"
-[09:31:02.541] "Y: 193"
-[09:31:03.852] "X: 321"
-[09:31:03.856] "Y: 271"
-[09:31:05.671] "X: 365"
-[09:31:05.676] "Y: 181"
-[09:31:07.308] "X: 430"
-[09:31:07.313] "Y: 177"
-[09:31:08.898] "X: 486"
-[09:31:08.903] "Y: 201"
-[09:31:10.346] "X: 418"
-[09:31:10.352] "Y: 265"
-[09:31:15.266] "Y: 284"
-
-//layer 2
-
-//layer 3
-						
-						
-					}
 					
-					for(var c = 0; c < goalArrX.length; c++){
-						if((newImageData.data[((goalArrY[c]*(newImageData.width*4)) + (goalArrX[c]*4)) + 3]) == 100)
-							targetHit++;
-						else
-							targetMissed++;
+							$("#score_popup_tag").show();
+					/*
+						goalArrX[0] = 481;
+						goalArrY[0] = 108;
+						goalArrX[1] = 430;
+						goalArrY[1] = 99;
+						goalArrX[2] = 523;
+						goalArrY[2] = 137;
+						goalArrX[3] = 498;
+						goalArrY[3] = 99;
+						goalArrX[4] = 451;
+						goalArrY[4] = 88;
 						
 						
-						
-					}
-					
-					for(var c = 0; c < healthyArrX.length; c++){
-						if((newImageData.data[((healthyArrY[c]*(newImageData.width*4)) + (healthyArrX[c]*4)) + 3]) == 100)
-							healthyHit++;
-						else
-							healthyMissed++;
-						
-						
+						healthyArrX[0] = 557;
+						healthyArrY[0] = 205;
+						healthyArrX[1] = 496;
+						healthyArrY[1] = 200;
+						healthyArrX[2] = 509;
+						healthyArrY[2] = 267;
+						healthyArrX[3] = 438;
+						healthyArrY[3] = 271;
+						healthyArrX[4] = 471;
+						healthyArrY[4] = 177;
+						healthyArrX[5] = 422;
+						healthyArrY[5] = 142;
+						healthyArrX[6] = 379;
+						healthyArrY[6] = 277;
+						healthyArrX[7] = 381;
+						healthyArrY[7] = 223;
+						healthyArrX[8] = 381;
+						healthyArrY[8] = 184;
+						healthyArrX[9] = 380;
+						healthyArrY[9] = 140;
+						healthyArrX[10] = 325;
+						healthyArrY[10] = 110;
+						healthyArrX[11] = 265;
+						healthyArrY[11] = 113;
+						healthyArrX[12] = 307;
+						healthyArrY[12] = 156;
+						healthyArrX[13] = 246;
+						healthyArrY[13] = 151;
+						healthyArrX[14] = 280;
+						healthyArrY[14] = 195;
+						healthyArrX[15] = 223;
+						healthyArrY[15] = 206;
+						healthyArrX[16] = 249;
+						healthyArrY[16] = 263;
+						healthyArrX[17] = 309;
+						healthyArrY[17] = 256;
+						healthyArrX[18] = 267;
+						healthyArrY[18] = 105;
+						healthyArrX[19] = 310;
+						healthyArrY[19] = 103;*/
 						
 					}
 					
 					
+					var can = $('#canvasHelper')[0];
+					var ctx = can.getContext('2d');
+					var img = new Image();
+					var left = ((this.canvas.width/2)-this.$('#scan_container #images')[0].style.width)/4;
+					var top = 0;
+					img.onload = function(){
+						
+					    //can.width = img.width;
+					    //can.height = img.height;
+					    ctx.drawImage(img, 0, 0, img.width, img.height);
+						var imageData=ctx.getImageData(0, 0, img.width, img.height);
+						var pix = imageData.data;
+
+						
+						var targetArr = new Array(can.width*can.height);
+						var k = 0;
+
+						for(var i = 0; i <img.height; i++){
+						    for(var j = 0; j <img.width; j++){
+						       if(parseInt(pix[k].toString()) == 255){
+									goalArrX.push(j+left);
+									goalArrY.push(i+top);
+									//console.log((j+left)+","+(i+top));
+								}
+								else{
+									healthyArrX.push(j+left);
+									healthyArrY.push(i+top);
+								}
+								k+=4;
+						    }
+						}
+						console.log(goalArrX.length);
+
+
+						for(var c = 0; c < goalArrX.length; c++){
+							if((newImageData.data[((goalArrY[c]*(newImageData.width*4)) + (goalArrX[c]*4)) + 3]) >= 100)
+								targetHit++;
+							else
+								targetMissed++;
+						}
+
+						for(var c = 0; c < healthyArrX.length; c++){
+							if((newImageData.data[((healthyArrY[c]*(newImageData.width*4)) + (healthyArrX[c]*4)) + 3]) >= 100)
+								healthyHit++;
+							else
+								healthyMissed++;
+						}
+						//totalScore += (scoreHit - (scoreMissed * .25));
+						$('#hit_' + friend.get("id")).text(targetHit * 10);
+						$('#missed_' + friend.get("id")).text((healthyHit / 4) * 10);
+						$('#total_' + friend.get("id")).text((targetHit * 10) - ((healthyHit / 4) * 10));
+						totalScore += (targetHit * 10) - ((healthyHit / 4) * 10);
+						console.log("After score");
+						console.log(new Date());
+
+
+						alert("Your score " + targetHit + " out of: " + (targetHit+targetMissed) + " with " + healthyHit + " wrong regions identified");
+
+
+
+
+						
+					}
+
+
+/*
+
+class PointSaver
+	constructor: (@id) ->
+		@redisClient = redis.createClient config.redis.port, config.redis.server
+		@redisClient.select config.redis.db
+	saveGoalPoints: (@imgUrl) ->
+		newChat: (player_id, message) ->
+			
+			
+			
+		    @redisClient.sadd 'GoalPoints:'+@case+':'+'', JSON.stringify({player: player_id, message: message, timestamp: new Date().getTime()}), (err, added) ->
+		        if err then console.log 'SADD error: ', err
+	getGoalPoints: (@imgUrl) ->
+
+
+*/
 					
+					img.src = 'images/cases/case1/perfect1.png';
 				
-					//totalScore += (scoreHit - (scoreMissed * .25));
-					$('#hit_' + friend.get("id")).text(targetHit);
-					$('#missed_' + friend.get("id")).text(targetMissed / 4);
-					$('#total_' + friend.get("id")).text(targetHit - (targetMissed / 4));
-					console.log("After score");
-					console.log(new Date());
 					
-					
-					alert("Your score " + targetHit + " out of: " + (targetHit+targetMissed) + " with " + healthyHit + " wrong regions identified");
 				}
 			}.bind(this));
 			var t = 0;
@@ -1223,7 +1264,7 @@ components.drawing = function(){
 				remote.sendChat(me.get('current_case_id'), me.get('id'), layer, message);
 			}
 		},
-		receiveChat: function(player_id, message) {
+		receiveChat: function(player_id, layer, message) {
 			var chatEl = $('#chat_window')[0];
 			//console.log (dThis.chatExpanded);
 			if (!dThis.chatExpanded){

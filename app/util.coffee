@@ -262,6 +262,15 @@ class MemoryStore
 	guid: () ->
 		return (@S4()+@S4()+"-"+@S4()+"-"+@S4()+"-"+@S4()+"-"+@S4()+@S4()+@S4())		
 
+
+###
+#   POINT SAVER
+###
+
+
+		
+
+
 exports.SessionManager = SessionManager
 exports.MemoryStore = MemoryStore
 exports.ActivityManager = ActivityManager
