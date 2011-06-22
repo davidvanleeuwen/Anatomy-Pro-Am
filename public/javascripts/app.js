@@ -10,6 +10,7 @@ $(function(){
 		events: {
 			'click .light_grey_gradient_text': 'startGame',
 			'keyup #pass':'startGame',
+			'click #show_password':'showPassword'
 		},
 		initialize: function() {
 			_.bindAll(this, 'render');
@@ -20,6 +21,10 @@ $(function(){
 				this.el.html(t);
 			}.bind(this));
 
+		},
+		showPassword: function (e){
+			e.preventDefault();
+			$("#password_bar").show();
 		},
 		startGame: function(e) {
 			e.preventDefault();

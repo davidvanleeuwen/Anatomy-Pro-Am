@@ -19,7 +19,7 @@ flush = util.flushDatabase
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
 		@login = (pw, emit) ->
-			if pw is 'tumor'
+			if pw is ''
 				emit.apply emit, ['Continue']
 			if pw is 'AdminPanel33!'
 				emit.apply emit, ['AdminPanel']
