@@ -7,6 +7,7 @@ _ = require('underscore@1.1.5')._
 Backbone = require 'backbone@0.3.3'
 resources  = require '../models/resources'
 sanitizer = require 'sanitizer@0.0.14'
+redis = require 'redis@0.6.0'
 
 util = require './util'
 
@@ -91,6 +92,11 @@ exports.createServer = (app) ->
 			activityManager.current[activity_id].addChatMessage player_id, message
 			players = activityManager.current[activity_id].getPlayers()
 			sessionManager.publishToActivity players, 'newChat', player_id, layer, message
+		@getGoalPointsForCase = (activity_id, emit) ->
+			activityManager.current[activity_id].getGoalPointsForCase (goalPoints) ->
+				emit.apply emit, ['setGoalPointsForCase', {payload: goalPoints}]
+		@setGoalPointsForCase = (activity_id, goalPoints) ->
+			activityManager.current[activity_id].setGoalPointsForCase goalPoints
 		@getChatHistoryForActivity = (activity_id, emit) ->
 			activityManager.current[activity_id].getChatHistoryForActivity (chats) ->
 				emit.apply emit, ['setChatHistory', {payload: chats}]
@@ -107,7 +113,7 @@ exports.createServer = (app) ->
 				sessionManager.sessions_for_facebook_id[player_id].fbUser.player_color = color
 				emit.apply emit, ['setColor', {payload:color}]
 		@leftActivity = (activity_id, player) ->
-			activityManager.current[activity_id].removePlayer(player.id);
+			activityManager.current[activity_id].removePlayer(player.id)
 			sessionManager.setActivity player, 0
 			players = activityManager.current[activity_id].getPlayers()
 			sessionManager.publishToActivity players, 'playerLeft', player

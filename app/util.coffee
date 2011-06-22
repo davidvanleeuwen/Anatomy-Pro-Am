@@ -171,6 +171,11 @@ class ContouringActivity
 	    @activityData.newChat player_id, message    
 	getChatHistoryForActivity: (callback) ->
 	    return @activityData.getChatHistoryForActivity callback
+	getGoalPointsForCase: (callback) ->
+	    return @activityData.getGoalPointsForCase callback
+	setGoalPointsForCase: (goalPoints) ->
+	    @activityData.setGoalPointsForCase goalPoints
+	
 	playerDone: (player, callback) ->
 		@players[player.id].isDone = true
 		result = true;
@@ -232,6 +237,20 @@ class ContouringActivityData
             _.each chats, (chat) ->
                 data.push JSON.parse chat
             callback data
+	getGoalPointsForCase: (callback) ->
+        @redisClient.smembers 'Case:'+@caseID+':GoalPoints', (err, goalPoints) ->
+            if err then console.log 'SMEMBERS error: ', err
+            data = []
+            _.each goalPoints, (goalPoint) ->
+                data.push JSON.parse goalPoint
+            callback data
+	setGoalPointsForCase: (goalPoints) ->
+	    @redisClient.sadd 'Case:'+@caseID+':GoalPoints', JSON.stringify({goalPoints: goalPoints}), (err, added) ->
+	        if err then console.log 'SADD error: ', err
+
+
+
+
 
 ###
 #	MEMORY STORE

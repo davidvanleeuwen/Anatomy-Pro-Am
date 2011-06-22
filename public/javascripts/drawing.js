@@ -88,23 +88,21 @@ components.drawing = function(){
 				self.index++;
 			});
 			
-			self.canvasArr["goal"] = ($('canvas')[9-self.index]);
-			self.ctxArr["goal"] = self.canvasArr["goal"].getContext("2d");
 			
-			
-			this.canvas = $('canvas')[10];
+			this.canvas = $('canvas')[11];
 			this.ctx = this.canvas.getContext("2d");
 			this.isErasing = false;
 			
 			
-		
-		
 			
 			this.ctxArr[me.id].clearRect(0, 0, this.canvas.width, this.canvas.height);
 			this.canvasArr[me.id].width = this.canvasArr[me.id].width;
 
 			/* Retreive chat messages */
 			remote.getChatHistoryForActivity(me.get('current_case_id'), emit);
+			
+			/* Retreive goal point array */
+			remote.getGoalPointsForCase(me.get('current_case_id'), emit);
 			
 			/* Retrieve my color */
 			remote.getColor(me.get('current_case_id'), me.get('id'), emit);
@@ -244,6 +242,23 @@ components.drawing = function(){
 			
 			// event listener for chat
 			em.on('setChatHistory', this.setChatHistory);
+			
+			em.on('setGoalPointsForCase', function(data) {
+					if(false){ 
+						self.setGoalPointsForCase(data);
+					}else{
+						if((data.payload.length != 0)){
+							self.goalPoints = data.payload;
+							console.log(self.goalPoints);
+						}else{
+							console.log("Empty payload!");
+						}
+					}
+			}.bind(this));
+			
+			console.log("And now it is");
+			console.log(this.goalPoints);
+			
 			em.on('newChat', this.receiveChat);
 			
 			em.on('newCursorPosition', this.newCursorPosition);
@@ -293,6 +308,7 @@ components.drawing = function(){
 			em.removeAllListeners('setColoredPointsForThisLayer');
 			em.removeAllListeners('JoinRequest');
 			em.removeAllListeners('setChatHistory');
+			em.removeAllListeners('setGoalPointsForCase');
 			em.removeAllListeners('newChat');
 			em.removeAllListeners('newCursorPosition');
 			em.removeAllListeners('playerNotDone');
@@ -899,6 +915,7 @@ components.drawing = function(){
 		},
 		doneButton: function (e){
 			e.preventDefault();
+			
 			this.locked = !this.locked;
 			if (this.locked){
 				remote.done(me.get('current_case_id'), me);
@@ -911,8 +928,11 @@ components.drawing = function(){
 		},
 		done: function() {
 			
+			console.log("And now it is");
+			console.log(this.goalPoints);
 			this.clean();
 			var self = this;
+		
 			var totalScore = 0;
 			var totalPlayers = 0;
 			online_friends.each(function(friend){
@@ -927,240 +947,149 @@ components.drawing = function(){
 			
 			online_friends.each(function(friend){
 				if (friend.get('current_case_id') == me.get('current_case_id')){
-					var color = friend.get('player_color');
-					var context = this.ctxArr[friend.get('id')];
-					var imageData=context.getImageData(0, 0, this.canvas.width/2, this.canvas.height/2);
-					var pix = imageData.data;
-					var redVal = (parseInt(color.substr(0,2),16));
-					var greenVal = (parseInt(color.substr(2,2),16));
-					var blueVal = (parseInt(color.substr(4,2),16));
+				
+						var targetHit = 0;
+						var targetMissed = 0;
+						var healthyHit = 0;
+						var healthyMissed = 0;
+						var offsetLeft = 0;
+				
+					for(var layerIndex = 0; layerIndex < this.goalPoints.length-1; layerIndex++){
+						this.changeLayer(layerIndex);
+				
+				
+						var color = friend.get('player_color');
+						var context = this.ctxArr[friend.get('id')];
+						var imageData=context.getImageData(0, 0, this.canvas.width/2, this.canvas.height/2);
+						var pix = imageData.data;
+						var redVal = (parseInt(color.substr(0,2),16));
+						var greenVal = (parseInt(color.substr(2,2),16));
+						var blueVal = (parseInt(color.substr(4,2),16));
 					
-					console.log("Before bwcc");
-					console.log(new Date());
-					//var typeMatrix = this.bwcc(imageData);
-					var newImageData = this.blobify(imageData);
-					//Uninvert the blobify
-					console.log("After bwcc");
-					console.log(new Date());
+						console.log("Before bwcc");
+						console.log(new Date());
+						//var typeMatrix = this.bwcc(imageData);
+						var newImageData = this.blobify(imageData);
+						//Uninvert the blobify
+						console.log("After bwcc");
+						console.log(new Date());
 					
-					for(var y = 0; y < newImageData.height; y++){
-						for(var x = 0; x < newImageData.width; x++){
-							if(newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 3] == 0){
-								newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 0]=redVal;
-								newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 1]=greenVal;
-								newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 2]=blueVal;
-								newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 3]=100;
-							}else if( (newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 0] == 0)	
-									&& (newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 1] == 0)	
-									&& (newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 2] == 0)){	
-								newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 3]=0;	
+						for(var y = 0; y < newImageData.height; y++){
+							for(var x = 0; x < newImageData.width; x++){
+								if(newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 3] == 0){
+									newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 0]=redVal;
+									newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 1]=greenVal;
+									newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 2]=blueVal;
+									newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 3]=100;
+								}else if( (newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 0] == 0)	
+										&& (newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 1] == 0)	
+										&& (newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 2] == 0)){	
+									newImageData.data[((y*(newImageData.width*4)) + (x*4)) + 3]=0;	
+								}
 							}
 						}
-					}
-					context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-					context.putImageData(newImageData, 0, 0);
+						context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+						context.putImageData(newImageData, 0, 0);
 					
-					console.log("Before score");
-					console.log(new Date());
-					
-					
-					var targetHit = 0;
-					var targetMissed = 0;
-					var healthyHit = 0;
-					var healthyMissed = 0;
-					
-					
-					var goalArrX = new Array();
-					var goalArrY = new Array();
-					var healthyArrX = new Array();
-					var healthyArrY = new Array();
-					
-					
-					
-					if(this.caseNum == 1){
-						$("#score_popup_tag").show();
-						goalArrX[0] = 142;
-						goalArrY[0] = 57;
-						goalArrX[1] = 190;
-						goalArrY[1] = 63;
-						goalArrX[2] = 242;
-						goalArrY[2] = 69;
-						goalArrX[3] = 561;
-						goalArrY[3] = 366;
-						goalArrX[4] = 448;
-						goalArrY[4] = 347;
-						goalArrX[5] = 662;
-						goalArrY[5] = 68;
-						goalArrX[6] = 660;
-						goalArrY[6] = 164;
-						goalArrX[7] = 473;
-						goalArrY[7] = 196;
-						goalArrX[8] = 411;
-						goalArrY[8] = 255;
-						goalArrX[9] = 359;
-						goalArrY[9] = 289;
-						
-						healthyArrX[0] = 42;
-						healthyArrY[0] = 57;
-						healthyArrX[1] = 190;
-						healthyArrY[1] = 263;
-						healthyArrX[2] = 442;
-						healthyArrY[2] = 69;
-						healthyArrX[3] = 541;
-						healthyArrY[3] = 266;
-						healthyArrX[4] = 148;
-						healthyArrY[4] = 147;
-						healthyArrX[5] = 612;
-						healthyArrY[5] = 100;
-						healthyArrX[6] = 60;
-						healthyArrY[6] = 264;
-						healthyArrX[7] = 73;
-						healthyArrY[7] = 196;
-					}
-					if(this.caseNum == 2){
-					
-							$("#score_popup_tag").show();
-					/*
-						goalArrX[0] = 481;
-						goalArrY[0] = 108;
-						goalArrX[1] = 430;
-						goalArrY[1] = 99;
-						goalArrX[2] = 523;
-						goalArrY[2] = 137;
-						goalArrX[3] = 498;
-						goalArrY[3] = 99;
-						goalArrX[4] = 451;
-						goalArrY[4] = 88;
-						
-						
-						healthyArrX[0] = 557;
-						healthyArrY[0] = 205;
-						healthyArrX[1] = 496;
-						healthyArrY[1] = 200;
-						healthyArrX[2] = 509;
-						healthyArrY[2] = 267;
-						healthyArrX[3] = 438;
-						healthyArrY[3] = 271;
-						healthyArrX[4] = 471;
-						healthyArrY[4] = 177;
-						healthyArrX[5] = 422;
-						healthyArrY[5] = 142;
-						healthyArrX[6] = 379;
-						healthyArrY[6] = 277;
-						healthyArrX[7] = 381;
-						healthyArrY[7] = 223;
-						healthyArrX[8] = 381;
-						healthyArrY[8] = 184;
-						healthyArrX[9] = 380;
-						healthyArrY[9] = 140;
-						healthyArrX[10] = 325;
-						healthyArrY[10] = 110;
-						healthyArrX[11] = 265;
-						healthyArrY[11] = 113;
-						healthyArrX[12] = 307;
-						healthyArrY[12] = 156;
-						healthyArrX[13] = 246;
-						healthyArrY[13] = 151;
-						healthyArrX[14] = 280;
-						healthyArrY[14] = 195;
-						healthyArrX[15] = 223;
-						healthyArrY[15] = 206;
-						healthyArrX[16] = 249;
-						healthyArrY[16] = 263;
-						healthyArrX[17] = 309;
-						healthyArrY[17] = 256;
-						healthyArrX[18] = 267;
-						healthyArrY[18] = 105;
-						healthyArrX[19] = 310;
-						healthyArrY[19] = 103;*/
-						
-					}
-					
-					
-					var can = $('#canvasHelper')[0];
-					var ctx = can.getContext('2d');
-					var img = new Image();
-					var left = ((this.canvas.width/2)-this.$('#scan_container #images')[0].style.width)/4;
-					var top = 0;
-					img.onload = function(){
-						
-					    //can.width = img.width;
-					    //can.height = img.height;
-					    ctx.drawImage(img, 0, 0, img.width, img.height);
-						var imageData=ctx.getImageData(0, 0, img.width, img.height);
-						var pix = imageData.data;
-
-						
-						var targetArr = new Array(can.width*can.height);
-						var k = 0;
-
-						for(var i = 0; i <img.height; i++){
-						    for(var j = 0; j <img.width; j++){
-						       if(parseInt(pix[k].toString()) == 255){
-									goalArrX.push(j+left);
-									goalArrY.push(i+top);
-									//console.log((j+left)+","+(i+top));
-								}
-								else{
-									healthyArrX.push(j+left);
-									healthyArrY.push(i+top);
-								}
-								k+=4;
-						    }
-						}
-						console.log(goalArrX.length);
-
-
-						for(var c = 0; c < goalArrX.length; c++){
-							if((newImageData.data[((goalArrY[c]*(newImageData.width*4)) + (goalArrX[c]*4)) + 3]) >= 100)
-								targetHit++;
-							else
-								targetMissed++;
-						}
-
-						for(var c = 0; c < healthyArrX.length; c++){
-							if((newImageData.data[((healthyArrY[c]*(newImageData.width*4)) + (healthyArrX[c]*4)) + 3]) >= 100)
-								healthyHit++;
-							else
-								healthyMissed++;
-						}
-						//totalScore += (scoreHit - (scoreMissed * .25));
-						$('#hit_' + friend.get("id")).text(targetHit * 10);
-						$('#missed_' + friend.get("id")).text((healthyHit / 4) * 10);
-						$('#total_' + friend.get("id")).text((targetHit * 10) - ((healthyHit / 4) * 10));
-						totalScore += (targetHit * 10) - ((healthyHit / 4) * 10);
-						console.log("After score");
+						console.log("Before score");
 						console.log(new Date());
-
-
-						alert("Your score " + targetHit + " out of: " + (targetHit+targetMissed) + " with " + healthyHit + " wrong regions identified");
-
-
-
-
+					
+					
+				
+					
+						var goalArrX = new Array();
+						var goalArrY = new Array();
+						var healthyArrX = new Array();
+						var healthyArrY = new Array();
+					
+					
+					
+						if(this.caseNum == 1){
+							goalArrX[0] = 142;
+							goalArrY[0] = 57;
+							goalArrX[1] = 190;
+							goalArrY[1] = 63;
+							goalArrX[2] = 242;
+							goalArrY[2] = 69;
+							goalArrX[3] = 561;
+							goalArrY[3] = 366;
+							goalArrX[4] = 448;
+							goalArrY[4] = 347;
+							goalArrX[5] = 662;
+							goalArrY[5] = 68;
+							goalArrX[6] = 660;
+							goalArrY[6] = 164;
+							goalArrX[7] = 473;
+							goalArrY[7] = 196;
+							goalArrX[8] = 411;
+							goalArrY[8] = 255;
+							goalArrX[9] = 359;
+							goalArrY[9] = 289;
 						
+							healthyArrX[0] = 42;
+							healthyArrY[0] = 57;
+							healthyArrX[1] = 190;
+							healthyArrY[1] = 263;
+							healthyArrX[2] = 442;
+							healthyArrY[2] = 69;
+							healthyArrX[3] = 541;
+							healthyArrY[3] = 266;
+							healthyArrX[4] = 148;
+							healthyArrY[4] = 147;
+							healthyArrX[5] = 612;
+							healthyArrY[5] = 100;
+							healthyArrX[6] = 60;
+							healthyArrY[6] = 264;
+							healthyArrX[7] = 73;
+							healthyArrY[7] = 196;
+						}
+						if(this.caseNum == 2){
+								offsetLeft = ((this.canvas.width/2)-this.$('#scan_container #images')[0].style.width)/4;
+							
+								var goalPointsXY = this.goalPoints[layer].goalPoints;
+								for(var c = 0; c<(goalPointsXY.length/2); c++){
+									goalArrX[c]=goalPointsXY[c*2+0] + offsetLeft;
+									goalArrY[c]=goalPointsXY[c*2+1];
+								}
+							
+				
+						}
+					
+				
+				
+				
+
+					for(var c = 0; c < goalArrX.length; c++){
+						if((newImageData.data[((goalArrY[c]*(newImageData.width*4)) + (goalArrX[c]*4)) + 3]) >= 100)
+							targetHit++;
+						else
+							targetMissed++;
 					}
 
+					for(var c = 0; c < healthyArrX.length; c++){
+						if((newImageData.data[((healthyArrY[c]*(newImageData.width*4)) + (healthyArrX[c]*4)) + 3]) >= 100)
+							healthyHit++;
+						else
+							healthyMissed++;
+					}
+				
+				}
+				
+				$("#score_popup_tag").show();
+				$('#hit_' + friend.get("id")).text(targetHit * 10);
+				$('#missed_' + friend.get("id")).text((healthyHit / 4) * 10);
+				$('#total_' + friend.get("id")).text((targetHit * 10) - ((healthyHit / 4) * 10));
+				totalScore += (targetHit * 10) - ((healthyHit / 4) * 10);
+				console.log("After score");
+				console.log(new Date());
 
-/*
 
-class PointSaver
-	constructor: (@id) ->
-		@redisClient = redis.createClient config.redis.port, config.redis.server
-		@redisClient.select config.redis.db
-	saveGoalPoints: (@imgUrl) ->
-		newChat: (player_id, message) ->
-			
-			
-			
-		    @redisClient.sadd 'GoalPoints:'+@case+':'+'', JSON.stringify({player: player_id, message: message, timestamp: new Date().getTime()}), (err, added) ->
-		        if err then console.log 'SADD error: ', err
-	getGoalPoints: (@imgUrl) ->
+				alert("Your score " + targetHit + " out of: " + (targetHit+targetMissed) + " with " + healthyHit + " wrong regions identified");
 
 
-*/
+
 					
-					img.src = 'images/cases/case1/perfect1.png';
+				
 				
 					
 				}
@@ -1292,6 +1221,38 @@ class PointSaver
         $('#chat_window').append('<div class="chat_msg_con"><span class="chat_person" style="color: #'+player[0].get('player_color')+'; font-weight: bold;">'+player[0].get('name')+':</span><span class="chat_message"> '+message.message+'</span></div>');
         chatEl.scrollTop = chatEl.scrollHeight;
       });
+		},
+		setGoalPointsForCase: function(data) {
+				console.log("Load Data Run");
+				this.goalCanvas = $('canvas')[10];
+				this.goalCtx = this.goalCanvas.getContext("2d");
+				console.log(this.goalCanvas);
+				var left = 0;
+				var top = 0;
+				var self = this;
+				var img = new Image();
+				img.onload = function(){
+					var targetArr = new Array();
+				    self.goalCtx.drawImage(img, 0, 0, img.width, img.height);
+					var imageData=self.goalCtx.getImageData(0, 0, img.width, img.height);
+					var pix = imageData.data;
+					var k = 0;
+					for(var i = 0; i <img.height; i++){
+					    for(var j = 0; j <img.width; j++){
+					       if(parseInt(pix[k].toString()) == 255){
+								targetArr.push(j+left);
+								targetArr.push(i+top);
+						
+							}
+							k+=4;
+					    }
+					}
+					this.goalPoints = targetArr;
+					remote.setGoalPointsForCase(me.get('current_case_id'), targetArr);
+					
+				}
+				img.src = 'images/cases/case1/perfect3.png';
+			
 		},
 		showPager: function (b){
 			if(b){
