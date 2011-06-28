@@ -97,7 +97,7 @@ components.drawing = function(){
 			remote.getChatHistoryForActivity(me.get('current_case_id'), emit);
 			
 			/* Retreive goal point array */
-			remote.getGoalPointsForCase(me.get('current_case_id'), emit);
+			//remote.getGoalPointsForCase(me.get('current_case_id'), emit);
 						
 			/* Retrieve my color */
 			remote.getColor(me.get('current_case_id'), me.get('id'), emit);
@@ -169,8 +169,8 @@ components.drawing = function(){
 			}.bind(this));
 			
 			em.on('setGoalPointsForCase', function(data) {
-					if(true){ 
-						self.setGoalPointsForCase(data, 'images/cases/case1/perfect1-0.png');
+					if(false){ 
+						self.setGoalPointsForCase(data, 'images/cases/case1/perfect3F.png');
 					}else{/*
 						if((data.payload.length != 0)){
 							self.goalPoints = data.payload;
