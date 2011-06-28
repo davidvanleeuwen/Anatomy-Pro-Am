@@ -7,7 +7,6 @@ _ = require('underscore@1.1.5')._
 Backbone = require 'backbone@0.3.3'
 resources  = require '../models/resources'
 sanitizer = require 'sanitizer@0.0.14'
-redis = require 'redis@0.6.0'
 
 util = require './util'
 
@@ -20,7 +19,7 @@ flush = util.flushDatabase
 exports.createServer = (app) ->
 	client = DNode (client, conn) ->
 		@login = (pw, emit) ->
-			if pw is 'tumor'
+			if pw is ''
 				emit.apply emit, ['Continue']
 			if pw is 'AdminPanel33!'
 				emit.apply emit, ['AdminPanel']
@@ -42,23 +41,23 @@ exports.createServer = (app) ->
 			emit.apply emit, ['setCurrentCase', case_number, returnedValue]
 			sessionManager.publishToAll 'PlayerStartedCase', thisPlayer, returnedValue
 		@getCase = (activity_id) ->
-		  return activityManager.current[id].getCaseID
+			return activityManager.current[activity_id].getCaseID
 		@pointColored = (activity_id, player_id, points) ->
-      players = activityManager.current[activity_id].getPlayers()
-      for point in points
-        activityManager.current[activity_id].createPoint player_id, point
-        sessionManager.publishToActivity players, 'pointColored', player_id, points
-    @pointErased = (activity_id, player_id, points) ->
-      players = activityManager.current[activity_id].getPlayers()
-      for point in points
-        activityManager.current[activity_id].deletePoint player_id, point
-        sessionManager.publishToActivity players, 'pointErased', player_id, points
-    @mouseDownErase = (activity_id, player_id, layer) ->
-      players = activityManager.current[activity_id].getPlayers()
-      sessionManager.publishToActivity players, 'mouseDownErase', player_id, layer
-    @mouseUpErase = (activity_id, player_id, layer) ->
-      players = activityManager.current[activity_id].getPlayers()
-      sessionManager.publishToActivity players, 'mouseUpErase', player_id, layer
+			players = activityManager.current[activity_id].getPlayers()
+			for point in points
+				activityManager.current[activity_id].createPoint player_id, point
+				sessionManager.publishToActivity players, 'pointColored', player_id, points
+		@pointErased = (activity_id, player_id, points) ->
+			players = activityManager.current[activity_id].getPlayers()
+			for point in points
+				activityManager.current[activity_id].deletePoint player_id, point
+				sessionManager.publishToActivity players, 'pointErased', player_id, points
+		@mouseDownErase = (activity_id, player_id, layer) ->
+			players = activityManager.current[activity_id].getPlayers()
+			sessionManager.publishToActivity players, 'mouseDownErase', player_id, layer
+		@mouseUpErase = (activity_id, player_id, layer) ->
+			players = activityManager.current[activity_id].getPlayers()
+			sessionManager.publishToActivity players, 'mouseUpErase', player_id, layer
 		@clearCanvas = (activity_id, player_id, layer) ->
 			activityManager.current[activity_id].clearCanvas player_id, layer
 			players = activityManager.current[activity_id].getPlayers()
@@ -66,23 +65,24 @@ exports.createServer = (app) ->
 		@getColoredPointsForThisLayerAndPlayer = (activity_id, requester_id, player, layer, emit) ->
 			activityManager.current[activity_id].getPointsForPlayer layer, player, (points) ->
 				emit.apply emit, ['setColoredPointsForThisLayer', {player: player, payload: points} ]
-		@done = (activity_id, player) ->
+		@done = (activity_id, player, tumorHit, healthyHit) ->
 			players = activityManager.current[activity_id].getPlayers()
 			sessionManager.publishToActivity players, 'playerIsDone', player
-			activityManager.current[activity_id].playerDone player, (result) ->
+			console.log players, player
+			activityManager.current[activity_id].playerDone player, tumorHit, healthyHit, (result) ->
 				if result == true
 					sessionManager.publishToActivity players, 'everyoneIsDone', player
 		@notDone = (activity_id, player) ->
 			players = activityManager.current[activity_id].getPlayers()
 			activityManager.current[activity_id].playerNotDone player
 			sessionManager.publishToActivity players, 'playerNotDone', player
-		@submitScore = (activity_id, player) ->
+		@getScores = (activity_id, player) ->
 			players = activityManager.current[activity_id].getPlayers()
 			sessionManager.publishToActivity players, 'playerSubmitted', player
-			activityManager.current[activity_id].submitScore player, (result) ->
-				if result == true
-					sessionManager.publishToActivity players, 'scoreEveryone', player
-					console.log 'score everyone'
+			activityManager.current[activity_id].getScores player, (returned) ->
+				console.log returned
+				if returned.result == true
+					sessionManager.publishToActivity players, 'allScores', returned
 		@joinActivity = (activity_id, player) ->
 			activityManager.current[activity_id].addPlayer(player)
 			sessionManager.setActivity player, activity_id
@@ -92,9 +92,23 @@ exports.createServer = (app) ->
 			activityManager.current[activity_id].addChatMessage player_id, message
 			players = activityManager.current[activity_id].getPlayers()
 			sessionManager.publishToActivity players, 'newChat', player_id, layer, message
+		
 		@getGoalPointsForCase = (activity_id, emit) ->
 			activityManager.current[activity_id].getGoalPointsForCase (goalPoints) ->
 				emit.apply emit, ['setGoalPointsForCase', {payload: goalPoints}]
+		@getScoreForCase = (activity_id, player, width, height, emit) ->
+			console.log  'this is from getScoreForCase'
+			activityManager.current[activity_id].getScoreForCase player.id, width, height, (caseScore) ->
+				players = activityManager.current[activity_id].getPlayers()
+				sessionManager.publishToActivity players, 'playerIsDone', player
+				activityManager.current[activity_id].playerDone player, caseScore.tumorHit, caseScore.healthyHit, (result) ->
+					if result == true
+						sessionManager.publishToActivity players, 'everyoneIsDone', player
+				console.log 'this is the stupid case score'
+				console.log caseScore
+				emit.apply emit, ['setScoreForCase', {payload: caseScore}]
+
+
 		@setGoalPointsForCase = (activity_id, goalPoints) ->
 			activityManager.current[activity_id].setGoalPointsForCase goalPoints
 		@getChatHistoryForActivity = (activity_id, emit) ->
@@ -113,11 +127,11 @@ exports.createServer = (app) ->
 				sessionManager.sessions_for_facebook_id[player_id].fbUser.player_color = color
 				emit.apply emit, ['setColor', {payload:color}]
 		@leftActivity = (activity_id, player) ->
-			activityManager.current[activity_id].removePlayer(player.id)
+			activityManager.current[activity_id].removePlayer player.id 
 			sessionManager.setActivity player, 0
 			players = activityManager.current[activity_id].getPlayers()
 			sessionManager.publishToActivity players, 'playerLeft', player
-			
+
 		# dnode/coffeescript fix:
 		@version = config.version
 	.listen {
