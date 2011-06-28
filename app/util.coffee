@@ -324,74 +324,77 @@ class ContouringActivityData
 							//	console.log(layerPointData[key].point);
 							//	console.log(layerPointData[key].point.y);
 							}		
-							//console.log("lpd");
-							//console.log(layerPointData);
-							for(var y = 0; y < height; y++)
-								for(var x = 0; x < width; x++){
-								
-									if(mainPointArr[y*width+x]==1){
-											if(x>mainXHigh)mainXHigh = x;
-											if(x<mainXLow)mainXLow = x;
-											if(y>mainYHigh)mainYHigh = y;
-											if(y<mainYLow)mainYLow = y;
-									}
-								}
+						
 							
 
 							console.log(mainPointArr.length);
 							//blobify data
+							
+							
+							
+							
+							
+							
+							
 							var pixelStack = [[0, 0]];
+							
+							var pix = mainPointArr;
+
 							while(pixelStack.length)
 							{
-								var newPos, x, y, pixelPos, reachLeft, reachRight;
-								newPos = pixelStack.pop();
-								x = newPos[0];
-								y = newPos[1];
+							  var newPos, x, y, pixelPos, reachLeft, reachRight;
+							  newPos = pixelStack.pop();
+							  x = newPos[0];
+							  y = newPos[1];
 
-								pixelPos = (y*width + x);
-								while(y-- >= 0 && (mainPointArr[pixelPos]==0)){
-									pixelPos -= width * 4;
-								}
-								pixelPos += width * 4;
-								++y;
-								reachLeft = false;
-								reachRight = false;
-								while(y++ < height-1 && (mainPointArr[pixelPos]==0))
-								{
-									mainPointArr[pixelPos]=2;
-									if(x > 0)
-									{
-										if(mainPointArr[(pixelPos - 1)]==0)
-										{
-											if(!reachLeft){
-												pixelStack.push([x - 1, y]);
-												reachLeft = true;
-											}
-										}
-										else if(reachLeft)
-										{
-											reachLeft = false;
-										}
-									}
+							  pixelPos = (y*width + x);
+							  while(y-- >= 0 && pix[pixelPos]==0){
+							    pixelPos -= width;
+							  }
+							  pixelPos += width;
+							  ++y;
+							  reachLeft = false;
+							  reachRight = false;
+							  while(y++ < height-1 && pix[pixelPos]==0)
+							  {
+							    pix[pixelPos]=2;
+							    if(x > 0)
+							    {
+							      if(pix[(pixelPos - 1)]==0)
+							      {
+							        if(!reachLeft){
+							          pixelStack.push([x - 1, y]);
+							          reachLeft = true;
+							        }
+							      }
+							      else if(reachLeft)
+							      {
+							        reachLeft = false;
+							      }
+							    }
 
-									if(x < width-1)
-									{
-										if(mainPointArr[(pixelPos + 1)]==0)
-										{
-											if(!reachRight)
-											{
-												pixelStack.push([x + 1, y]);
-												reachRight = true;
-											}
-										}
-										else if(reachRight)
-										{
-											reachRight = false;
-										}
-									}
-								pixelPos += width;
-								}
+							    if(x < width-1)
+							    {
+							      if(pix[(pixelPos + 1)]==0)
+							      {
+							        if(!reachRight)
+							        {
+							          pixelStack.push([x + 1, y]);
+							          reachRight = true;
+							        }
+							      }
+							      else if(reachRight)
+							      {
+							        reachRight = false;
+							      }
+							    }
+
+							    pixelPos += width;
+							  }
 							}
+							mainPointArr = pix;
+
+
 							//invert
 
 						
@@ -408,6 +411,19 @@ class ContouringActivityData
 									}
 								}
 							}
+								//console.log("lpd");
+								//console.log(layerPointData);
+								for(var y = 0; y < height; y++)
+									for(var x = 0; x < width; x++){
+
+										if(mainPointArr[y*width+x]==1){
+												if(x>mainXHigh)mainXHigh = x;
+												if(x<mainXLow)mainXLow = x;
+												if(y>mainYHigh)mainYHigh = y;
+												if(y<mainYLow)mainYLow = y;
+										}
+									}
+
 
 							//compare against goalData
 							var offsetLeft = 0;
@@ -421,6 +437,12 @@ class ContouringActivityData
 							console.log(goalPointsXY.length);
 							
 							console.log(countOfPoints);
+
+							goalXHigh = 0;
+							goalYHigh = 0;
+							goalXLow = 30000;
+							goalYLow = 30000;
+							
 
 
 							for(var c = 0; c<(goalPointsXY.length/2); c++){
@@ -437,6 +459,9 @@ class ContouringActivityData
 								healthyArrX[c]=healthyPointsXY[c*2+0];
 								healthyArrY[c]=healthyPointsXY[c*2+1];
 							}
+
+								console.log("goalArrXY length");
+								console.log(goalPointsXY.length);
 
 								console.log("goalArrX length");
 								console.log(goalArrX.length);
@@ -461,6 +486,11 @@ class ContouringActivityData
 							for(var c = 0; c < goalArrX.length; c++){
 								if((mainPointArr[((goalArrY[c]*(width)) + (goalArrX[c]))]==1)){
 									targetHit++;
+								}
+								else{
+									console.log("Missed at");
+									console.log(goalArrX[c]);
+									console.log(goalArrY[c]);
 								}
 							}
 								
