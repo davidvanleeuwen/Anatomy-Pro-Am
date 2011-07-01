@@ -1,4 +1,6 @@
 config = require '../config'
+fbhelper = require '../fbhelper'
+scoreManager = require './utils/scoreManager'
 
 Hash = require 'hashish@0.0.2'
 _ = require('underscore@1.1.5')._
@@ -171,14 +173,12 @@ class ContouringActivity
 	    @activityData.newChat player_id, message    
 	getChatHistoryForActivity: (callback) ->
 	    return @activityData.getChatHistoryForActivity callback
-	getGoalPointsForCase: (callback) ->
-	    return @activityData.getGoalPointsForCase @caseID, callback
-	setGoalPointsForCase: (goalPoints) ->
-	    @activityData.setGoalPointsForCase @caseID, goalPoints
-	getScoreForCase: (player_id, width, height, callback) ->
-		return @activityData.getScoreForCase player_id, width, height, @caseID, callback
-	
-	
+	setGoalPointsForCaseAndLayer: (layer_ID, goalPoints) ->
+	    @activityData.setGoalPointsForCaseAndLayer @caseID, layer_ID, goalPoints
+	getScoreForCaseAndLayer: (player_id, width, height, layer_ID, callback) ->
+		return @activityData.getScoreForCaseAndLayer player_id, width, height, @caseID, layer_ID, callback	
+	getLayerCountForCase: (callback) ->
+		return @activityData.getLayerCountForCase @caseID, callback	
 	playerDone: (player, tumorHit, healthyHit, callback) ->
 		@players[player.id].isDone = true
 		@players[player.id].tumorHit = tumorHit
@@ -249,280 +249,19 @@ class ContouringActivityData
             _.each chats, (chat) ->
                 data.push JSON.parse chat
             callback data
-	getGoalPointsForCase: (case_ID, callback) ->
-		console.log "caseID"
-		console.log case_ID		
-		@redisClient.smembers 'Case:'+case_ID+':GoalPoints', (err, goalPoints) ->
-			if err then console.log 'SMEMBERS error: ', err
-			data = []
-			_.each goalPoints, (goalPoint) ->
-				data.push JSON.parse goalPoint
-			callback data
-	setGoalPointsForCase: (case_ID, goalPoints) ->
-		console.log "caseID"
-		console.log case_ID		
-		@redisClient.sadd 'Case:'+case_ID+':GoalPoints', JSON.stringify({goalPoints: goalPoints}), (err, added) ->
-			if err then console.log 'SADD error: ', err
-	getScoreForCase: (player_id, width, height, case_ID, callback) ->
+	getLayerCountForCase: (case_ID, callback) ->
+		@redisClient.get 'Case:'+case_ID+':layerCount', (err, layerCount) ->
+			if err then console.log 'GET error: ', err
+			callback layerCount
+	setGoalPointsForCaseAndLayer: (case_ID, layer_ID, goalPoints) ->
+		scoreManager.setGoalPointsForCaseAndLayer @, case_ID, layer_ID, goalPoints
+	getScoreForCaseAndLayer: (player_id, width, height, case_ID, layer_ID, callback) ->
 		self = @
-		@score = {}
-		@score['tumorHit'] = 0 #Hit
-		@score['healthyHit'] = 0 #Missed
-		@score['layerCount'] = 0 #Total Layers
-		console.log "caseID"
-		console.log case_ID
-		@redisClient.smembers 'Case:'+case_ID+':GoalPoints', (err, goalPoints) ->
-			if err then console.log 'SMEMBERS error: ', err
-			data = []
-			layerIndex = 0
-			console.log("makes it here")
-			_.each goalPoints, (goalPoint) ->
-				currentLayerGoalPoints = JSON.parse goalPoint
-				layerPointData = []
-				#get layer data for player
-
-				self.redisClient.smembers 'activity:'+self.id+':layer:'+layerIndex+':player:'+player_id+':points', (err, points) ->
-					if err then console.log 'SMEMBERS error: ', err	
-					_.each points, (point) ->
-						layerPointData.push JSON.parse point
-					console.log("now this place")
-					`
-					
-					
-						var countOfPoints = 0;
-						var mainXHigh = 0;
-						var goalXHigh = 0;
-						var mainYHigh = 0;
-						var goalYHigh = 0;
-						
-						var mainXLow = 30000;
-						var goalXLow = 30000;
-						var mainYLow = 30000;
-						var goalYLow = 30000;
-
-					console.log("here to here");
-							//arrayify data
-							//console.log(points);
-							//console.log(currentLayerGoalPoints);
-							var goalPointsXY = currentLayerGoalPoints.goalPoints[0];
-							var healthyPointsXY = currentLayerGoalPoints.goalPoints[1];
-							
-							var mainPointArr = new Array(width*height);
-							for(var y = 0; y < height; y++)
-								for(var x = 0; x < width; x++){
-									mainPointArr[y*width+x] = 0;
-								}
-								
-							console.log("width");
-							console.log(width);
-							console.log("height");
-							console.log(height);
-								
-							
-							for(key in layerPointData){
-								mainPointArr[layerPointData[key].point.x+(layerPointData[key].point.y*width)] = 1;
-							//	console.log(layerPointData[key].point);
-							//	console.log(layerPointData[key].point.y);
-							}		
-						
-							
-
-							console.log(mainPointArr.length);
-							//blobify data
-							
-							
-							
-							
-							
-							
-							
-							var pixelStack = [[0, 0]];
-							
-							var pix = mainPointArr;
-
-							while(pixelStack.length)
-							{
-							  var newPos, x, y, pixelPos, reachLeft, reachRight;
-							  newPos = pixelStack.pop();
-							  x = newPos[0];
-							  y = newPos[1];
-
-							  pixelPos = (y*width + x);
-							  while(y-- >= 0 && pix[pixelPos]==0){
-							    pixelPos -= width;
-							  }
-							  pixelPos += width;
-							  ++y;
-							  reachLeft = false;
-							  reachRight = false;
-							  while(y++ < height-1 && pix[pixelPos]==0)
-							  {
-							    pix[pixelPos]=2;
-							    if(x > 0)
-							    {
-							      if(pix[(pixelPos - 1)]==0)
-							      {
-							        if(!reachLeft){
-							          pixelStack.push([x - 1, y]);
-							          reachLeft = true;
-							        }
-							      }
-							      else if(reachLeft)
-							      {
-							        reachLeft = false;
-							      }
-							    }
-
-							    if(x < width-1)
-							    {
-							      if(pix[(pixelPos + 1)]==0)
-							      {
-							        if(!reachRight)
-							        {
-							          pixelStack.push([x + 1, y]);
-							          reachRight = true;
-							        }
-							      }
-							      else if(reachRight)
-							      {
-							        reachRight = false;
-							      }
-							    }
-
-							    pixelPos += width;
-							  }
-							}
-							mainPointArr = pix;
-
-
-							//invert
-
-						
-							
-
-							for(var y = 0; y < height; y++){
-								for(var x = 0; x < width; x++){
-									if(mainPointArr[((y*(width)) + (x))] == 2){
-										mainPointArr[((y*(width)) + (x))] = 0;
-									}else{
-										mainPointArr[((y*(width)) + (x))] = 1;
-										countOfPoints++;
-						
-									}
-								}
-							}
-								//console.log("lpd");
-								//console.log(layerPointData);
-								for(var y = 0; y < height; y++)
-									for(var x = 0; x < width; x++){
-
-										if(mainPointArr[y*width+x]==1){
-												if(x>mainXHigh)mainXHigh = x;
-												if(x<mainXLow)mainXLow = x;
-												if(y>mainYHigh)mainYHigh = y;
-												if(y<mainYLow)mainYLow = y;
-										}
-									}
-
-
-							//compare against goalData
-							var offsetLeft = 0;
-							var goalArrX = new Array();
-							var goalArrY = new Array();
-							var healthyArrX = new Array();
-							var healthyArrY = new Array();	
-
-							
-							console.log("goalpoints");
-							console.log(goalPointsXY.length);
-							
-							console.log(countOfPoints);
-
-							goalXHigh = 0;
-							goalYHigh = 0;
-							goalXLow = 30000;
-							goalYLow = 30000;
-							
-
-
-							for(var c = 0; c<(goalPointsXY.length/2); c++){
-								goalArrX[c]=goalPointsXY[c*2+0];
-								goalArrY[c]=goalPointsXY[c*2+1];
-								
-								if(goalArrX[c]>goalXHigh)goalXHigh = goalArrX[c];
-								if(goalArrX[c]<goalXLow)goalXLow = goalArrX[c];
-									
-								if(goalArrY[c]>goalYHigh)goalYHigh = goalArrY[c];
-								if(goalArrY[c]<goalYLow)goalYLow = goalArrY[c];
-							}
-							for(var c = 0; c<(healthyPointsXY.length/2); c++){
-								healthyArrX[c]=healthyPointsXY[c*2+0];
-								healthyArrY[c]=healthyPointsXY[c*2+1];
-							}
-
-								console.log("goalArrXY length");
-								console.log(goalPointsXY.length);
-
-								console.log("goalArrX length");
-								console.log(goalArrX.length);
-								
-								console.log("healthyArrX length");
-								console.log(healthyArrX.length);
-								
-								console.log("mainHighLowXY");
-								console.log(mainXHigh);
-								console.log(mainXLow);
-								console.log(mainYHigh);
-								console.log(mainYLow);
-								console.log("goalHighLowXY");
-								console.log(goalXHigh);
-								console.log(goalXLow);
-								console.log(goalYHigh);
-								console.log(goalYLow);
-							
-							var targetHit = 0;
-							var healthyHit = 0;
-							
-							for(var c = 0; c < goalArrX.length; c++){
-								if((mainPointArr[((goalArrY[c]*(width)) + (goalArrX[c]))]==1)){
-									targetHit++;
-								}
-								else{
-									console.log("Missed at");
-									console.log(goalArrX[c]);
-									console.log(goalArrY[c]);
-								}
-							}
-								
-							for(var c = 0; c < healthyArrX.length; c++){
-								if((mainPointArr[((healthyArrY[c]*(width)) + (healthyArrX[c]))]==1)){
-									healthyHit++;
-								}
-							}
-							
-							console.log("targetHit");
-							console.log(targetHit);
-							
-							console.log("healthyHit");
-							console.log(healthyHit);
-
-						if(goalArrX.length > 0)	self.score.tumorHit+=(targetHit/goalArrX.length) * 100;
-						if(healthyArrX.length > 0)	self.score.healthyHit+=(healthyHit/healthyArrX.length) * 100;
-							
-						self.score.layerCount++;
-
-
-							console.log("score TIME");
-							console.log(self.score);
-
-
-					`
-					console.log("made it out")
-					console.log self.score
-					callback self.score
-				layerIndex = layerIndex + 1
-
-	
+		getPointsForPlayerCB = (myPoints) ->
+			getGoalPointsForCaseCB = (goalPoints) ->
+				scoreManager.getScoreForCaseAndLayer self, player_id, width, height, case_ID, layer_ID, myPoints, goalPoints, callback
+			scoreManager.getGoalPointsForCase self, case_ID, layer_ID, getGoalPointsForCaseCB
+		@getPointsForPlayer(layer_ID, player_id, getPointsForPlayerCB)
 
 ###
 #	MEMORY STORE

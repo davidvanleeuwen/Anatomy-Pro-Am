@@ -95,9 +95,6 @@ components.drawing = function(){
 
 			/* Retreive chat messages */
 			remote.getChatHistoryForActivity(me.get('current_case_id'), emit);
-			
-			/* Retreive goal point array */
-			//remote.getGoalPointsForCase(me.get('current_case_id'), emit);
 						
 			/* Retrieve my color */
 			remote.getColor(me.get('current_case_id'), me.get('id'), emit);
@@ -168,18 +165,9 @@ components.drawing = function(){
 				}	
 			}.bind(this));
 			
-			em.on('setGoalPointsForCase', function(data) {
-					if(false){ 
-						self.setGoalPointsForCase(data, 'images/cases/case1/perfect3F.png');
-					}else{/*
-						if((data.payload.length != 0)){
-							self.goalPoints = data.payload;
-							console.log(self.goalPoints);
-						}else{
-							console.log("Empty payload!");
-						}*/
+			if(false){ 
+						self.setGoalPointsForCase('images/cases/case1/perfect3F.png', 3);
 					}
-			}.bind(this));
 			
 			
 			
@@ -1080,7 +1068,7 @@ components.drawing = function(){
 				chatEl.scrollTop = chatEl.scrollHeight;
 			});
 		},
-		setGoalPointsForCase: function(data, fileName) {
+		setGoalPointsForCase: function(fileName, layer_ID) {
 				console.log("Load Data Run");
 				this.goalCanvas = $('canvas')[10];
 				this.goalCtx = this.goalCanvas.getContext("2d");
@@ -1114,12 +1102,13 @@ components.drawing = function(){
 							
 					    }
 					}
-					this.goalPoints = targetArr;
-					remote.setGoalPointsForCase(me.get('current_case_id'), [targetArr,healthyArr]);
+					this.goalPoints = {"targetPoints": targetArr, "healthyPoints": healthyArr};
+					remote.setGoalPointsForCaseAndLayer(me.get('current_case_id'), layer_ID, this.goalPoints);
 					console.log(targetArr.length);
 					//console.log("Here it is");
 					//console.log(targetArr);
 					console.log(healthyArr.length);
+					console.log(this.goalPoints);
 					
 				}
 				img.src = fileName;

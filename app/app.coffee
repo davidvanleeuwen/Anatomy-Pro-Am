@@ -52,12 +52,6 @@ exports.createServer = (app) ->
 			for point in points
 				activityManager.current[activity_id].deletePoint player_id, point
 				sessionManager.publishToActivity players, 'pointErased', player_id, points
-		@mouseDownErase = (activity_id, player_id, layer) ->
-			players = activityManager.current[activity_id].getPlayers()
-			sessionManager.publishToActivity players, 'mouseDownErase', player_id, layer
-		@mouseUpErase = (activity_id, player_id, layer) ->
-			players = activityManager.current[activity_id].getPlayers()
-			sessionManager.publishToActivity players, 'mouseUpErase', player_id, layer
 		@clearCanvas = (activity_id, player_id, layer) ->
 			activityManager.current[activity_id].clearCanvas player_id, layer
 			players = activityManager.current[activity_id].getPlayers()
@@ -92,25 +86,27 @@ exports.createServer = (app) ->
 			activityManager.current[activity_id].addChatMessage player_id, message
 			players = activityManager.current[activity_id].getPlayers()
 			sessionManager.publishToActivity players, 'newChat', player_id, layer, message
-		
-		@getGoalPointsForCase = (activity_id, emit) ->
-			activityManager.current[activity_id].getGoalPointsForCase (goalPoints) ->
-				emit.apply emit, ['setGoalPointsForCase', {payload: goalPoints}]
+		@setGoalPointsForCaseAndLayer = (activity_id, layer_ID, goalPoints) ->
+			activityManager.current[activity_id].setGoalPointsForCaseAndLayer layer_ID, goalPoints
 		@getScoreForCase = (activity_id, player, width, height, emit) ->
-			console.log  'this is from getScoreForCase'
-			activityManager.current[activity_id].getScoreForCase player.id, width, height, (caseScore) ->
-				players = activityManager.current[activity_id].getPlayers()
-				sessionManager.publishToActivity players, 'playerIsDone', player
-				activityManager.current[activity_id].playerDone player, caseScore.tumorHit, caseScore.healthyHit, (result) ->
-					if result == true
-						sessionManager.publishToActivity players, 'everyoneIsDone', player
-				console.log 'this is the stupid case score'
-				console.log caseScore
-				emit.apply emit, ['setScoreForCase', {payload: caseScore}]
-
-
-		@setGoalPointsForCase = (activity_id, goalPoints) ->
-			activityManager.current[activity_id].setGoalPointsForCase goalPoints
+			activityManager.current[activity_id].getLayerCountForCase (layerCount) ->
+				totalCaseScore = {'tumorHit': 0, 'healthyHit': 0}
+				_.each( _.range(layerCount), (layer_ID) ->
+					activityManager.current[activity_id].getScoreForCaseAndLayer player.id, width, height, layer_ID, (caseScore) ->
+						totalCaseScore['tumorHit'] += caseScore['tumorHit']
+						totalCaseScore['healthyHit'] += caseScore['healthyHit']
+						players = activityManager.current[activity_id].getPlayers()
+						sessionManager.publishToActivity players, 'playerIsDone', player
+						activityManager.current[activity_id].playerDone player, caseScore.tumorHit, caseScore.healthyHit, (result) ->
+							if result == true
+								sessionManager.publishToActivity players, 'everyoneIsDone', player
+						if layer_ID is layerCount - 1
+							totalCaseScore['tumorHit'] /= layerCount
+							totalCaseScore['healthyHit'] /= layerCount
+							console.log 'this is the final case score'
+							console.log totalCaseScore
+							emit.apply emit, ['setScoreForCase', {payload: caseScore}]
+				)
 		@getChatHistoryForActivity = (activity_id, emit) ->
 			activityManager.current[activity_id].getChatHistoryForActivity (chats) ->
 				emit.apply emit, ['setChatHistory', {payload: chats}]
