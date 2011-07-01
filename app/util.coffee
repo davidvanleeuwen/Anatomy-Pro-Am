@@ -1,4 +1,6 @@
 config = require '../config'
+fbhelper = require '../fbhelper'
+scoreManager = require './utils/scoreManager'
 
 Hash = require 'hashish@0.0.2'
 _ = require('underscore@1.1.5')._
@@ -155,10 +157,10 @@ class ContouringActivity
 	removePlayer: (player) ->
 		@players[player] = null
 	getPlayers: () ->
-	  playerIDs = []
-	  Hash(@players).forEach (player) ->
-	    playerIDs.push player.id
-	  return playerIDs
+		playerIDs = []
+		Hash(@players).forEach (player) ->
+			playerIDs.push player.id
+		return playerIDs
 	createPoint: (player_id, point) ->
 		@activityData.newPoint player_id, point
 	deletePoint: (player_id, point, callback) ->
@@ -171,24 +173,40 @@ class ContouringActivity
 	    @activityData.newChat player_id, message    
 	getChatHistoryForActivity: (callback) ->
 	    return @activityData.getChatHistoryForActivity callback
-	playerDone: (player, callback) ->
+	setGoalPointsForCaseAndLayer: (layer_ID, goalPoints) ->
+	    @activityData.setGoalPointsForCaseAndLayer @caseID, layer_ID, goalPoints
+	getScoreForCaseAndLayer: (player_id, width, height, layer_ID, callback) ->
+		return @activityData.getScoreForCaseAndLayer player_id, width, height, @caseID, layer_ID, callback	
+	getLayerCountForCase: (callback) ->
+		return @activityData.getLayerCountForCase @caseID, callback	
+	playerDone: (player, tumorHit, healthyHit, callback) ->
 		@players[player.id].isDone = true
+		@players[player.id].tumorHit = tumorHit
+		@players[player.id].healthyHit = healthyHit
 		result = true;
 		_.each @players, (player) ->
 			if player.isDone != true
 				result = false;
 		callback result
-	submitScore: (player, callback) ->	
+	getScores: (player, callback) ->
+		returned = {}
+		returned['result'] = false
+		returned['scores'] = {}
 		@players[player.id].requestsScore = true
 		scoreResult = true;
 		doneResult = true
 		_.each @players, (player) ->
+			returned['scores'][player.id] = {}
+			returned['scores'][player.id]['id'] = player.id
+			returned['scores'][player.id]['tumorHit'] = player.tumorHit
+			returned['scores'][player.id]['healthyHit'] = player.healthyHit
 			if player.requestsScore != true
 				scoreResult = false;
 		_.each @players, (player) ->
 			if player.isDone != true
 				doneResult = false;
-		callback doneResult && scoreResult
+		returned.result = doneResult && scoreResult
+		callback returned
 	playerNotDone: (player) ->
 		@players[player.id].isDone = false
 		@players[player.id].scoreResult = false
@@ -231,6 +249,19 @@ class ContouringActivityData
             _.each chats, (chat) ->
                 data.push JSON.parse chat
             callback data
+	getLayerCountForCase: (case_ID, callback) ->
+		@redisClient.get 'Case:'+case_ID+':layerCount', (err, layerCount) ->
+			if err then console.log 'GET error: ', err
+			callback layerCount
+	setGoalPointsForCaseAndLayer: (case_ID, layer_ID, goalPoints) ->
+		scoreManager.setGoalPointsForCaseAndLayer @, case_ID, layer_ID, goalPoints
+	getScoreForCaseAndLayer: (player_id, width, height, case_ID, layer_ID, callback) ->
+		self = @
+		getPointsForPlayerCB = (myPoints) ->
+			getGoalPointsForCaseCB = (goalPoints) ->
+				scoreManager.getScoreForCaseAndLayer self, player_id, width, height, case_ID, layer_ID, myPoints, goalPoints, callback
+			scoreManager.getGoalPointsForCase self, case_ID, layer_ID, getGoalPointsForCaseCB
+		@getPointsForPlayer(layer_ID, player_id, getPointsForPlayerCB)
 
 ###
 #	MEMORY STORE
